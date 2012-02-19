@@ -1,0 +1,6 @@
+pkg/
+._*
+*~
+.DS_Store
+.*.swp
+*.log
