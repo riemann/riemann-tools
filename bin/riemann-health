@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 
-# Reports current CPU, disk, load average, and memory use to reimann.
+# Reports current CPU, disk, load average, and memory use to riemann.
 
 require 'trollop'
-require 'reimann/client'
+require 'riemann/client'
 
-class Reimann::Health
+class Riemann::Health
   def initialize(opts)
     @host = opts[:host]
     @port = opts[:port]
@@ -17,7 +17,7 @@ class Reimann::Health
       memory: {critical: opts[:memory_critical], warning: opts[:memory_warning]}
     }
 
-    @client = Reimann::Client.new(:host => @host, :port => @port)
+    @client = Riemann::Client.new(:host => @host, :port => @port)
   end
 
   def alert(service, state, metric, description)
@@ -150,7 +150,7 @@ class Reimann::Health
   end
 end
   
-Reimann::Health.new(Trollop.options do
+Riemann::Health.new(Trollop.options do
   opt :host, "Host", :default => '127.0.0.1'
   opt :port, "Port", :default => 5555
   opt :interval, "Seconds between updates", :default => 5

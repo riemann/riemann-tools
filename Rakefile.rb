@@ -9,17 +9,17 @@ ENV['COPYFILE_DISABLE'] = 'true'
  
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'reimann-tools'
+  s.rubyforge_project = 'riemann-tools'
  
-  s.name = 'reimann-tools'
+  s.name = 'riemann-tools'
   s.version = '0.0.1'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
-  s.homepage = 'https://github.com/aphyr/reimann-tools'
+  s.homepage = 'https://github.com/aphyr/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'HTTP dashboard for the distributed event system Reimann.'
+  s.summary = 'HTTP dashboard for the distributed event system Riemann.'
 
-  s.add_dependency 'reimann-client', '>= 0.0.4'
+  s.add_dependency 'riemann-client', '>= 0.0.4'
   s.add_dependency 'trollop', '>= 1.16.2'
 
   s.files = FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
@@ -34,8 +34,8 @@ Gem::PackageTask.new gemspec do |p|
 end
  
 RDoc::Task.new do |rd|
-  rd.main = 'Reimann Tools'
-  rd.title = 'Reimann Tools'
+  rd.main = 'Riemann Tools'
+  rd.title = 'Riemann Tools'
   rd.rdoc_dir = 'doc'
  
   rd.rdoc_files.include('lib/**/*.rb')

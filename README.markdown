@@ -1,9 +1,9 @@
-Reimann Tools
+Riemann Tools
 =============
 
-Tiny programs to submit events to Reimann.
+Tiny programs to submit events to Riemann.
 
-Reimann-health, for example, submits events about the current CPU, load,
+Riemann-health, for example, submits events about the current CPU, load,
 memory, and disk use. Bench submits randomly distributed metrics for load
 testing. I've got a whole bunch of these internally for monitoring Redis, Riak,
 queues, etc. Most have internal configuration dependencies, so it'll be a while
@@ -13,6 +13,6 @@ Get started
 ==========
 
 ``` bash
-gem install reimann-tools
-reimann-health --host my.reimann.server
+gem install riemann-tools
+riemann-health --host my.riemann.server
 ```
