@@ -2,31 +2,27 @@
 
 # Reports current CPU, disk, load average, and memory use to riemann.
 
-require 'trollop'
-require 'riemann/client'
+require File.expand_path('../../lib/riemann/tools', __FILE__)
 
-class Riemann::Health
-  def initialize(opts)
-    @host = opts[:host]
-    @port = opts[:port]
-    @interval = opts[:interval]
+class Riemann::Tools::Health
+  include Riemann::Tools
+
+  def initialize
     @limits = {
-      cpu: {critical: opts[:cpu_critical], warning: opts[:cpu_warning]},
-      disk: {critical: opts[:disk_critical], warning: opts[:disk_warning]},
+      :cpu => {critical: opts[:cpu_critical], warning: opts[:cpu_warning]},
+      :disk => {critical: opts[:disk_critical], warning: opts[:disk_warning]},
       :load => {critical: opts[:load_critical], warning: opts[:load_warning]},
-      memory: {critical: opts[:memory_critical], warning: opts[:memory_warning]}
+      :memory => {critical: opts[:memory_critical], warning: opts[:memory_warning]}
     }
-
-    @client = Riemann::Client.new(:host => @host, :port => @port)
   end
 
   def alert(service, state, metric, description)
-    @client << {
+    report(
       service: service,
       state: state.to_s,
       metric: metric.to_f,
       description: description
-    }
+    )
   end
 
   def cores
@@ -131,35 +127,24 @@ class Riemann::Health
   end
 
   def tick
-    begin
-      cpu
-      memory
-      load
-      disk
-    rescue => e
-      $stderr.puts "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
-      sleep 10
-    end
+    cpu
+    memory
+    load
+    disk
   end
-
-  def run
-    loop do
-      tick
-      sleep @interval
+  
+  def tool_options
+    Trollop.options do
+      opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
+      opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
+      opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
+      opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
+      opt :load_warning, "Load warning threshold (load average / core)", :default => 3
+      opt :load_critical, "Load critical threshold (load average / core)", :default => 8
+      opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
+      opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
     end
   end
 end
   
-Riemann::Health.new(Trollop.options do
-  opt :host, "Host", :default => '127.0.0.1'
-  opt :port, "Port", :default => 5555
-  opt :interval, "Seconds between updates", :default => 5
-  opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
-  opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
-  opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
-  opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
-  opt :load_warning, "Load warning threshold (load average / core)", :default => 3
-  opt :load_critical, "Load critical threshold (load average / core)", :default => 8
-  opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
-  opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
-end).run
+Riemann::Tools::Health.run
