@@ -8,25 +8,47 @@ module Riemann
         def run
           new.run
         end
-      end
-    end
 
-    def tool_options
-      {}
-    end
+        def opt(*a)
+          a.unshift :opt
+          @opts ||= []
+          @opts << a
+        end
 
-    def global_options
-      Trollop.options do
+        def options
+          p = Trollop::Parser.new
+          @opts.each do |o|
+            p.send *o
+          end
+          Trollop::with_standard_exception_handling(p) do
+            p.parse ARGV
+          end
+        end
+        
         opt :host, "Riemann host", :default => '127.0.0.1'
         opt :port, "Riemann port", :default => 5555
         opt :interval, "Seconds between updates", :default => 5
       end
     end
 
+    def initialize
+      super
+    end
+
+    def tool_options
+      {}
+    end
+
+    # Returns parsed options (cached) from command line.
     def options
-      @options ||= global_options.merge(tool_options)
+      @options ||= self.class.options
     end
     alias :opts :options
+
+    # Add a new command line option
+    def opt(*a)
+      @option_parser.opt *a
+    end
 
     def report(event)
       riemann << event
@@ -41,6 +63,7 @@ module Riemann
     alias :r :riemann
 
     def run
+      t0 = Time.now
       loop do
         begin
           tick
@@ -48,7 +71,8 @@ module Riemann
           $stderr.puts "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
         end
 
-        sleep options[:interval]
+        # Sleep. 
+        sleep(options[:interval] - ((Time.now - t0) % options[:interval]))
       end
     end
 
