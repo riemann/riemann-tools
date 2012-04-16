@@ -1,5 +1,6 @@
 module Riemann
   module Tools
+    require 'rubygems'
     require 'trollop'
     require 'riemann/client'
 

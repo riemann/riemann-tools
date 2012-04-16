@@ -6,22 +6,31 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 class Riemann::Tools::Health
   include Riemann::Tools
+  
+  opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
+  opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
+  opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
+  opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
+  opt :load_warning, "Load warning threshold (load average / core)", :default => 3
+  opt :load_critical, "Load critical threshold (load average / core)", :default => 8
+  opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
+  opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
 
   def initialize
     @limits = {
-      :cpu => {critical: opts[:cpu_critical], warning: opts[:cpu_warning]},
-      :disk => {critical: opts[:disk_critical], warning: opts[:disk_warning]},
-      :load => {critical: opts[:load_critical], warning: opts[:load_warning]},
-      :memory => {critical: opts[:memory_critical], warning: opts[:memory_warning]}
+      :cpu => {:critical => opts[:cpu_critical], :warning => opts[:cpu_warning]},
+      :disk => {:critical => opts[:disk_critical], :warning => opts[:disk_warning]},
+      :load => {:critical => opts[:load_critical], :warning => opts[:load_warning]},
+      :memory => {:critical => opts[:memory_critical], :warning => opts[:memory_warning]}
     }
   end
 
   def alert(service, state, metric, description)
     report(
-      service: service,
-      state: state.to_s,
-      metric: metric.to_f,
-      description: description
+      :service => service,
+      :state => state.to_s,
+      :metric => metric.to_f,
+      :description => description
     )
   end
 
@@ -131,19 +140,6 @@ class Riemann::Tools::Health
     memory
     load
     disk
-  end
-  
-  def tool_options
-    Trollop.options do
-      opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
-      opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
-      opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
-      opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
-      opt :load_warning, "Load warning threshold (load average / core)", :default => 3
-      opt :load_critical, "Load critical threshold (load average / core)", :default => 8
-      opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
-      opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
-    end
   end
 end
   
