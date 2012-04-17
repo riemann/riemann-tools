@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-tools'
  
   s.name = 'riemann-tools'
-  s.version = '0.0.2'
+  s.version = '0.0.3'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/aphyr/riemann-tools'
@@ -28,7 +28,7 @@ gemspec = Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.has_rdoc = true
  
-  s.required_ruby_version = '>= 1.9.1'
+  s.required_ruby_version = '>= 1.8.7'
 end
 
 Gem::PackageTask.new gemspec do |p|
