@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+
+# Gathers munin statistics and submits them to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Net
+  include Riemann::Tools
+  
+  opt :munin_host, "Munin hostname", :default => 'localhost'
+  opt :munin_port, "Munin port", :default => 4949
+  opt :services, "Munin services to translate (if not specified, all services are relayed)", :type => :strings
+  
+  def initialize
+    @old_state = nil
+  end
+
+  def state
+    f = File.read('/proc/net/dev')
+    state = f.split("\n").inject({}) do |s, line|
+      if line =~ /\s*(\w+?):\s*([\s\d]+)\s*/
+        iface = $1
+        ['rx bytes',
+        'rx packets',
+        'rx errs',
+        'rx drop',
+        'rx fifo',
+        'rx frame',
+        'rx compressed',
+        'rx multicast',
+        'tx bytes',
+        'tx packets',
+        'tx drops',
+        'tx fifo',
+        'tx colls',
+        'tx carrier',
+        'tx compressed'].map do |service|
+          "#{iface} #{service}"
+        end.zip(
+          $2.split(/\s+/).map { |str| str.to_i }
+        ).each do |service, value|
+          s[service] = value
+        end
+      end
+      
+      s
+    end
+  end
+  
+  def tick
+    state = self.state
+
+    if @old_state
+      state.each do |service, metric|
+        delta = metric - @old_state[service]
+        svc_state = case service
+          when /drop$/
+            if metric > 0
+              'warning'
+            else
+              'ok'
+            end
+          when /errs$/
+            if metric > 0
+              'warning'
+            else
+              'ok'
+            end
+          else
+            'ok'
+          end
+
+        report(
+          :service => service,
+          :metric => (delta / opts[:interval]),
+          :state => svc_state
+        )
+      end
+    end
+
+    @old_state = state
+  end
+end
+  
+Riemann::Tools::Net.run
