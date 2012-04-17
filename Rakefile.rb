@@ -19,7 +19,7 @@ gemspec = Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.summary = 'HTTP dashboard for the distributed event system Riemann.'
 
-  s.add_dependency 'riemann-client', '>= 0.0.4'
+  s.add_dependency 'riemann-client', '>= 0.0.7'
   s.add_dependency 'trollop', '>= 1.16.2'
   s.add_dependency 'munin-ruby', '>= 0.2.1'
 
