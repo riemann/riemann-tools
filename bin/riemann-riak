@@ -145,7 +145,7 @@ class Riemann::Tools::Riak
     ].each do |s|
       report(
         :host => opts[:riak_host],
-        :service => s,
+        :service => "riak #{s}",
         :state => 'ok',
         :metric => stats[s]/60.0,
         :description => "#{stats[s]/60.0}/sec"
