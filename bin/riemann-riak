@@ -1,0 +1,181 @@
+#!/usr/bin/env ruby
+
+# Forwards information on a Riak node to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+require 'net/http'
+require 'yajl/json_gem'
+
+class Riemann::Tools::Riak
+  include Riemann::Tools
+
+  opt :riak_host, "Riak host", :default => "localhost"
+  opt :stats_port, "Riak HTTP port for stats", :default => 8098
+  opt :stats_path, "Riak HTTP stats path", :default => '/stats'
+  opt :node_name, "Riak erlang node name", :default => "riak@#{Socket.gethostname}"
+  
+  opt :get_50_warning, "FSM 50% get time warning threshold (ms)", :default => 1000
+  opt :put_50_warning, "FSM 50% put time warning threshold (ms)", :default => 1000
+  opt :get_95_warning, "FSM 95% get time warning threshold (ms)", :default => 2000
+  opt :put_95_warning, "FSM 95% put time warning threshold (ms)", :default => 2000
+  opt :get_99_warning, "FSM 99% get time warning threshold (ms)", :default => 10000
+  opt :put_99_warning, "FSM 99% put time warning threshold (ms)", :default => 10000
+
+  def initialize
+    if `which escript` =~ /^\s*$/
+      puts "No escript; disabling ring/key checks."
+      @no_escript = true
+    end
+  end
+
+  def check_ring
+    return if @no_escript
+
+    str = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-ring #{opts[:node_name]}`.chomp
+    if str =~ /^TRUE/
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak ring',
+        :state => 'ok',
+        :description => str
+      )
+    else
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak ring',
+        :state => 'warning',
+        :description => str
+      )
+    end
+  end
+
+  def check_keys
+    return if @no_escript
+    
+    keys = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-keys #{opts[:node_name]}`.chomp
+    if keys =~ /^\d+$/
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak keys',
+        :state => 'ok',
+        :metric => keys.to_i,
+        :description => keys
+      )
+    else
+      report(
+        :host => opts[:riak_host],
+        :servie => 'riak keys',
+        :state => 'unknown',
+        :description => keys
+      )
+    end
+  end
+
+  def check_disk
+    gb = `du -s /var/lib/riak`.split(/\s+/).first.to_i / (1024.0**2)
+    report(
+      :host => opts[:riak_host],
+      :service => 'riak disk',
+      :state => 'ok',
+      :metric => gb,
+      :description => "#{gb} GB in /var/lib/riak/"
+    )
+  end
+
+  # Returns the riak stat for the given fsm type and percentile.
+  def fsm_stat(type, percentile)
+    "node_#{type}_fsm_time_#{percentile == 50 ? 'median' : percentile}"
+  end
+
+  # Returns the alerts state for the given fsm.
+  def fsm_state(type, percentile, val)
+    limit = opts["#{type}_#{percentile}_warning".to_sym]
+    case val
+    when 0 .. limit
+      'ok'
+    when limit .. limit * 2
+      'warning'
+    else
+      'critical'
+    end
+  end
+
+  def check_stats
+    begin
+      res = Net::HTTP.start(opts[:riak_host], opts[:stats_port]) do |http|
+        http.get opts[:stats_path]
+      end
+    rescue => e
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak',
+        :state => 'critical',
+        :description => "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}"
+      )
+      return
+    end
+
+    if res.code.to_i == 200
+      stats = JSON.parse(res.body)
+    else
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak',
+        :state => 'critical',
+        :description => "stats returned HTTP #{res.code}:\n\n#{res.body}"
+      )
+      return
+    end
+
+    report(
+      :host => opts[:riak_host],
+      :service => 'riak',
+      :state => 'ok'
+    )
+
+    # Gets/puts/rr
+    [
+      'vnode_gets', 
+      'vnode_puts', 
+      'node_gets', 
+      'node_puts', 
+      'read_repairs' 
+    ].each do |s|
+      report(
+        :host => opts[:riak_host],
+        :service => s,
+        :state => 'ok',
+        :metric => stats[s]/60.0,
+        :description => "#{stats[s]/60.0}/sec"
+      )
+    end
+
+    # FSMs
+    ['get', 'put'].each do |type|
+      [50, 95, 99].each do |percentile|
+        val = stats[fsm_stat(type, percentile)] || 0
+        val = 0 if val == 'undefined'
+        val /= 1000.0 # Convert us to ms
+        state = fsm_state(type, percentile, val)
+        report(
+          :host => opts[:riak_host],
+          :service => "riak #{type} #{percentile}",
+          :state => state,
+          :metric => val,
+          :description => "#{val} ms"
+        )
+      end
+    end
+  end
+
+  def tick
+    # This can utterly destroy a cluster, so we disable
+    # check_keys
+    check_stats
+    check_ring
+    check_disk
+  end
+end
+
+Riemann::Tools::Riak.run
