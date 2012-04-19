@@ -17,7 +17,7 @@ gemspec = Gem::Specification.new do |s|
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/aphyr/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'HTTP dashboard for the distributed event system Riemann.'
+  s.summary = 'Utilities which submit events to Riemann.'
 
   s.add_dependency 'riemann-client', '>= 0.0.7'
   s.add_dependency 'trollop', '>= 1.16.2'
