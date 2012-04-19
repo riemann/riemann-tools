@@ -80,7 +80,7 @@ class Riemann::Tools::Riak
       :service => 'riak disk',
       :state => 'ok',
       :metric => gb,
-      :description => "#{gb} GB in /var/lib/riak/"
+      :description => "#{gb} GB in #{opts[:data_dir]}"
     )
   end
 
