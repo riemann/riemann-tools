@@ -11,6 +11,7 @@ class Riemann::Tools::Riak
   include Riemann::Tools
 
   opt :riak_host, "Riak host", :default => "localhost"
+  opt :data_dir, "Riak data directory", :default => '/var/lib/riak'
   opt :stats_port, "Riak HTTP port for stats", :default => 8098
   opt :stats_path, "Riak HTTP stats path", :default => '/stats'
   opt :node_name, "Riak erlang node name", :default => "riak@#{Socket.gethostname}"
@@ -73,7 +74,7 @@ class Riemann::Tools::Riak
   end
 
   def check_disk
-    gb = `du -s /var/lib/riak`.split(/\s+/).first.to_i / (1024.0**2)
+    gb = `du -s #{opts[:data_dir]}`.split(/\s+/).first.to_i / (1024.0**2)
     report(
       :host => opts[:riak_host],
       :service => 'riak disk',
