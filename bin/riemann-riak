@@ -10,7 +10,7 @@ require 'yajl/json_gem'
 class Riemann::Tools::Riak
   include Riemann::Tools
 
-  opt :riak_host, "Riak host", :default => "localhost"
+  opt :riak_host, "Riak host", :default => Socket.gethostname
   opt :data_dir, "Riak data directory", :default => '/var/lib/riak'
   opt :stats_port, "Riak HTTP port for stats", :default => 8098
   opt :stats_path, "Riak HTTP stats path", :default => '/stats'
