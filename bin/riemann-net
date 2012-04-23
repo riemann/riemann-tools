@@ -7,6 +7,9 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 class Riemann::Tools::Net
   include Riemann::Tools
   
+  opt :interfaces, "Interfaces to monitor", :type => :strings, :default => nil
+  opt :ignore_interfaces, "Interfaces to ignore", :type => :strings, :default =>['lo']
+
   def initialize
     @old_state = nil
   end
@@ -16,6 +19,7 @@ class Riemann::Tools::Net
     state = f.split("\n").inject({}) do |s, line|
       if line =~ /\s*(\w+?):\s*([\s\d]+)\s*/
         iface = $1
+
         ['rx bytes',
         'rx packets',
         'rx errs',
@@ -41,6 +45,19 @@ class Riemann::Tools::Net
       
       s
     end
+
+    # Filter interfaces
+    if is = opts[:interfaces]
+      state = state.select do |service, value|
+        is.include? service.split(' ').first
+      end
+    end
+
+    state = state.reject do |service, value|
+      opts[:ignore_interfaces].include? service.split(' ').first
+    end
+
+    state
   end
   
   def tick
