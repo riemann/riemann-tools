@@ -85,7 +85,7 @@ class Riemann::Tools::Net
 
         report(
           :service => service,
-          :metric => (delta / opts[:interval]),
+          :metric => (delta.to_f / opts[:interval]),
           :state => svc_state
         )
       end
