@@ -7,10 +7,6 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 class Riemann::Tools::Net
   include Riemann::Tools
   
-  opt :munin_host, "Munin hostname", :default => 'localhost'
-  opt :munin_port, "Munin port", :default => 4949
-  opt :services, "Munin services to translate (if not specified, all services are relayed)", :type => :strings
-  
   def initialize
     @old_state = nil
   end
