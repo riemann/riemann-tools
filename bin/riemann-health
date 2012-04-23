@@ -83,7 +83,7 @@ class Riemann::Tools::Health
   end
 
   def disk
-    `df`.split(/\n/).each do |r|
+    `df -P`.split(/\n/).each do |r|
       f = r.split(/\s+/)
       next unless f[0] =~ /^\//
       next if f[0] == 'Filesystem'
