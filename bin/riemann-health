@@ -6,7 +6,7 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 class Riemann::Tools::Health
   include Riemann::Tools
-  
+
   opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
   opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
   opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
@@ -23,11 +23,33 @@ class Riemann::Tools::Health
       :load => {:critical => opts[:load_critical], :warning => opts[:load_warning]},
       :memory => {:critical => opts[:memory_critical], :warning => opts[:memory_warning]}
     }
+    case (ostype = `uname -s`.chomp.downcase)
+    when 'darwin'
+      @cores = `sysctl -n hw.ncpu`.to_i
+      @cpu = method :darwin_cpu
+      @disk = method :disk
+      @load = method :darwin_load
+      @memory = method :darwin_memory
+      darwin_top
+    when 'freebsd'
+      @cores = `sysctl -n hw.ncpu`.to_i
+      @cpu = method :freebsd_cpu
+      @disk = method :disk
+      @load = method :freebsd_load
+      @memory = method :freebsd_memory
+    else
+      @cores = cores
+      puts "WARNING: OS '#{ostype}' not explicitly supported. Falling back to Linux" unless ostype == "linux"
+      @cpu = method :linux_cpu
+      @disk = method :disk
+      @load = method :linux_load
+      @memory = method :linux_memory
+    end
   end
 
   def alert(service, state, metric, description)
     report(
-      :service => service,
+      :service => service.to_s,
       :state => state.to_s,
       :metric => metric.to_f,
       :description => description
@@ -51,14 +73,26 @@ class Riemann::Tools::Health
     end.size
   end
 
-  def cpu
+  def report_pct(service, fraction, report)
+    if fraction
+      if fraction > @limits[service][:critical]
+        alert service, :critical, fraction, "#{sprintf("%.2f", fraction * 100)}% #{report}"
+      elsif fraction > @limits[service][:warning]
+        alert service, :warning, fraction, "#{sprintf("%.2f", fraction * 100)}% #{report}"
+      else
+        alert service, :ok, fraction, "#{sprintf("%.2f", fraction * 100)}% #{report}"
+      end
+    end
+  end
+
+  def linux_cpu
     new = File.read('/proc/stat')
     unless new[/cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/]
       alert 'cpu', :unknown, nil, "/proc/stat doesn't include a CPU line"
       return false
     end
     u2, n2, s2, i2 = [$1, $2, $3, $4].map { |e| e.to_i }
-    
+
     if @old_cpu
       u1, n1, s1, i1 = @old_cpu
 
@@ -66,41 +100,14 @@ class Riemann::Tools::Health
       total = used + i2-i1
       fraction = used.to_f / total
 
-      if fraction > @limits[:cpu][:critical]
-        alert "cpu", :critical, fraction, "#{sprintf("%.2f", fraction * 100)}% user+nice+sytem\n\n#{cpu_report}"
-      elsif fraction > @limits[:cpu][:warning]
-        alert "cpu", :warning, fraction, "#{sprintf("%.2f", fraction * 100)}% user+nice+sytem\n\n#{cpu_report}"
-      else
-        alert "cpu", :ok, fraction, "#{sprintf("%.2f", fraction * 100)}% user+nice+sytem\n\n#{cpu_report}"
-      end
+      report_pct :cpu, fraction, "user+nice+sytem\n\n#{`ps -eo pcpu,pid,args | sort -nrb -k1 | head -10`.chomp}"
     end
-    
+
     @old_cpu = [u2, n2, s2, i2]
   end
 
-  def cpu_report
-    `ps -eo pcpu,pid,args | sort -nrb -k1 | head -10`.chomp
-  end
-
-  def disk
-    `df -P`.split(/\n/).each do |r|
-      f = r.split(/\s+/)
-      next unless f[0] =~ /^\//
-      next if f[0] == 'Filesystem'
-      x = f[4].to_f/100
-
-      if x > @limits[:disk][:critical]
-        alert "disk #{f[5]}", :critical, x, "#{f[4]} used"
-      elsif x > @limits[:disk][:warning]
-        alert "disk #{f[5]}", :warning, x, "#{f[4]} used"
-      else
-        alert "disk #{f[5]}", :ok, x, "#{f[4]} used"
-      end
-    end
-  end
-  
-  def load
-    load = File.read('/proc/loadavg').split(/\s+/)[2].to_f / cores
+  def linux_load
+    load = File.read('/proc/loadavg').split(/\s+/)[2].to_f / @cores
     if load > @limits[:load][:critical]
       alert "load", :critical, load, "15-minute load average/core is #{load}"
     elsif load > @limits[:load][:warning]
@@ -110,7 +117,7 @@ class Riemann::Tools::Health
     end
   end
 
-  def memory
+  def linux_memory
     m = File.read('/proc/meminfo').split(/\n/).inject({}) { |info, line|
       x = line.split(/:?\s+/)
       # Assume kB...
@@ -122,25 +129,120 @@ class Riemann::Tools::Health
     total = m['MemTotal']
     fraction = 1 - (free.to_f / total)
 
-    if fraction > @limits[:memory][:critical]
-      alert "memory", :critical, fraction, "#{sprintf("%.2f", fraction * 100)}% used\n\n#{memory_report}"
-    elsif fraction > @limits[:memory][:warning]
-      alert "memory", :warning, fraction, "#{sprintf("%.2f", fraction * 100)}% used\n\n#{memory_report}"
+    report_pct :memory, fraction, "used\n\n#{`ps -eo pmem,pid,args | sort -nrb -k1 | head -10`.chomp}"
+  end
+
+  def freebsd_cpu
+    u2, n2, s2, t2, i2 = `sysctl -n kern.cp_time 2>/dev/null`.split.map{ |e| e.to_i } #FreeBSD has 5 cpu stats
+
+    if @old_cpu
+      u1, n1, s1, t1, i1 = @old_cpu
+
+      used = (u2+n2+s2+t2) - (u1+n1+s1+t1)
+      total = used + i2-i1
+      fraction = used.to_f / total
+
+      report_pct :cpu, fraction, "user+nice+sytem+interrupt\n\n#{`ps -axo pcpu,pid,args | sort -nrb -k1 | head -10`.chomp}"
+    end
+
+    @old_cpu = [u2, n2, s2, t2, i2]
+  end
+
+  def freebsd_load
+    m = `uptime`.split[-1].match(/^[0-9]*\.[0-9]*$/)
+    load = m[0].to_f / @cores
+    if load > @limits[:load][:critical]
+      alert "load", :critical, load, "15-minute load average/core is #{load}"
+    elsif load > @limits[:load][:warning]
+      alert "load", :warning, load, "15-minute load average/core is #{load}"
     else
-      alert "memory", :ok, fraction, "#{sprintf("%.2f", fraction * 100)}% used\n\n#{memory_report}"
+      alert "load", :ok, load, "15-minute load average/core is #{load}"
     end
   end
 
-  def memory_report
-    `ps -eo pmem,pid,args | sort -nrb -k1 | head -10`.chomp
+  def freebsd_memory
+    meminfo = `sysctl -n vm.stats.vm.v_page_count vm.stats.vm.v_wire_count vm.stats.vm.v_active_count 2>/dev/null`.chomp.split
+    fraction = (meminfo[1].to_f + meminfo[2].to_f) / meminfo[0].to_f
+
+    report_pct :memory, fraction, "used\n\n#{`ps -axo pmem,pid,args | sort -nrb -k1 | head -10`.chomp}"
+  end
+
+  def darwin_top
+    raw = `top -l 1 | grep -i "^\\(cpu\\|physmem\\|load\\)"`.chomp
+    @topdata = {:stamp => Time.now.to_i }
+    raw.each_line do |ln|
+      if ln.match(/Load Avg: [0-9.]+, [0-9.]+, ([0-9.])+/i)
+        @topdata[:load] = $1.to_f
+      elsif ln.match(/CPU usage: [0-9.]+% user, [0-9.]+% sys, ([0-9.]+)% idle/i)
+        @topdata[:cpu] = $1.to_f / 100
+      elsif mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) wired, ([0-9]+)([BKMGT]) active, ([0-9]+)([BKMGT]) inactive, ([0-9]+)([BKMGT]) used, ([0-9]+)([BKMGT]) free/i)
+        wired = mdat[1].to_i * (1024 ** "BKMGT".index(mdat[2]))
+        active = mdat[3].to_i * (1024 ** "BKMGT".index(mdat[4]))
+        inactive = mdat[5].to_i * (1024 ** "BKMGT".index(mdat[6]))
+        used = mdat[7].to_i * (1024 ** "BKMGT".index(mdat[8]))
+        free = mdat[9].to_i * (1024 ** "BKMGT".index(mdat[10]))
+        @topdata[:memory] = (wired + active + used).to_f / (wired + active + used + inactive + free)
+      end
+    end
+  end
+
+  def darwin_cpu
+    darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
+    unless @topdata[:cpu]
+      alert 'cpu', :unknown, nil, "unable to get CPU stats from top"
+      return false
+    end
+    report_pct :cpu,  @topdata[:cpu], "usage\n\n#{`ps -eo pcpu,pid,args | sort -nrb -k1 | head -10`.chomp}"
+  end
+
+  def darwin_load
+    darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
+    unless @topdata[:load]
+      alert 'load', :unknown, nil, "unable to get load ave from top"
+      return false
+    end
+    metric = @topdata[:load] / cores
+    if metric > @limits[:load][:critical]
+      alert "load", :critical, metric, "15-minute load average per core is #{metric}"
+    elsif metric > @limits[:load][:warning]
+      alert "load", :warning, metric, "15-minute load average per core is #{metric}"
+    else
+      alert "load", :ok, metric, "15-minute load average per core is #{metric}"
+    end
+  end
+
+  def darwin_memory
+    darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
+    unless @topdata[:memory]
+      alert 'memory', :unknown, nil, "unable to get memory data from top"
+      return false
+    end
+    report_pct :memory,  @topdata[:memory], "usage\n\n#{`ps -eo pmem,pid,args | sort -nrb -k1 | head -10`.chomp}"
+  end
+
+  def disk
+    `df -P`.split(/\n/).each do |r|
+      f = r.split(/\s+/)
+      next unless f[0] =~ /^\//
+        next if f[0] == 'Filesystem'
+      x = f[4].to_f/100
+
+      if x > @limits[:disk][:critical]
+        alert "disk #{f[5]}", :critical, x, "#{f[4]} used"
+      elsif x > @limits[:disk][:warning]
+        alert "disk #{f[5]}", :warning, x, "#{f[4]} used"
+      else
+        alert "disk #{f[5]}", :ok, x, "#{f[4]} used"
+      end
+    end
   end
 
   def tick
-    cpu
-    memory
-    load
-    disk
+    @cpu.call
+    @memory.call
+    @disk.call
+    @load.call
   end
 end
-  
+
 Riemann::Tools::Health.run
