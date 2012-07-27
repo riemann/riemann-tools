@@ -13,7 +13,7 @@ class Riemann::Tools::KVM
   #submit them to riemann
   report(
      :service => "KVM Running VMs",
-     :metric => kvm_instances,
+     :metric => kvm_instances.to_i,
      :state => "info"
        )
   end
