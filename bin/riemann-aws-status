@@ -38,7 +38,7 @@ class Riemann::Tools::AWS
 
     hosts.each do |host, status|
       status['eventsSet'].each do |event|
-        before, after = ['notBefore', 'notAfter'].map { |k| Date.parse event[k] if event[k] }
+        before, after = ['notBefore', 'notAfter'].map { |k| Date.parse event[k].to_s if event[k] }
 
         ev = {:host => host,
               :service => "aws_instance_status",
