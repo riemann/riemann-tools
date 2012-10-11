@@ -125,8 +125,8 @@ class Riemann::Tools::Health
       info
     }
 
-    free = m['MemFree'] + m['Buffers'] + m['Cached']
-    total = m['MemTotal']
+    free = m['MemFree'].to_i + m['Buffers'].to_i + m['Cached'].to_i
+    total = m['MemTotal'].to_i
     fraction = 1 - (free.to_f / total)
 
     report_pct :memory, fraction, "used\n\n#{`ps -eo pmem,pid,args | sort -nrb -k1 | head -10`.chomp}"
