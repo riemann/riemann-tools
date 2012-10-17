@@ -10,14 +10,16 @@ class Riemann::Bench
   attr_accessor :client, :hosts, :services, :states
   def initialize
     @hosts = [nil] + (0...10).map { |i| "host#{i}" }
-    @hosts = ['test']
-    @services = %w(per)
+    @hosts = %w(a b c d e f g h i j)
+    @services = %w(test1 test2 test3 foo bar baz xyzzy attack cat treat)
     @states = {}
     @client = Riemann::Client.new(host: (ARGV.first || 'localhost'))
   end
 
   def evolve(state)
-    m = rand
+    m = state[:metric] + (rand - 0.5) * 0.1
+    m = [[0,m].max, 1].min
+
     s = case m
     when 0...0.75
       'ok'
@@ -28,7 +30,7 @@ class Riemann::Bench
     end
 
     {
-      metric_f: m,
+      metric: m,
       state: s,
       host: state[:host],
       service: state[:service],
@@ -46,7 +48,7 @@ class Riemann::Bench
   def run
     start
     loop do
-#      sleep 0.01
+      sleep 0.05
       tick
     end
   end
@@ -54,7 +56,7 @@ class Riemann::Bench
   def start
     hosts.product(services).each do |host, service|
       states[[host, service]] = {
-        metric_f: 0.5,
+        metric: 0.5,
         state: 'ok',
         description: "Starting up",
         host: host,
