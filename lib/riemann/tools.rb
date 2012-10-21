@@ -29,6 +29,7 @@ module Riemann
         opt :host, "Riemann host", :default => '127.0.0.1'
         opt :port, "Riemann port", :default => 5555
         opt :interval, "Seconds between updates", :default => 5
+        opt :tag, "Tag to add to events", :type => String, :multi => true
       end
     end
 
@@ -52,6 +53,10 @@ module Riemann
     end
 
     def report(event)
+      if options[:tag]
+        event[:tags] = options[:tag]
+      end
+
       riemann << event
     end
 
