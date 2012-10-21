@@ -31,7 +31,6 @@ class Riemann::Tools::Haproxy
         end
       end
     end
-
   end
 
   def get_csv
