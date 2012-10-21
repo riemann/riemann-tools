@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+# Gathers redis INFO statistics and submits them to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Redis
+  include Riemann::Tools
+  require 'redis'
+
+  opt :redis_host, "Redis hostname", :default => 'localhost'
+  opt :redis_port, "Redis port", :default => 6379
+  opt :redis_password, "Redis password", :default => ''
+
+  def initialize
+    @redis = ::Redis.new(:host => opts[:redis_host], :port => opts[:redis_port])
+    @redis.auth(opts[:redis_password]) unless opts[:redis_password] == ''
+  end
+
+  def tick
+    @redis.info.each do |property, value|
+      report(
+        :service => "redis #{property}",
+        :metric  => value.to_f,
+        :state   => 'ok',
+        :tags    => ['redis']
+      )
+    end
+  end
+
+end
+
+Riemann::Tools::Redis.run
