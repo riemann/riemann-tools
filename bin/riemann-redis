@@ -20,6 +20,7 @@ class Riemann::Tools::Redis
   def tick
     @redis.info.each do |property, value|
       report(
+        :host    => opts[:redis_host],
         :service => "redis #{property}",
         :metric  => value.to_f,
         :state   => 'ok',
