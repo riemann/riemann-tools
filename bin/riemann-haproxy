@@ -9,7 +9,7 @@ class Riemann::Tools::Haproxy
   require 'net/http'
   require 'csv'
 
-  opt :stats_url, "full url to haproxy stats (eg: https://user:password@host.com:9999/stats)", :required => true, :type => :string
+  opt :stats_url, "Full url to haproxy stats (eg: https://user:password@host.com:9999/stats)", :required => true, :type => :string
 
   def initialize
     @uri = URI(opts[:stats_url]+';csv')
