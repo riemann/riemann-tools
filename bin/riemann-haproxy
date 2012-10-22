@@ -23,6 +23,7 @@ class Riemann::Tools::Haproxy
       row.each do |property, metric|
         unless property == 'pxname' || property == 'svname'
           report(
+            :host    => @uri.host,
             :service => "#{ns} #{property}",
             :metric  => metric.to_f,
             :state   =>  'ok',
