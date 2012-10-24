@@ -30,6 +30,7 @@ module Riemann
         opt :port, "Riemann port", :default => 5555
         opt :interval, "Seconds between updates", :default => 5
         opt :tag, "Tag to add to events", :type => String, :multi => true
+        opt :ttl, "TTL for events", :type => Integer
       end
     end
 
@@ -55,6 +56,10 @@ module Riemann
     def report(event)
       if options[:tag]
         event[:tags] = options[:tag]
+      end
+      
+      if options[:ttl]
+        event[:ttl] = options[:ttl]
       end
 
       riemann << event
