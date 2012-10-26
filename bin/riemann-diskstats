@@ -19,11 +19,11 @@ class Riemann::Tools::Diskstats
       if line =~ /^(?:\s+\d+){2}\s+([\w\d]+) (.*)$/
         dev = $1
 
-        ['reads',
+        ['reads reqs',
         'reads merged',
         'reads sector',
         'reads time',
-        'writes',
+        'writes reqs',
         'writes merged',
         'writes sector',
         'writes time',
@@ -70,6 +70,12 @@ class Riemann::Tools::Diskstats
           :metric => (delta.to_f / opts[:interval]),
           :state => "ok"
         )
+
+        if service =~ /io time$/
+          report(:service => "diskstats " + service.gsub(/time/, 'util'),
+                 :metric => (delta.to_f / (opts[:interval]*1000)),
+                 :state => "ok")
+        end
       end
     end
 
