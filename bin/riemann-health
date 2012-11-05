@@ -174,7 +174,7 @@ class Riemann::Tools::Health
       if ln.match(/Load Avg: [0-9.]+, [0-9.]+, ([0-9.])+/i)
         @topdata[:load] = $1.to_f
       elsif ln.match(/CPU usage: [0-9.]+% user, [0-9.]+% sys, ([0-9.]+)% idle/i)
-        @topdata[:cpu] = $1.to_f / 100
+        @topdata[:cpu] = 1  - ($1.to_f / 100)
       elsif mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) wired, ([0-9]+)([BKMGT]) active, ([0-9]+)([BKMGT]) inactive, ([0-9]+)([BKMGT]) used, ([0-9]+)([BKMGT]) free/i)
         wired = mdat[1].to_i * (1024 ** "BKMGT".index(mdat[2]))
         active = mdat[3].to_i * (1024 ** "BKMGT".index(mdat[4]))
