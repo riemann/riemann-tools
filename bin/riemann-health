@@ -201,7 +201,7 @@ class Riemann::Tools::Health
       alert 'load', :unknown, nil, "unable to get load ave from top"
       return false
     end
-    metric = @topdata[:load] / cores
+    metric = @topdata[:load] / @cores
     if metric > @limits[:load][:critical]
       alert "load", :critical, metric, "15-minute load average per core is #{metric}"
     elsif metric > @limits[:load][:warning]
