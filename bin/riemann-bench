@@ -10,7 +10,8 @@ class Riemann::Bench
   attr_accessor :client, :hosts, :services, :states
   def initialize
     @hosts = [nil] + (0...10).map { |i| "host#{i}" }
-    @services = [nil] + (0...10).map { |i| "svc#{i}" }
+    @hosts = %w(a b c d e f g h i j)
+    @services = %w(test1 test2 test3 foo bar baz xyzzy attack cat treat)
     @states = {}
     @client = Riemann::Client.new(host: (ARGV.first || 'localhost'))
   end
