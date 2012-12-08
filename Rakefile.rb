@@ -19,7 +19,7 @@ gemspec = Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.summary = 'Utilities which submit events to Riemann.'
 
-  s.add_dependency 'riemann-client', '>= 0.0.7'
+  s.add_dependency 'riemann-client', '>= 0.0.8'
   s.add_dependency 'trollop', '>= 1.16.2'
   s.add_dependency 'munin-ruby', '>= 0.2.1'
   s.add_dependency 'yajl-ruby', '>= 1.1.0'
