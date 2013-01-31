@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+# Gathers memcached STATS and submits them to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Memcached
+  include Riemann::Tools
+  require 'socket'
+
+  opt :memcached_host, "Memcached hostname", :default => 'localhost'
+  opt :memcached_port, "Memcached port", :default => 11211
+
+  def tick
+    sock = TCPSocket.new(opts[:memcached_host], opts[:memcached_port])
+    sock.print("stats\r\n")
+    sock.flush
+    stats = sock.gets
+
+    data = {}
+    while true
+      stats = sock.gets
+      break if stats.strip == 'END'
+      m = stats.match /STAT (\w+) (\S+)/
+      report(
+             :host => opts[:memcached_host],
+             :service => "memcached #{m[1]}",
+             :metric => m[2].to_f,
+             :state => 'ok',
+             :tags => ['memcached']
+             )
+    end
+    sock.close
+  end
+end
+
+Riemann::Tools::Memcached.run
