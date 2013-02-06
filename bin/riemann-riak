@@ -15,7 +15,7 @@ class Riemann::Tools::Riak
   opt :stats_port, "Riak HTTP port for stats", :default => 8098
   opt :stats_path, "Riak HTTP stats path", :default => '/stats'
   opt :node_name, "Riak erlang node name", :default => "riak@#{Socket.gethostname}"
-  
+
   opt :get_50_warning, "FSM 50% get time warning threshold (ms)", :default => 1000
   opt :put_50_warning, "FSM 50% put time warning threshold (ms)", :default => 1000
   opt :get_95_warning, "FSM 95% get time warning threshold (ms)", :default => 2000
@@ -24,16 +24,36 @@ class Riemann::Tools::Riak
   opt :put_99_warning, "FSM 99% put time warning threshold (ms)", :default => 10000
 
   def initialize
+    @escript = true
+    @riakadmin = true
+    @httpstats = true
+
     if `which escript` =~ /^\s*$/
-      puts "No escript; disabling ring/key checks."
-      @no_escript = true
+      @escript = false
+    end
+
+    if `which riak-admin` =~ /^\s*$/
+      @riakadmin = false
+    end
+
+    if
+      begin
+        Net::HTTP.start(opts[:riak_host], opts[:stats_port]) do |http|
+          http.get opts[:stats_path]
+      end
+      rescue => e
+        @httpstatus = false
+      end
     end
   end
 
   def check_ring
-    return if @no_escript
+    if @escript
+      str = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-ring #{opts[:node_name]}`.chomp
+    elsif @riakadmin
+      str = `riak-admin ringready`
+    end
 
-    str = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-ring #{opts[:node_name]}`.chomp
     if str =~ /^TRUE/
       report(
         :host => opts[:riak_host],
@@ -52,8 +72,6 @@ class Riemann::Tools::Riak
   end
 
   def check_keys
-    return if @no_escript
-    
     keys = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-keys #{opts[:node_name]}`.chomp
     if keys =~ /^\d+$/
       report(
@@ -103,30 +121,42 @@ class Riemann::Tools::Riak
   end
 
   def check_stats
-    begin
-      res = Net::HTTP.start(opts[:riak_host], opts[:stats_port]) do |http|
-        http.get opts[:stats_path]
+    if @httpstatus
+      begin
+        res = Net::HTTP.start(opts[:riak_host], opts[:stats_port]) do |http|
+          http.get opts[:stats_path]
+        end
+      rescue => e
+        report(
+          :host => opts[:riak_host],
+          :service => 'riak',
+          :state => 'critical',
+          :description => "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}"
+        )
+        return
       end
-    rescue => e
-      report(
-        :host => opts[:riak_host],
-        :service => 'riak',
-        :state => 'critical',
-        :description => "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}"
-      )
-      return
-    end
 
-    if res.code.to_i == 200
-      stats = JSON.parse(res.body)
+      if res.code.to_i == 200
+        stats = JSON.parse(res.body)
+      else
+        report(
+          :host => opts[:riak_host],
+          :service => 'riak',
+          :state => 'critical',
+          :description => "stats returned HTTP #{res.code}:\n\n#{res.body}"
+        )
+        return
+      end
+    elsif @riakadmin
+      stats = Hash[`riak-admin status`.split(/\n/).map{|i| i.split(/ : /)}]
     else
-      report(
-        :host => opts[:riak_host],
-        :service => 'riak',
-        :state => 'critical',
-        :description => "stats returned HTTP #{res.code}:\n\n#{res.body}"
-      )
-      return
+        report(
+          :host => opts[:riak_host],
+          :service => 'riak',
+          :state => 'critical',
+          :description => "error fetching Riak stats"
+        )
+        return
     end
 
     report(
@@ -137,25 +167,25 @@ class Riemann::Tools::Riak
 
     # Gets/puts/rr
     [
-      'vnode_gets', 
-      'vnode_puts', 
-      'node_gets', 
-      'node_puts', 
-      'read_repairs' 
+      'vnode_gets',
+      'vnode_puts',
+      'node_gets',
+      'node_puts',
+      'read_repairs'
     ].each do |s|
       report(
         :host => opts[:riak_host],
         :service => "riak #{s}",
         :state => 'ok',
-        :metric => stats[s]/60.0,
-        :description => "#{stats[s]/60.0}/sec"
+        :metric => stats[s].to_i/60.0,
+        :description => "#{stats[s].to_i/60.0}/sec"
       )
     end
 
     # FSMs
     ['get', 'put'].each do |type|
       [50, 95, 99].each do |percentile|
-        val = stats[fsm_stat(type, percentile)] || 0
+        val = stats[fsm_stat(type, percentile)].to_i || 0
         val = 0 if val == 'undefined'
         val /= 1000.0 # Convert us to ms
         state = fsm_state(type, percentile, val)
