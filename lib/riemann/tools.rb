@@ -63,7 +63,9 @@ module Riemann
         event[:ttl] = options[:ttl]
       end
 
-      event[:host] ||= options[:event_host]
+      if options[:event_host]
+        event[:host] = options[:event_host]
+      end
 
       riemann << event
     end
