@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Resmon
+  include Riemann::Tools
+  require 'nokogiri'
+  require 'faraday'
+
+  opt :resmon_hostfile, 'File with hostnames running Resmon (one URI per line)', type: :string
+
+  def initialize
+    @hosts = File.read(options[:resmon_hostfile]).split("\n")
+    super
+  end
+
+  def tick
+    @hosts.each do |host|
+      uri = URI(host)
+
+      doc = Nokogiri::XML(
+        Faraday.new(uri).get.body
+      )
+
+      results = doc.xpath('//ResmonResults/ResmonResult').each do |result|
+        timestamp = result.xpath('last_update').first.text
+        result.xpath('metric').each do |metric|
+          hash = {
+            host: uri.host,
+            service: "#{result.attributes['module'].value}`#{result.attributes['service'].value}`#{metric.attributes['name'].value}",
+            time: timestamp.to_i
+          }
+          case metric.attributes['type'].value
+            when /[iIlLn]/
+              hash[:metric] = metric.text
+            when 's'
+              hash[:description] = metric.text
+            when '0'
+              raise 'dunno what 0 is yet'
+          end
+          
+          report(hash)
+        end
+      end
+    end
+  end
+end
+
+Riemann::Tools::Resmon.run
