@@ -8,6 +8,8 @@ class Riemann::Tools::Resmon
   require 'faraday'
 
   opt :resmon_hostfile, 'File with hostnames running Resmon (one URI per line)', type: :string
+  opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
+  opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
 
   def initialize
     @hosts = File.read(options[:resmon_hostfile]).split("\n")
@@ -20,8 +22,8 @@ class Riemann::Tools::Resmon
       begin
         connection = Faraday.new(uri)
         response = connection.get do |req|
-          req.options[:timeout] = 3
-          req.options[:open_timeout] = 3
+          req.options[:timeout] = options[:read_timeout]
+          req.options[:open_timeout] = options[:open_timeout]
         end
       rescue => e
         report(:host => host,
