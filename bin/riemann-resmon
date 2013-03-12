@@ -18,9 +18,33 @@ class Riemann::Tools::Resmon
     @hosts.each do |host|
       uri = URI(host)
 
-      doc = Nokogiri::XML(
-        Faraday.new(uri).get.body
-      )
+      # Handle connection timeouts
+      begin
+        connection = Faraday.new(uri)
+        response = connection.get do |req|
+          req.options[:timeout] = 3
+          req.options[:open_timeout] = 3
+        end
+      rescue => e
+        report(:host => host,
+          :service => "resmon",
+          :state => "critical",
+          :description => "HTTP connection error: #{e.class} - #{e.message}"
+        )
+        next
+      end
+
+      # Handle non-200 responses
+      if response.status != 200
+        report(:host => host,
+          :service => "resmon",
+          :state => "critical",
+          :description => "HTTP connection error: #{response.status} - #{response.body}"
+        )
+        next
+      else
+        doc = Nokogiri::XML(response.body)
+      end
 
       results = doc.xpath('//ResmonResults/ResmonResult').each do |result|
         timestamp = result.xpath('last_update').first.text
@@ -30,6 +54,7 @@ class Riemann::Tools::Resmon
             service: "#{result.attributes['module'].value}`#{result.attributes['service'].value}`#{metric.attributes['name'].value}",
             time: timestamp.to_i
           }
+
           case metric.attributes['type'].value
             when /[iIlLn]/
               hash[:metric] = metric.text
@@ -38,7 +63,7 @@ class Riemann::Tools::Resmon
             when '0'
               raise 'dunno what 0 is yet'
           end
-          
+
           report(hash)
         end
       end
