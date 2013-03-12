@@ -14,11 +14,9 @@ class Riemann::Tools::Resmon
     super
   end
 
-  def tick
-    @hosts.each do |host|
-      uri = URI(host)
-
+  def safe_get(uri)
       # Handle connection timeouts
+      response = nil
       begin
         connection = Faraday.new(uri)
         response = connection.get do |req|
@@ -31,8 +29,16 @@ class Riemann::Tools::Resmon
           :state => "critical",
           :description => "HTTP connection error: #{e.class} - #{e.message}"
         )
-        next
       end
+      response
+  end
+
+  def tick
+    @hosts.each do |host|
+      uri = URI(host)
+
+      response = safe_get(uri)
+      next if response.nil?
 
       # Handle non-200 responses
       if response.status != 200
