@@ -52,7 +52,7 @@ class Riemann::Tools::Resmon
         doc = Nokogiri::XML(response.body)
       end
 
-      results = doc.xpath('//ResmonResults/ResmonResult').each do |result|
+      doc.xpath('//ResmonResults/ResmonResult').each do |result|
         timestamp = result.xpath('last_update').first.text
         result.xpath('metric').each do |metric|
           hash = {
