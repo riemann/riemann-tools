@@ -26,7 +26,7 @@ class Riemann::Tools::Resmon
           req.options[:open_timeout] = options[:open_timeout]
         end
       rescue => e
-        report(:host => host,
+        report(:host => uri.host,
           :service => "resmon",
           :state => "critical",
           :description => "HTTP connection error: #{e.class} - #{e.message}"
@@ -44,7 +44,7 @@ class Riemann::Tools::Resmon
 
       # Handle non-200 responses
       if response.status != 200
-        report(:host => host,
+        report(:host => uri.host,
           :service => "resmon",
           :state => "critical",
           :description => "HTTP connection error: #{response.status} - #{response.body}"
