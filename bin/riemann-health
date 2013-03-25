@@ -46,6 +46,26 @@ class Riemann::Tools::Health
       @load = method :linux_load
       @memory = method :linux_memory
     end
+
+    if opts[:checks_to_run] == "all"
+      @cpu_enabled = true
+      @load_enabled = true
+      @disk_enabled = true
+      @memory_enabled = true
+    elsif opts[:checks_to_run].respond_to?("split")
+      opts[:checks_to_run].split(",").each do |check|
+        case check
+        when "disk"
+          @disk_enabled = true
+        when "load"
+          @load_enabled = true
+        when "cpu"
+          @cpu_enabled = true
+        when "memory"
+          @memory_enabled = true
+        end
+      end
+    end
   end
 
   def alert(service, state, metric, description)
