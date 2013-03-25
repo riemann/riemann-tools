@@ -259,10 +259,18 @@ class Riemann::Tools::Health
   end
 
   def tick
-    @cpu.call
-    @memory.call
-    @disk.call
-    @load.call
+    if @cpu_enabled
+      @cpu.call
+    end
+    if @memory_enabled
+      @memory.call
+    end
+    if @disk_enabled
+      @disk.call
+    end
+    if @load_enabled
+      @load.call
+    end
   end
 end
 
