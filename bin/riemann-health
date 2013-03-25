@@ -15,6 +15,7 @@ class Riemann::Tools::Health
   opt :load_critical, "Load critical threshold (load average / core)", :default => 8
   opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
   opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
+  opt :checks_to_run, "Comma seperated list of checks to run: all, cpu, load, memory, disk", :default => "all"
 
   def initialize
     @limits = {
