@@ -11,9 +11,18 @@ class Riemann::Tools::Redis
   opt :redis_host, "Redis hostname", :default => 'localhost'
   opt :redis_port, "Redis port", :default => 6379
   opt :redis_password, "Redis password", :default => ''
+  opt :redis_url, "Redis URL", :default => ''
+  opt :redis_socket, "Redis socket", :default => ''
 
   def initialize
-    @redis = ::Redis.new(:host => opts[:redis_host], :port => opts[:redis_port])
+    options = if opts[:redis_url] != ''
+                { :url => opts[:redis_url] }
+              elsif opts[:redis_socket] != ''
+                { :path => opts[:redis_socket] }
+              else
+                { :host => opts[:redis_host], :port => opts[:redis_port] }
+              end
+    @redis = ::Redis.new(options)
     @redis.auth(opts[:redis_password]) unless opts[:redis_password] == ''
   end
 
