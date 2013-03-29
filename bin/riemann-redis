@@ -41,7 +41,7 @@ class Riemann::Tools::Redis
         :tags    => ['redis']
       }
 
-      if STRING_VALUES.include?(property)
+      if STRING_VALUES.include?(property) || property.match(/^db\d+/)
         if %w{ rdb_last_bgsave_status aof_last_bgrewrite_status }.include?(property)
           data[:state] = value
         else
