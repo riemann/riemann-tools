@@ -24,6 +24,7 @@ gemspec = Gem::Specification.new do |s|
   s.add_dependency 'munin-ruby', '>= 0.2.1'
   s.add_dependency 'yajl-ruby', '>= 1.1.0'
   s.add_dependency 'redis', '>= 3.0.2'
+  s.add_dependency 'fog', '>= 1.4.0'
   s.add_dependency 'faraday', '>= 0.8.5'
   s.add_dependency 'nokogiri', '>= 1.5.6'
 
