@@ -3,6 +3,7 @@
 # Connects to a server (first arg) and populates it with a constant stream of
 # events for testing.
 
+require 'rubygems'
 require 'riemann/client'
 require 'pp'
 
@@ -13,7 +14,7 @@ class Riemann::Bench
     @hosts = %w(a b c d e f g h i j)
     @services = %w(test1 test2 test3 foo bar baz xyzzy attack cat treat)
     @states = {}
-    @client = Riemann::Client.new(host: (ARGV.first || 'localhost'))
+    @client = Riemann::Client.new(:host => (ARGV.first || 'localhost'))
   end
 
   def evolve(state)
@@ -30,11 +31,11 @@ class Riemann::Bench
     end
 
     {
-      metric: m,
-      state: s,
-      host: state[:host],
-      service: state[:service],
-      description: "at #{Time.now}"
+      :metric => m,
+      :state => s,
+      :host => state[:host],
+      :service => state[:service],
+      :description => "at #{Time.now}"
     }
   end
   
@@ -56,11 +57,11 @@ class Riemann::Bench
   def start
     hosts.product(services).each do |host, service|
       states[[host, service]] = {
-        metric: 0.5,
-        state: 'ok',
-        description: "Starting up",
-        host: host,
-        service: service
+        :metric => 0.5,
+        :state => 'ok',
+        :description => "Starting up",
+        :host => host,
+        :service => service
       }
     end
   end
