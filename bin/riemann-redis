@@ -42,7 +42,11 @@ class Riemann::Tools::Redis
       }
 
       if STRING_VALUES.include?(property)
-        data[:description] = value
+        if %w{ rdb_last_bgsave_status aof_last_bgrewrite_status }.include?(property)
+          data[:state] = value
+        else
+          data[:description] = value
+        end
       end
 
       report(data)
