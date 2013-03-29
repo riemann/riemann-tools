@@ -15,6 +15,7 @@ class Riemann::Tools::Health
   opt :load_critical, "Load critical threshold (load average / core)", :default => 8
   opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
   opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
+  opt :checks_to_run, "Comma seperated list of checks to run: all, cpu, load, memory, disk", :default => "all"
 
   def initialize
     @limits = {
@@ -44,6 +45,26 @@ class Riemann::Tools::Health
       @disk = method :disk
       @load = method :linux_load
       @memory = method :linux_memory
+    end
+
+    if opts[:checks_to_run] == "all"
+      @cpu_enabled = true
+      @load_enabled = true
+      @disk_enabled = true
+      @memory_enabled = true
+    elsif opts[:checks_to_run].respond_to?("split")
+      opts[:checks_to_run].split(",").each do |check|
+        case check
+        when "disk"
+          @disk_enabled = true
+        when "load"
+          @load_enabled = true
+        when "cpu"
+          @cpu_enabled = true
+        when "memory"
+          @memory_enabled = true
+        end
+      end
     end
   end
 
@@ -238,10 +259,18 @@ class Riemann::Tools::Health
   end
 
   def tick
-    @cpu.call
-    @memory.call
-    @disk.call
-    @load.call
+    if @cpu_enabled
+      @cpu.call
+    end
+    if @memory_enabled
+      @memory.call
+    end
+    if @disk_enabled
+      @disk.call
+    end
+    if @load_enabled
+      @load.call
+    end
   end
 end
 
