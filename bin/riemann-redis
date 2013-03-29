@@ -13,6 +13,7 @@ class Riemann::Tools::Redis
   opt :redis_password, "Redis password", :default => ''
   opt :redis_url, "Redis URL", :default => ''
   opt :redis_socket, "Redis socket", :default => ''
+  opt :redis_section, "Redis INFO section", :default => 'default'
 
   STRING_VALUES = %w{ redis_version redis_git_sha1 redis_mode os
                       multiplexing_api gcc_version run_id used_memory_human
@@ -29,10 +30,11 @@ class Riemann::Tools::Redis
               end
     @redis = ::Redis.new(options)
     @redis.auth(opts[:redis_password]) unless opts[:redis_password] == ''
+    @section = opts[:redis_section]
   end
 
   def tick
-    @redis.info.each do |property, value|
+    @redis.info(@section).each do |property, value|
       data = {
         :host    => opts[:redis_host],
         :service => "redis #{property}",
