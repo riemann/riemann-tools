@@ -15,7 +15,7 @@ class Riemann::Tools::Health
   opt :load_critical, "Load critical threshold (load average / core)", :default => 8
   opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
   opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
-  opt :checks_to_run, "Comma seperated list of checks to run: all, cpu, load, memory, disk", :default => "all"
+  opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'load', 'memory', 'disk']
 
   def initialize
     @limits = {
@@ -47,28 +47,22 @@ class Riemann::Tools::Health
       @memory = method :linux_memory
     end
 
-    if opts[:checks_to_run] == "all"
-      @cpu_enabled = true
-      @load_enabled = true
-      @disk_enabled = true
-      @memory_enabled = true
-    elsif opts[:checks_to_run].respond_to?("split")
-      opts[:checks_to_run].split(",").each do |check|
-        case check
-        when "disk"
-          @disk_enabled = true
-        when "load"
-          @load_enabled = true
-        when "cpu"
-          @cpu_enabled = true
-        when "memory"
-          @memory_enabled = true
-        end
+    opts[:checks].each do |check|
+      case check
+      when "disk"
+        @disk_enabled = true
+      when "load"
+        @load_enabled = true
+      when "cpu"
+        @cpu_enabled = true
+      when "memory"
+        @memory_enabled = true
       end
     end
   end
 
   def alert(service, state, metric, description)
+    puts service
     report(
       :service => service.to_s,
       :state => state.to_s,
