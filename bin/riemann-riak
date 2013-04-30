@@ -15,6 +15,7 @@ class Riemann::Tools::Riak
   opt :stats_port, "Riak HTTP port for stats", :default => 8098
   opt :stats_path, "Riak HTTP stats path", :default => '/stats'
   opt :node_name, "Riak erlang node name", :default => "riak@#{Socket.gethostname}"
+  opt :cookie, "Riak cookie to use", :default => "riak"
 
   opt :get_50_warning, "FSM 50% get time warning threshold (ms)", :default => 1000
   opt :put_50_warning, "FSM 50% put time warning threshold (ms)", :default => 1000
@@ -45,6 +46,11 @@ class Riemann::Tools::Riak
         @httpstatus = false
       end
     end
+    # we're going to override the emulator setting to allow users to
+    # dynamically input the cookie
+    # this is done only once - hopefully it doesn't get overridden.
+    ENV['ERL_AFLAGS'] = "-setcookie #{opts[:cookie]}"
+    
   end
 
   def check_ring
