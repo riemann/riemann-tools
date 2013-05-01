@@ -21,7 +21,7 @@ class Riemann::Tools::Haproxy
       row = row.to_hash
       ns  = "haproxy #{row['pxname']} #{row['svname']}"
       row.each do |property, metric|
-        unless property == 'pxname' || property == 'svname'
+        unless (property.nil? || property == 'pxname' || property == 'svname')
           report(
             :host    => @uri.host,
             :service => "#{ns} #{property}",
