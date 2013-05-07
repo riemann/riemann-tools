@@ -25,13 +25,14 @@ module Riemann
             p.parse ARGV
           end
         end
-        
+
         opt :host, "Riemann host", :default => '127.0.0.1'
         opt :port, "Riemann port", :default => 5555
         opt :event_host, "Event hostname", :type => String
         opt :interval, "Seconds between updates", :default => 5
         opt :tag, "Tag to add to events", :type => String, :multi => true
         opt :ttl, "TTL for events", :type => Integer
+        opt :attribute, "Attribute to add to the event", :type => String, :multi => true
       end
     end
 
@@ -54,11 +55,20 @@ module Riemann
       @option_parser.opt *a
     end
 
+    def attributes
+      @attributes ||= Hash[options[:attribute].map do |attr|
+        k,v = attr.split(/=/)
+        if k and v
+          [k,v]
+        end
+      end]
+    end
+
     def report(event)
       if options[:tag]
         event[:tags] = options[:tag]
       end
-      
+
       if options[:ttl]
         event[:ttl] = options[:ttl]
       end
@@ -67,7 +77,7 @@ module Riemann
         event[:host] = options[:event_host]
       end
 
-      riemann << event
+      riemann << event.merge(attributes)
     end
 
     def riemann
@@ -87,7 +97,7 @@ module Riemann
           $stderr.puts "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
         end
 
-        # Sleep. 
+        # Sleep.
         sleep(options[:interval] - ((Time.now - t0) % options[:interval]))
       end
     end
