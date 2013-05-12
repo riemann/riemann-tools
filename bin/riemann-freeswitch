@@ -8,10 +8,10 @@ class Riemann::Tools::FreeSWITCH
   def tick
 
   #determine how many current calls I have according to FreeSWITCH
-  fs_calls = %x[fs_cli -x "show calls number"| grep -Po '^\d+']
+  fs_calls = %x[fs_cli -x "show calls count"| grep -Po '^\\d+']
   
   #determine how many current channels I have according to FreeSWITCH
-  fs_channels = %x[fs_cli -x "show channels number"| grep -Po '^\d+']
+  fs_channels = %x[fs_cli -x "show channels count"| grep -Po '^\\d+']
 
   #submit them to riemann
   report(
