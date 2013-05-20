@@ -3,6 +3,7 @@ module Riemann
     require 'rubygems'
     require 'trollop'
     require 'riemann/client'
+    require 'timeout'
 
     def self.included(base)
       base.instance_eval do
@@ -33,6 +34,7 @@ module Riemann
         opt :tag, "Tag to add to events", :type => String, :multi => true
         opt :ttl, "TTL for events", :type => Integer
         opt :attribute, "Attribute to add to the event", :type => String, :multi => true
+        opt :timeout, "Timeout (in seconds) when waiting for acknowledgements", :default => 30
       end
     end
 
@@ -77,7 +79,13 @@ module Riemann
         event[:host] = options[:event_host]
       end
 
-      riemann << event.merge(attributes)
+      begin
+        Timeout::timeout(options[:timeout]) do
+          riemann << event.merge(attributes)
+        end
+      rescue Timeout::Error
+        riemann.connect
+      end
     end
 
     def riemann
