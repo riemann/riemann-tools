@@ -38,24 +38,11 @@ module Riemann
       end
     end
 
-    def initialize
-      super
-    end
-
-    def tool_options
-      {}
-    end
-
     # Returns parsed options (cached) from command line.
     def options
       @options ||= self.class.options
     end
     alias :opts :options
-
-    # Add a new command line option
-    def opt(*a)
-      @option_parser.opt *a
-    end
 
     def attributes
       @attributes ||= Hash[options[:attribute].map do |attr|
