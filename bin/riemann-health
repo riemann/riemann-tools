@@ -62,7 +62,6 @@ class Riemann::Tools::Health
   end
 
   def alert(service, state, metric, description)
-    puts service
     report(
       :service => service.to_s,
       :state => state.to_s,
