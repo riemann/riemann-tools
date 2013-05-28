@@ -3,6 +3,7 @@ module Riemann
     require 'rubygems'
     require 'trollop'
     require 'riemann/client'
+    require 'timeout'
 
     def self.included(base)
       base.instance_eval do
@@ -25,22 +26,16 @@ module Riemann
             p.parse ARGV
           end
         end
-        
+
         opt :host, "Riemann host", :default => '127.0.0.1'
         opt :port, "Riemann port", :default => 5555
         opt :event_host, "Event hostname", :type => String
         opt :interval, "Seconds between updates", :default => 5
         opt :tag, "Tag to add to events", :type => String, :multi => true
         opt :ttl, "TTL for events", :type => Integer
+        opt :attribute, "Attribute to add to the event", :type => String, :multi => true
+        opt :timeout, "Timeout (in seconds) when waiting for acknowledgements", :default => 30
       end
-    end
-
-    def initialize
-      super
-    end
-
-    def tool_options
-      {}
     end
 
     # Returns parsed options (cached) from command line.
@@ -49,16 +44,20 @@ module Riemann
     end
     alias :opts :options
 
-    # Add a new command line option
-    def opt(*a)
-      @option_parser.opt *a
+    def attributes
+      @attributes ||= Hash[options[:attribute].map do |attr|
+        k,v = attr.split(/=/)
+        if k and v
+          [k,v]
+        end
+      end]
     end
 
     def report(event)
       if options[:tag]
         event[:tags] = options[:tag]
       end
-      
+
       if options[:ttl]
         event[:ttl] = options[:ttl]
       end
@@ -67,7 +66,13 @@ module Riemann
         event[:host] = options[:event_host]
       end
 
-      riemann << event
+      begin
+        Timeout::timeout(options[:timeout]) do
+          riemann << event.merge(attributes)
+        end
+      rescue Timeout::Error
+        riemann.connect
+      end
     end
 
     def riemann
@@ -87,7 +92,7 @@ module Riemann
           $stderr.puts "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
         end
 
-        # Sleep. 
+        # Sleep.
         sleep(options[:interval] - ((Time.now - t0) % options[:interval]))
       end
     end
