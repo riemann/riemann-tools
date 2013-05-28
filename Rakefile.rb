@@ -12,14 +12,14 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-tools'
 
   s.name = 'riemann-tools'
-  s.version = '0.1.2'
+  s.version = '0.1.3'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/aphyr/riemann-tools'
   s.platform = Gem::Platform::RUBY
   s.summary = 'Utilities which submit events to Riemann.'
 
-  s.add_dependency 'riemann-client', '>= 0.2.1'
+  s.add_dependency 'riemann-client', '>= 0.2.2'
   s.add_dependency 'trollop', '>= 1.16.2'
   s.add_dependency 'munin-ruby', '>= 0.2.1'
   s.add_dependency 'yajl-ruby', '>= 1.1.0'
