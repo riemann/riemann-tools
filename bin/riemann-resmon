@@ -78,8 +78,10 @@ class Riemann::Tools::Resmon
           }
 
           case metric.attributes['type'].value
-            when /[iIlLn]/
-              hash[:metric] = metric.text
+            when /[iIlL]/
+              hash[:metric] = metric.text.to_i
+            when 'n'
+              hash[:metric] = metric.text.to_f
             when 's'
               hash[:description] = metric.text
             when '0'
