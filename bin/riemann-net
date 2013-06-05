@@ -30,6 +30,7 @@ class Riemann::Tools::Net
         'rx multicast',
         'tx bytes',
         'tx packets',
+        'tx errs',
         'tx drops',
         'tx fifo',
         'tx colls',
