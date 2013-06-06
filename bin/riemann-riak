@@ -5,12 +5,13 @@
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 require 'net/http'
+require 'net/https'
 require 'yajl/json_gem'
 
 class Riemann::Tools::Riak
   include Riemann::Tools
 
-  opt :riak_host, "Riak host", :default => Socket.gethostname
+  opt :riak_host, "Riak host for stats <IP> or SSL http(s)://<IP>", :default => Socket.gethostname
   opt :data_dir, "Riak data directory", :default => '/var/lib/riak'
   opt :stats_port, "Riak HTTP port for stats", :default => 8098
   opt :stats_path, "Riak HTTP stats path", :default => '/stats'
@@ -39,8 +40,17 @@ class Riemann::Tools::Riak
 
     if
       begin
-        Net::HTTP.start(opts[:riak_host], opts[:stats_port]) do |http|
-          http.get opts[:stats_path]
+        uri = URI.parse(opts[:riak_host])
+      if uri.host == nil
+      uri.host = opts[:riak_host]
+      end
+        http = Net::HTTP.new(uri.host, opts[:stats_port])
+        http.use_ssl = uri.scheme == 'https'
+          if http.use_ssl?
+              http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+          end
+        http.start do |http|
+        http.get opts[:stats_path]
       end
       rescue => e
         @httpstatus = false
@@ -50,7 +60,7 @@ class Riemann::Tools::Riak
     # dynamically input the cookie
     # this is done only once - hopefully it doesn't get overridden.
     ENV['ERL_AFLAGS'] = "-setcookie #{opts[:cookie]}"
-    
+
   end
 
   def check_ring
@@ -129,9 +139,18 @@ class Riemann::Tools::Riak
   def check_stats
     if @httpstatus
       begin
-        res = Net::HTTP.start(opts[:riak_host], opts[:stats_port]) do |http|
-          http.get opts[:stats_path]
+        uri = URI.parse(opts[:riak_host])
+        if uri.host == nil
+          uri.host = opts[:riak_host]
         end
+        http = Net::HTTP.new(uri.host, opts[:stats_port])
+        http.use_ssl = uri.scheme == 'https'
+        if http.use_ssl?
+            http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+        res = http.start do |http|
+          http.get opts[:stats_path]
+      end
       rescue => e
         report(
           :host => opts[:riak_host],
