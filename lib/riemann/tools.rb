@@ -3,6 +3,7 @@ module Riemann
     require 'rubygems'
     require 'trollop'
     require 'riemann/client'
+    require 'daemons'
 
     def self.included(base)
       base.instance_eval do
@@ -32,6 +33,9 @@ module Riemann
         opt :interval, "Seconds between updates", :default => 5
         opt :tag, "Tag to add to events", :type => String, :multi => true
         opt :ttl, "TTL for events", :type => Integer
+        opt :daemonize, "Daemonize this process", :type => :boolean, :default => true, :short => :none
+        opt :daemonize_pid_dir, "pid process dir", :type => String , :default => '/tmp', :short => :none
+        
       end
     end
 
@@ -79,6 +83,19 @@ module Riemann
     alias :r :riemann
 
     def run
+      if (opts[:daemonize])
+        daemonsOptions = {
+          :backtrace  => true,
+          :dir        => opts[:daemonize_pid_dir],
+          :dir_mode   => :normal,
+#          :log_output => true,
+          :app_name   => File.basename($PROGRAM_NAME),
+        
+        }
+        puts "daemonize me, bitch! #{daemonsOptions}}"
+
+        Daemons.daemonize(daemonsOptions)
+      end
       t0 = Time.now
       loop do
         begin
