@@ -41,7 +41,7 @@ module Riemann
       super
     end
 
-    def tool_options
+    def tool_23
       {}
     end
 
