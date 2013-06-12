@@ -215,4 +215,8 @@ class Riemann::Tools::Riak
   end
 end
 
-Riemann::Tools::Riak.run
+# move process to the background
+riemannToolsJob = fork do
+  Riemann::Tools::Riak.run
+end
+Process.detach(riemannToolsJob)
