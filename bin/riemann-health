@@ -268,8 +268,4 @@ class Riemann::Tools::Health
   end
 end
 
-# move process to the background
-riemannToolsJob = fork do
-  Riemann::Tools::Health.run
-end
-Process.detach(riemannToolsJob)
+Riemann::Tools::Health.run

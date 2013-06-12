@@ -49,9 +49,4 @@ class Riemann::Tools::Haproxy
 
 end
 
-
-# move process to the background
-riemannToolsJob = fork do
-  Riemann::Tools::Haproxy.run
-end
-Process.detach(riemannToolsJob)
+Riemann::Tools::Haproxy.run
