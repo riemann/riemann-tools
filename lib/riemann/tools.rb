@@ -26,12 +26,14 @@ module Riemann
           end
         end
         
-        opt :host, "Riemann host", :default => '127.0.0.1'
-        opt :port, "Riemann port", :default => 5555
-        opt :event_host, "Event hostname", :type => String
-        opt :interval, "Seconds between updates", :default => 5
-        opt :tag, "Tag to add to events", :type => String, :multi => true
-        opt :ttl, "TTL for events", :type => Integer
+        opt :host,          "Riemann host",             :default => '127.0.0.1'
+        opt :port,          "Riemann port",             :default => 5555
+        opt :event_host,    "Event hostname",           :type => String
+        opt :interval,      "Seconds between updates",  :default => 5
+        opt :tag,           "Tag to add to events",     :type => String, :multi => true
+        opt :ttl,           "TTL for events",           :type => Integer
+        opt :pid_create,    "Create pidfile.",          :type => :bool, :default => false
+        opt :pid_dir,       "pid file location",        :type => String, :multi => false, :default => '/tmp'
       end
     end
 
@@ -39,7 +41,7 @@ module Riemann
       super
     end
 
-    def tool_options
+    def tool_23
       {}
     end
 
@@ -78,8 +80,26 @@ module Riemann
     end
     alias :r :riemann
 
+    # create PID File
+    def create_pid
+      @piddir = opts[:pid_dir] + '/'
+      @pidfile = @piddir + File.basename($PROGRAM_NAME) + '.pid'
+      @pid = Process.pid 
+      
+      # TODO: prevent process from starting if it's already running?
+      @file = File.open(@pidfile, 'a')
+      @file.write "#{@pid}\n"
+      @file.close unless @file == nil
+    end
+    
     def run
       t0 = Time.now
+      
+      # check whether to create the pid file
+      if opts[:pid_create]
+        create_pid
+      end
+
       loop do
         begin
           tick
