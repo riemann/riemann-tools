@@ -65,6 +65,11 @@ class Riemann::Tools::Resmon
         )
         next
       else
+        report(:host => event_host,
+          :service => "resmon",
+          :state => "ok",
+          :description => "Resmon connection ok"
+        )
         doc = Nokogiri::XML(response.body)
       end
 
