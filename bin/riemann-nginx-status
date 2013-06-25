@@ -49,7 +49,25 @@ class Riemann::Tools::NginxStatus
   end
 
   def tick
-    response = Net::HTTP.get(@uri)
+    response = nil
+    begin
+      response = Net::HTTP.get(@uri)
+    rescue => e
+      report(
+        :service => "nginx health",
+        :state => "critical",
+        :description => "Connection error: #{e.class} - #{e.message}"
+      )
+    end
+
+    return if response.nil?
+
+    report(
+      :service => "nginx health",
+      :state => "ok",
+      :description => "Nginx status connection ok"
+    )
+
     values = @re.match(response).to_a[1,7].map { |v| v.to_i }
 
     @keys.zip(values).each do |key, value|
