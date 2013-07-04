@@ -34,25 +34,32 @@ class Riemann::Tools::Redis
   end
 
   def tick
-    @redis.info(@section).each do |property, value|
-      data = {
-        :host    => opts[:redis_host],
-        :service => "redis #{property}",
-        :metric  => value.to_f,
-        :state   => 'ok',
-        :tags    => ['redis']
-      }
+    begin
+      @redis.info(@section).each do |property, value|
+        data = {
+          :host    => opts[:redis_host],
+          :service => "redis #{property}",
+          :metric  => value.to_f,
+          :state   => 'ok',
+          :tags    => ['redis']
+        }
 
-      if STRING_VALUES.include?(property) || property.match(/^db\d+/)
-        if %w{ rdb_last_bgsave_status aof_last_bgrewrite_status }.include?(property)
-          data[:state] = value
-        else
-          data[:description] = value
+        if STRING_VALUES.include?(property) || property.match(/^db\d+/)
+          if %w{ rdb_last_bgsave_status aof_last_bgrewrite_status }.include?(property)
+            data[:state] = value
+          else
+            data[:description] = value
+          end
         end
-      end
 
-      report(data)
+        report(data)
+      end
+    rescue ::Redis::CommandError => e
+      if e.message == "ERR operation not permitted"
+        @redis.auth(opts[:redis_password]) unless opts[:redis_password] == ''
+      end
     end
+
   end
 
 end
