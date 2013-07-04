@@ -77,7 +77,7 @@ class Riemann::Tools::Rabbitmq
         # I can't decide.
         next if json[stat].empty?
         json[stat].each_pair do |k,v|
-          service = "#{stat}.#{k}"
+          service = "rabbitmq.#{stat}.#{k}"
           if k =~ /details$/
             metric = v['rate']
           else
