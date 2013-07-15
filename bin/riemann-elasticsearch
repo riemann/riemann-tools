@@ -11,7 +11,7 @@ class Riemann::Tools::Elasticsearch
   opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
   opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
   opt :es_host, 'Elasticsearch host', default: "localhost"
-  opt :es_port, 'Elasticsearch port', tyoe: :int, default: 9200
+  opt :es_port, 'Elasticsearch port', type: :int, default: 9200
 
 
   # Handles HTTP connections and GET requests safely
@@ -26,7 +26,7 @@ class Riemann::Tools::Elasticsearch
         end
       rescue => e
         report(:host => uri.host,
-          :service => "elasticsearch",
+          :service => "elasticsearch health",
           :state => "critical",
           :description => "HTTP connection error: #{e.class} - #{e.message}"
         )
@@ -46,7 +46,7 @@ class Riemann::Tools::Elasticsearch
 
     if response.status != 200
         report(:host => uri.host,
-          :service => "elasticsearch",
+          :service => "elasticsearch health",
           :state => "critical",
           :description => "HTTP connection error: #{response.status} - #{response.body}"
         )
