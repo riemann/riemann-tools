@@ -26,7 +26,7 @@ class Riemann::Tools::Elasticsearch
         end
       rescue => e
         report(:host => uri.host,
-          :service => "elasticsearch",
+          :service => "elasticsearch health",
           :state => "critical",
           :description => "HTTP connection error: #{e.class} - #{e.message}"
         )
@@ -46,7 +46,7 @@ class Riemann::Tools::Elasticsearch
 
     if response.status != 200
         report(:host => uri.host,
-          :service => "elasticsearch",
+          :service => "elasticsearch health",
           :state => "critical",
           :description => "HTTP connection error: #{response.status} - #{response.body}"
         )
