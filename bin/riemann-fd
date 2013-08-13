@@ -34,15 +34,13 @@ class Riemann::Tools::Health
   end
 
   def linux_fd
-    unless opts[:no_sys]
-      sys_used = Integer(`lsof | wc -l`)
-      if sys_used > @limits[:fd][:critical]
-        alert "fd sys", :critical, sys_used, "system is using #{sys_used} fds"
-      elsif sys_used > @limits[:fd][:warning]
-        alert "fd sys", :warning, sys_used, "system is using #{sys_used} fds"
-      else
-        alert "fd sys", :ok, sys_used, "system is using #{sys_used} fds"
-      end
+    sys_used = Integer(`lsof | wc -l`)
+    if sys_used > @limits[:fd][:critical]
+      alert "fd sys", :critical, sys_used, "system is using #{sys_used} fds"
+    elsif sys_used > @limits[:fd][:warning]
+      alert "fd sys", :warning, sys_used, "system is using #{sys_used} fds"
+    else
+      alert "fd sys", :ok, sys_used, "system is using #{sys_used} fds"
     end
 
     unless opts[:processes].nil?
