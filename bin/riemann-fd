@@ -45,12 +45,13 @@ class Riemann::Tools::Health
     unless opts[:processes].nil?
       opts[:processes].each do |process|
         used = Integer(`lsof -p #{process} | wc -l`)
-        if sys_used > @limits[:process][:critical]
-          alert "fd #{process}", :critical, used, "process #{process} is using #{used} fds"
-        elsif sys_used > @limits[:process][:warning]
-          alert "fd #{process}", :warning, used, "process #{process} is using #{used} fds"
+        name, pid = `ps axo comm,pid | grep -w #{process}`.split
+        if used > @limits[:process][:critical]
+          alert "fd #{name} #{process}", :critical, used, "process #{name} #{process} is using #{used} fds"
+        elsif used > @limits[:process][:warning]
+          alert "fd #{name} #{process}", :warning, used, "process #{name} #{process} is using #{used} fds"
         else
-          alert "fd #{process}", :ok, used, "process #{process} is using #{used} fds"
+          alert "fd #{name} #{process}", :ok, used, "process #{name} #{process} is using #{used} fds"
         end
       end
     end
