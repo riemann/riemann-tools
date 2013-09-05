@@ -27,8 +27,7 @@ class Riemann::Tools::Mysql
         data = {
           :host => opts[:mysql_host],
           :service => "mysql #{var["Variable_name"]}",
-          :metric => var["Value"].to_f,
-          :state => var["Value"].to_s,
+          :metric => var["Value"],
           :tags => ["mysql"]
         }
         report(data)
