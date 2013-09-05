@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Gathers redis INFO statistics and submits them to Riemann.
+# Gathers mysql STATUS and submits them to Riemann.
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
