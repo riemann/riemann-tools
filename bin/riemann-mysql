@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+# Gathers mysql STATUS and submits them to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Mysql
+  include Riemann::Tools
+  require 'mysql2'
+
+  opt :mysql_host, "MySQL hostname", :default => 'localhost'
+  opt :mysql_port, "MySQL port", :default => 3306
+  opt :mysql_username, "MySQL username", :default => ''
+  opt :mysql_password, "MySQL password", :default => ''
+
+  def initialize
+    options = { :host => opts[:mysql_host],
+                :port => opts[:mysql_port],
+                :username => opts[:mysql_username],
+                :password => opts[:mysql_password] }
+    @mysql = ::Mysql2::Client.new(options)
+  end
+
+  def tick
+    begin
+      @mysql.query("SHOW STATUS;").each do |var|
+        data = {
+          :host => opts[:mysql_host],
+          :service => "mysql #{var["Variable_name"]}",
+          :metric => var["Value"],
+          :tags => ["mysql"]
+        }
+        report(data)
+      end
+    end
+  end
+
+end
+
+Riemann::Tools::Mysql.run
