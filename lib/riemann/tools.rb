@@ -55,7 +55,8 @@ module Riemann
 
     def report(event)
       if options[:tag]
-        event[:tags] = options[:tag]
+        # Work around a bug with beefcake which can't take frozen strings.
+        event[:tags] = options[:tag].map(&:dup)
       end
 
       if options[:ttl]
@@ -63,12 +64,14 @@ module Riemann
       end
 
       if options[:event_host]
-        event[:host] = options[:event_host]
+        event[:host] = options[:event_host].dup
       end
+      
+      event = event.merge(attributes)
 
       begin
         Timeout::timeout(options[:timeout]) do
-          riemann << event.merge(attributes)
+          riemann << event
         end
       rescue Timeout::Error
         riemann.connect
