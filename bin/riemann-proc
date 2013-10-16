@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+# Reports running process count to riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Proc
+  include Riemann::Tools
+
+  opt :proc_regex, "regular expression that matches the process to be monitored", type: :string
+  opt :proc_min_critical, "running process count minimum", :default => 1
+  opt :proc_max_critical, "running process count maximum", :default => 1
+
+  def initialize
+    @limits = { :critical => { :min => opts[:proc_min_critical], :max => opts[:proc_max_critical] } }
+
+    abort "FATAL: specify a process regular expression, see --help for usage" unless opts[:proc_regex]
+
+    ostype = `uname -s`.chomp.downcase
+    puts "WARNING: OS '#{ostype}' not explicitly supported. Falling back to Linux" unless ostype == "linux"
+    @check = method :linux_proc
+  end
+
+  def alert(service, state, metric, description)
+    report(
+      :service => service.to_s,
+      :state => state.to_s,
+      :metric => metric.to_f,
+      :description => description
+    )
+  end
+
+  def linux_proc
+    process = opts[:proc_regex]
+    running = Integer(`ps axo args | grep #{process} | grep -v grep | grep -v riemann-proc | wc -l`)
+    if running > @limits[:critical][:max] or running < @limits[:critical][:min]
+      alert "proc #{process}", :critical, running, "process #{process} is running #{running} instances"
+    else
+      alert "proc #{process}", :ok, running, "process #{process} is running #{running} instances"
+    end
+  end
+
+  def tick
+    @check.call
+  end
+end
+
+Riemann::Tools::Proc.run
