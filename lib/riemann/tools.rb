@@ -35,7 +35,7 @@ module Riemann
         opt :ttl, "TTL for events", :type => Integer
         opt :attribute, "Attribute to add to the event", :type => String, :multi => true
         opt :timeout, "Timeout (in seconds) when waiting for acknowledgements", :default => 30
-        opt :tcp, "Use TCP transport instead of UDP (improves reliability, slight overhead.", :default => false
+        opt :tcp, "Use TCP transport instead of UDP (improves reliability, slight overhead.", :default => true
       end
     end
 
