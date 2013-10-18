@@ -35,6 +35,7 @@ module Riemann
         opt :ttl, "TTL for events", :type => Integer
         opt :attribute, "Attribute to add to the event", :type => String, :multi => true
         opt :timeout, "Timeout (in seconds) when waiting for acknowledgements", :default => 30
+        opt :tcp, "Use TCP transport instead of UDP (improves reliability, slight overhead.", :default => true
       end
     end
 
@@ -59,9 +60,7 @@ module Riemann
         event[:tags] = options[:tag].map(&:dup)
       end
 
-      if options[:ttl]
-        event[:ttl] = options[:ttl]
-      end
+      event[:ttl] ||= (options[:ttl] || (options[:interval] * 2))
 
       if options[:event_host]
         event[:host] = options[:event_host].dup
@@ -78,11 +77,20 @@ module Riemann
       end
     end
 
-    def riemann
-      @riemann ||= Riemann::Client.new(
+    def new_riemann_client
+      r = Riemann::Client.new(
         :host => options[:host],
         :port => options[:port]
       )
+      if options[:tcp]
+        r.tcp
+      else
+        r
+      end
+    end
+
+    def riemann
+      @riemann ||= new_riemann_client
     end
     alias :r :riemann
 
