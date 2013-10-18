@@ -60,9 +60,7 @@ module Riemann
         event[:tags] = options[:tag].map(&:dup)
       end
 
-      if options[:ttl]
-        event[:ttl] = options[:ttl]
-      end
+      event[:ttl] ||= (options[:ttl] || (options[:interval] * 2))
 
       if options[:event_host]
         event[:host] = options[:event_host].dup
