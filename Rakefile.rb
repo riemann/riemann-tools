@@ -18,6 +18,8 @@ gemspec = Gem::Specification.new do |s|
   s.homepage = 'https://github.com/aphyr/riemann-tools'
   s.platform = Gem::Platform::RUBY
   s.summary = 'Utilities which submit events to Riemann.'
+  s.description = 'Utilities which submit events to Riemann.'
+  s.license = 'MIT'
 
   s.add_dependency 'riemann-client', '>= 0.2.2'
   s.add_dependency 'trollop', '>= 1.16.2'

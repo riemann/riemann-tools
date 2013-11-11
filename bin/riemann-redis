@@ -52,6 +52,10 @@ class Riemann::Tools::Redis
           end
         end
 
+        if property == "run_id"
+          data[:metric] = 0
+        end
+
         report(data)
       end
     rescue ::Redis::CommandError => e
