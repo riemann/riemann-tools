@@ -37,7 +37,7 @@ class Riemann::Tools::Redis
     begin
       @redis.info(@section).each do |property, value|
         data = {
-          :host    => opts[:redis_host],
+          :host    => opts[:redis_host].dup,
           :service => "redis #{property}",
           :metric  => value.to_f,
           :state   => value.to_s,
