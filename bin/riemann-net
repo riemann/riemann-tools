@@ -87,7 +87,7 @@ class Riemann::Tools::Net
           end
 
         report(
-          :service => service,
+          :service => service.dup,
           :metric => (delta.to_f / opts[:interval]),
           :state => svc_state
         )
