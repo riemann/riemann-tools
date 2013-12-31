@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+
+# Collects apache httpd metrics and submits them to Riemann
+# More information can be found at http://httpd.apache.org/docs/2.4/mod/mod_status.html 
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::HttpdStatus
+  include Riemann::Tools
+  require 'net/http'
+  require 'uri'
+
+
+  opt :uri, "Apache Server Status URI", :default => 'http://localhost/server-status'
+
+  def initialize
+    @uri = URI.parse(opts[:uri]) + '?auto'
+    puts @uri
+
+    # Sample Response with ExtendedStatus On
+    # Total Accesses: 20643
+    # Total kBytes: 36831
+    # CPULoad: .0180314
+    # Uptime: 43868
+    # ReqPerSec: .470571
+    # BytesPerSec: 859.737
+    # BytesPerReq: 1827.01
+    # BusyWorkers: 6
+    # IdleWorkers: 94
+    # Scoreboard: ___K_____K____________W_
+
+    scoreboard_map  = { '_' => 'waiting', 'S' => 'starting', 'R' => 'reading', 'W' => 'sending',
+      'K' => 'keepalive', 'D' => 'dns', 'C' => 'closing', 'L' => 'logging', 'G' => 'graceful', 
+      'I' => 'idle', '.' => 'open' }
+
+  end
+
+  def scoreboard_metrics(response)
+    results = Hash.new(0)
+
+    response.slice! "Scoreboard: "
+
+    response.each_char do |char|
+        results[char] += 1
+    end
+
+    Hash[results.map {|k, v| [scoreboard_map[k], v]}]
+
+  end
+
+
+  def tick
+    response = Net::HTTP.get(@uri)
+
+      response.each_line do |line|
+        
+        if !(line =~ /Scoreboard/)
+          key, value = line.strip.split(':')
+
+          report({
+            :service => "httpd #{key.strip}",
+            :metric  => value.strip.to_f,
+            :state   => 'ok',
+            :tags    => ['httpd']
+          })
+        end
+      end
+  end
+
+
+
+end
+
+Riemann::Tools::HttpdStatus.run
