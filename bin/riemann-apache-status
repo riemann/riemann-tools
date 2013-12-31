@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
-# Collects apache httpd metrics and submits them to Riemann
+# Collects Apache metrics and submits them to Riemann
 # More information can be found at http://httpd.apache.org/docs/2.4/mod/mod_status.html
 
 # Removes whitespace from 'Total Accesses' and 'Total kBytes' for output to graphite
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
-class Riemann::Tools::HttpdStatus
+class Riemann::Tools::ApacheStatus
   include Riemann::Tools
   require 'net/http'
   require 'uri'
@@ -95,4 +95,4 @@ class Riemann::Tools::HttpdStatus
 
 end
 
-Riemann::Tools::HttpdStatus.run
+Riemann::Tools::ApacheStatus.run
