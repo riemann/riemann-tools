@@ -114,7 +114,7 @@ class Riemann::Tools::Riak
   end
 
   def check_disk
-    gb = `du -s #{opts[:data_dir]}`.split(/\s+/).first.to_i / (1024.0**2)
+    gb = `du -Ls #{opts[:data_dir]}`.split(/\s+/).first.to_i / (1024.0**2)
     report(
       :host => opts[:riak_host],
       :service => 'riak disk',
