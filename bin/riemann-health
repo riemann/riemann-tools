@@ -38,11 +38,6 @@ class Riemann::Tools::Health
       @disk = method :disk
       @load = method :freebsd_load
       @memory = method :freebsd_memory
-    when 'sunos'      
-      @cores = `psrinfo -p`.to_i
-      @cpu = method :sunos_cpu
-      @disk = :sunos_disk
-      @memory = :sunos_memory
     else
       @cores = cores
       puts "WARNING: OS '#{ostype}' not explicitly supported. Falling back to Linux" unless ostype == "linux"
@@ -254,32 +249,6 @@ class Riemann::Tools::Health
         alert "disk #{f[5]}", :ok, x, "#{f[4]} used"
       end
     end
-  end
-
-  def sunos_cpu
-    values = {}
-    lines = IO.popen('sm-cpuinfo -p 2>&1') do |child|
-      child.read.split("\n")
-    end
-    
-    puts lines
-
-    lines.each do |line|
-      cols = line.strip.split(":")
-      values[cols[0]] = cols[1]
-    end
-    puts values
-    values
-  end
-
-
-  def sunos_memory
-  end
-
-  def sunos_load
-  end
-
-  def sunos_disk
   end
 
   def tick
