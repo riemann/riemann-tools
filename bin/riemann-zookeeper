@@ -21,7 +21,7 @@ class Riemann::Tools::Zookeeper
     data = {}
     while true
       stats = sock.gets
-      # puts stats
+      
       break if stats.nil?
 
       m = stats.match /^(\w+)\t+(.*)/
