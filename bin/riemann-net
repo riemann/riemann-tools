@@ -12,6 +12,8 @@ class Riemann::Tools::Net
 
   def initialize
     @old_state = nil
+    @interfaces = opts[:interfaces].map(&:dup) if opts[:interfaces]
+    @ignore_interfaces = opts[:ignore_interfaces].map(&:dup)
   end
 
   def state
@@ -48,14 +50,14 @@ class Riemann::Tools::Net
     end
 
     # Filter interfaces
-    if is = opts[:interfaces]
+    if is = @interfaces
       state = state.select do |service, value|
         is.include? service.split(' ').first
       end
     end
 
     state = state.reject do |service, value|
-      opts[:ignore_interfaces].include? service.split(' ').first
+      @ignore_interfaces.include? service.split(' ').first
     end
 
     state
@@ -85,7 +87,7 @@ class Riemann::Tools::Net
           end
 
         report(
-          :service => service,
+          :service => service.dup,
           :metric => (delta.to_f / opts[:interval]),
           :state => svc_state
         )

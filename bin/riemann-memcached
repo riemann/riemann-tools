@@ -23,7 +23,7 @@ class Riemann::Tools::Memcached
       break if stats.strip == 'END'
       m = stats.match /STAT (\w+) (\S+)/
       report(
-             :host => opts[:memcached_host],
+             :host => opts[:memcached_host].dup,
              :service => "memcached #{m[1]}",
              :metric => m[2].to_f,
              :state => 'ok',
