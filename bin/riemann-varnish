@@ -7,7 +7,7 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 class Riemann::Tools::Varnish
   include Riemann::Tools
 
-  opt :varnish_host, "Varnish hostname", :default => `hostname`
+  opt :varnish_host, "Varnish hostname", :default => `hostname`.chomp
 
   def initialize
     @vstats = [ "client_conn", 
