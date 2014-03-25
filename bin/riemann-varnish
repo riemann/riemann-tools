@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+# Reports varnish stats to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Varnish
+  include Riemann::Tools
+
+  opt :varnish_host, "Varnish hostname", :default => `hostname`.chomp
+
+  def initialize
+    @vstats = [ "client_conn", 
+                "client_drop",
+                "client_req",
+                "cache_hit",
+                "cache_miss" ]
+  end
+
+  def tick
+    stats = `varnishstat -1 -f #{@vstats.join(",")}`
+    stats.each_line do |stat|
+      m = stat.split()
+      report(
+             :host => opts[:varnish_host].dup,
+             :service => "varnish #{m[0]}",
+             :metric => m[1].to_f,
+             :state => "ok",
+             :description => "#{m[3..-1].join(' ')}",
+             :tags => ["varnish"]
+            )
+    end
+  end
+end
+
+Riemann::Tools::Varnish.run
