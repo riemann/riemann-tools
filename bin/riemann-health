@@ -163,7 +163,7 @@ class Riemann::Tools::Health
   end
 
   def freebsd_load
-    m = `uptime`.split[0].match(/^[0-9]*\.[0-9]*$/)
+    m = `uptime`.split(':')[-1].chomp.gsub(/\s+/,'').split(',')
     load = m[0].to_f / @cores
     if load > @limits[:load][:critical]
       alert "load", :critical, load, "1-minute load average/core is #{load}"
