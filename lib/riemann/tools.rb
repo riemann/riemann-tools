@@ -1,9 +1,7 @@
 module Riemann
   module Tools
-    require 'rubygems'
     require 'trollop'
     require 'riemann/client'
-    require 'timeout'
 
     def self.included(base)
       base.instance_eval do
@@ -68,19 +66,14 @@ module Riemann
       
       event = event.merge(attributes)
 
-      begin
-        Timeout::timeout(options[:timeout]) do
-          riemann << event
-        end
-      rescue Timeout::Error
-        riemann.connect
-      end
+      riemann << event
     end
 
     def new_riemann_client
       r = Riemann::Client.new(
-        :host => options[:host],
-        :port => options[:port]
+        :host    => options[:host],
+        :port    => options[:port],
+        :timeout => options[:timeout]
       )
       if options[:tcp]
         r.tcp
