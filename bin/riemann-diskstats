@@ -16,7 +16,7 @@ class Riemann::Tools::Diskstats
   def state
     f = File.read('/proc/diskstats')
     state = f.split("\n").reject { |d| d =~ /(ram|loop)/ }.inject({}) do |s, line|
-      if line =~ /^(?:\s+\d+){2}\s+([\w\d]+) (.*)$/
+      if line =~ /^(?:\s+\d+){2}\s+([\w\d\-]+) (.*)$/
         dev = $1
 
         ['reads reqs',

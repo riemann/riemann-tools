@@ -121,13 +121,13 @@ class Riemann::Tools::Health
   end
 
   def linux_load
-    load = File.read('/proc/loadavg').split(/\s+/)[2].to_f / @cores
+    load = File.read('/proc/loadavg').split(/\s+/)[0].to_f / @cores
     if load > @limits[:load][:critical]
-      alert "load", :critical, load, "15-minute load average/core is #{load}"
+      alert "load", :critical, load, "1-minute load average/core is #{load}"
     elsif load > @limits[:load][:warning]
-      alert "load", :warning, load, "15-minute load average/core is #{load}"
+      alert "load", :warning, load, "1-minute load average/core is #{load}"
     else
-      alert "load", :ok, load, "15-minute load average/core is #{load}"
+      alert "load", :ok, load, "1-minute load average/core is #{load}"
     end
   end
 
@@ -163,14 +163,14 @@ class Riemann::Tools::Health
   end
 
   def freebsd_load
-    m = `uptime`.split[-1].match(/^[0-9]*\.[0-9]*$/)
+    m = `uptime`.split(':')[-1].chomp.gsub(/\s+/,'').split(',')
     load = m[0].to_f / @cores
     if load > @limits[:load][:critical]
-      alert "load", :critical, load, "15-minute load average/core is #{load}"
+      alert "load", :critical, load, "1-minute load average/core is #{load}"
     elsif load > @limits[:load][:warning]
-      alert "load", :warning, load, "15-minute load average/core is #{load}"
+      alert "load", :warning, load, "1-minute load average/core is #{load}"
     else
-      alert "load", :ok, load, "15-minute load average/core is #{load}"
+      alert "load", :ok, load, "1-minute load average/core is #{load}"
     end
   end
 
@@ -217,11 +217,11 @@ class Riemann::Tools::Health
     end
     metric = @topdata[:load] / @cores
     if metric > @limits[:load][:critical]
-      alert "load", :critical, metric, "15-minute load average per core is #{metric}"
+      alert "load", :critical, metric, "1-minute load average per core is #{metric}"
     elsif metric > @limits[:load][:warning]
-      alert "load", :warning, metric, "15-minute load average per core is #{metric}"
+      alert "load", :warning, metric, "1-minute load average per core is #{metric}"
     else
-      alert "load", :ok, metric, "15-minute load average per core is #{metric}"
+      alert "load", :ok, metric, "1-minute load average per core is #{metric}"
     end
   end
 
@@ -237,8 +237,10 @@ class Riemann::Tools::Health
   def disk
     `df -P`.split(/\n/).each do |r|
       f = r.split(/\s+/)
-      next unless f[0] =~ /^\//
-        next if f[0] == 'Filesystem'
+      next if f[0] == 'Filesystem'
+      next unless f[0] =~ /\// # Needs at least one slash in the mount path
+
+      # Calculate capacity
       x = f[4].to_f/100
 
       if x > @limits[:disk][:critical]

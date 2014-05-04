@@ -26,18 +26,10 @@ class Riemann::Tools::Riak
   opt :put_99_warning, "FSM 99% put time warning threshold (ms)", :default => 10000
 
   def initialize
-    @escript = true
-    @riakadmin = true
-    @httpstatus = true
-
-    if `which escript` =~ /^\s*$/
-      @escript = false
-    end
-
-    if `which riak-admin` =~ /^\s*$/
-      @riakadmin = false
-    end
-
+    detect_features
+    
+    @httpstatus = true 
+    # What's going on here? --aphyr
     if
       begin
         uri = URI.parse(opts[:riak_host])
@@ -56,11 +48,25 @@ class Riemann::Tools::Riak
         @httpstatus = false
       end
     end
+
     # we're going to override the emulator setting to allow users to
     # dynamically input the cookie
     # this is done only once - hopefully it doesn't get overridden.
     ENV['ERL_AFLAGS'] = "-setcookie #{opts[:cookie]}"
+  end
 
+  # Identifies whether escript and riak-admin are installed
+  def detect_features
+    @escript = true # Whether escript is present on this machine
+    @riakadmin = true # Whether riak-admin is present
+    
+    if `which escript` =~ /^\s*$/
+      @escript = false
+    end
+
+    if `which riak-admin` =~ /^\s*$/
+      @riakadmin = false
+    end
   end
 
   def check_ring
@@ -108,7 +114,7 @@ class Riemann::Tools::Riak
   end
 
   def check_disk
-    gb = `du -s #{opts[:data_dir]}`.split(/\s+/).first.to_i / (1024.0**2)
+    gb = `du -Ls #{opts[:data_dir]}`.split(/\s+/).first.to_i / (1024.0**2)
     report(
       :host => opts[:riak_host],
       :service => 'riak disk',
@@ -136,54 +142,106 @@ class Riemann::Tools::Riak
     end
   end
 
-  def check_stats
-    if @httpstatus
-      begin
-        uri = URI.parse(opts[:riak_host])
-        if uri.host == nil
-          uri.host = opts[:riak_host]
-        end
-        http = Net::HTTP.new(uri.host, opts[:stats_port])
-        http.use_ssl = uri.scheme == 'https'
-        if http.use_ssl?
-            http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
-        res = http.start do |http|
-          http.get opts[:stats_path]
+  # Get current stats via HTTP
+  def stats_http
+    begin
+      uri = URI.parse(opts[:riak_host])
+      if uri.host == nil
+        uri.host = opts[:riak_host]
       end
-      rescue => e
-        report(
-          :host => opts[:riak_host],
-          :service => 'riak',
-          :state => 'critical',
-          :description => "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}"
-        )
-        return
+      http = Net::HTTP.new(uri.host, opts[:stats_port])
+      http.use_ssl = uri.scheme == 'https'
+      if http.use_ssl?
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
-
-      if res.code.to_i == 200
-        stats = JSON.parse(res.body)
-      else
-        report(
-          :host => opts[:riak_host],
-          :service => 'riak',
-          :state => 'critical',
-          :description => "stats returned HTTP #{res.code}:\n\n#{res.body}"
-        )
-        return
+      res = http.start do |http|
+        http.get opts[:stats_path]
       end
-    elsif @riakadmin
-      stats = Hash[`riak-admin status`.split(/\n/).map{|i| i.split(/ : /)}]
-    else
-        report(
-          :host => opts[:riak_host],
-          :service => 'riak',
-          :state => 'critical',
-          :description => "error fetching Riak stats"
-        )
-        return
+    rescue => e
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak',
+        :state => 'critical',
+        :description => "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}"
+      )
+      raise
     end
 
+    if res.code.to_i == 200
+      return JSON.parse(res.body)
+    else
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak',
+        :state => 'critical',
+        :description => "stats returned HTTP #{res.code}:\n\n#{res.body}"
+      )
+      raise "Can't fetch stats via HTTP: #{res.core}:\n\n#{res.body}"
+    end
+  end
+
+  # Get current stats via riak-admin
+  def stats_riak_admin
+    str = `riak-admin status`
+    raise "riak-admin failed" unless $? == 0
+    Hash[str.split(/\n/).map{|i| i.split(/ : /)}]
+  end
+
+  # Get current stats as a hash
+  def stats
+    if @httpstatus
+      stats_http
+    elsif @riakadmin
+      stats_riak_admin
+    else
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak',
+        :state => 'critical',
+        :description => "No mechanism for fetching Riak stats: neither HTTP nor riak-admin available."
+      )
+      raise "No mechanism for fetching Riak stats: neither HTTP nor riak-admin available."
+    end
+  end
+
+  def core_services
+    ['vnode_gets',
+     'vnode_puts',
+     'node_gets',
+     'node_puts',
+     'read_repairs']
+  end
+
+  def fsm_types
+    ['get', 'put']
+  end
+
+  def fsm_percentiles
+    [50, 95, 99]
+  end
+
+  # Reports current stats to Riemann
+  def check_stats
+    begin
+      stats = self.stats
+    rescue => e
+      event = {:state => 'critical',
+               :description => e.message,
+               :host => opts[:riak_host]}
+      # Report errors
+      report(event.merge(:service => 'riak'))
+      core_services.each do |s|
+        report(event.merge(:service => "riak #{s}"))
+      end
+      fsm_types.each do |type|
+        fsm_percentiles.each do |percentile|
+          report(event.merge(:service => "riak #{type} #{percentile}"))
+        end
+      end
+      return
+    end
+
+    # Riak itself
     report(
       :host => opts[:riak_host],
       :service => 'riak',
@@ -191,13 +249,7 @@ class Riemann::Tools::Riak
     )
 
     # Gets/puts/rr
-    [
-      'vnode_gets',
-      'vnode_puts',
-      'node_gets',
-      'node_puts',
-      'read_repairs'
-    ].each do |s|
+    core_services.each do |s|
       report(
         :host => opts[:riak_host],
         :service => "riak #{s}",
@@ -208,8 +260,8 @@ class Riemann::Tools::Riak
     end
 
     # FSMs
-    ['get', 'put'].each do |type|
-      [50, 95, 99].each do |percentile|
+    fsm_types.each do |type|
+      fsm_percentiles.each do |percentile|
         val = stats[fsm_stat(type, percentile)].to_i || 0
         val = 0 if val == 'undefined'
         val /= 1000.0 # Convert us to ms
