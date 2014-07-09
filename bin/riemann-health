@@ -114,7 +114,7 @@ class Riemann::Tools::Health
       total = used + i2-i1
       fraction = used.to_f / total
 
-      report_pct :cpu, fraction, "user+nice+sytem\n\n#{`ps -eo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+      report_pct :cpu, fraction, "user+nice+system\n\n#{`ps -eo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
     end
 
     @old_cpu = [u2, n2, s2, i2]
