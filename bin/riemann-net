@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Gathers munin statistics and submits them to Riemann.
+# Gathers network interface statistics and submits them to Riemann.
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
