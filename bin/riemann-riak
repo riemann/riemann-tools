@@ -209,6 +209,8 @@ class Riemann::Tools::Riak
      'vnode_puts',
      'node_gets',
      'node_puts',
+     'node_gets_set',
+     'node_puts_set',
      'read_repairs']
   end
 
