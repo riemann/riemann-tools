@@ -125,8 +125,8 @@ class Riemann::Tools::Riak
   end
 
   # Returns the riak stat for the given fsm type and percentile.
-  def fsm_stat(type, percentile)
-    "node_#{type}_fsm_time_#{percentile == 50 ? 'median' : percentile}"
+  def fsm_stat(type, property, percentile)
+    "node_#{type}_fsm_#{property}_#{percentile == 50 ? 'median' : percentile}"
   end
 
   # Returns the alerts state for the given fsm.
@@ -215,7 +215,8 @@ class Riemann::Tools::Riak
   end
 
   def fsm_types
-    ['get', 'put']
+    [{'get' => 'time'}, {'put' => 'time'},
+     {'get' => 'set_objsize'}]
   end
 
   def fsm_percentiles
@@ -235,9 +236,11 @@ class Riemann::Tools::Riak
       core_services.each do |s|
         report(event.merge(:service => "riak #{s}"))
       end
-      fsm_types.each do |type|
-        fsm_percentiles.each do |percentile|
-          report(event.merge(:service => "riak #{type} #{percentile}"))
+      fsm_types.each do |typespec|
+        typespec.each do |type, prop|
+          fsm_percentiles.each do |percentile|
+            report(event.merge(:service => "riak #{type} #{prop} #{percentile}"))
+          end
         end
       end
       return
@@ -262,19 +265,25 @@ class Riemann::Tools::Riak
     end
 
     # FSMs
-    fsm_types.each do |type|
-      fsm_percentiles.each do |percentile|
-        val = stats[fsm_stat(type, percentile)].to_i || 0
-        val = 0 if val == 'undefined'
-        val /= 1000.0 # Convert us to ms
-        state = fsm_state(type, percentile, val)
-        report(
-          :host => opts[:riak_host],
-          :service => "riak #{type} #{percentile}",
-          :state => state,
-          :metric => val,
-          :description => "#{val} ms"
-        )
+    fsm_types.each do |typespec|
+      typespec.each do |type, prop|
+        fsm_percentiles.each do |percentile|
+          val = stats[fsm_stat(type, prop, percentile)].to_i || 0
+          val = 0 if val == 'undefined'
+          val /= 1000.0 if prop == 'time' # Convert us to ms
+          if prop == 'time'
+            state = fsm_state(type,  percentile, val)
+          else
+            state = "ok"
+          end
+          report(
+            :host => opts[:riak_host],
+            :service => "riak #{type} #{prop} #{percentile}",
+            :state => state,
+            :metric => val,
+            :description => "#{val} ms"
+          )
+        end
       end
     end
   end
