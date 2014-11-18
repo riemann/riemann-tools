@@ -7,7 +7,7 @@ class Riemann::Tools::FreeSWITCH
 
   opt :calls_warning, "Calls warning threshold", :default => 100
   opt :calls_critical, "Calls critical threshold", :default => 300
-  opt :pid_path, "FreeSWITCH daemon pidfile", :type => String, :default => "/var/run/freeswitch/freeswitch.pid"
+  opt :pid_file, "FreeSWITCH daemon pidfile", :type => String, :default => "/var/run/freeswitch/freeswitch.pid"
 
   def initialize
     @limits = {
@@ -15,9 +15,13 @@ class Riemann::Tools::FreeSWITCH
     }
   end
 
-  def dead_proc
-    #return a boolean
-    true
+  def dead_proc?(pid)
+    begin
+      Process.kill(0, pid)
+      false
+    rescue Errno::ESRCH
+      true
+    end
   end
 
   def alert(service, state, metric, description)
@@ -30,13 +34,20 @@ class Riemann::Tools::FreeSWITCH
   end
 
   def tick
-    #determine how many current calls I have according to FreeSWITCH
+    # Determine how many current calls I have according to FreeSWITCH
     fs_calls = %x[fs_cli -x "show calls count"| grep -Po '^\\d+'].to_i
 
-    #determine how many current channels I have according to FreeSWITCH
+    # Determine how many current channels I have according to FreeSWITCH
     fs_channels = %x[fs_cli -x "show channels count"| grep -Po '^\\d+'].to_i
 
-    #submit them to riemann
+    # Try to read pidfile. If it fails use Devil's dummy PID
+    begin
+      fs_pid = File.read(opts[:pid_file]).to_i
+    rescue
+      fs_pid = -666
+    end
+
+    # Submit calls to riemann
     if fs_calls > @limits[:calls][:critical]
       alert "FreeSWITCH current calls", :critical, fs_calls, "Number of calls are #{fs_calls}"
     elsif fs_calls > @limits[:calls][:warning]
@@ -45,6 +56,7 @@ class Riemann::Tools::FreeSWITCH
       alert "FreeSWITCH current calls", :ok, fs_calls, "Number of calls are #{fs_calls}"
     end
 
+    # Submit channels to riemann
     if fs_channels > @limits[:calls][:critical]
       alert "FreeSWITCH current channels", :critical, fs_channels, "Number of channels are #{fs_channels}"
     elsif fs_channels > @limits[:calls][:warning]
@@ -53,8 +65,9 @@ class Riemann::Tools::FreeSWITCH
       alert "FreeSWITCH current channels", :ok, fs_channels, "Number of channels are #{fs_channels}"
     end
 
-    if dead_proc
-      alert "FreeSWITCH status", :critical, nil, "FreeSWITCH service status: not running"
+    # Submit status to riemann
+    if dead_proc?(fs_pid)
+      alert "FreeSWITCH status", :critical, -1, "FreeSWITCH service status: not running"
     else
       alert "FreeSWITCH status", :ok, nil, "FreeSWITCH service status: running"
     end
