@@ -5,26 +5,60 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 class Riemann::Tools::FreeSWITCH
   include Riemann::Tools
 
+  opt :calls_warning, "Calls warning threshold", :default => 100
+  opt :calls_critical, "Calls critical threshold", :default => 300
+  opt :pid_path, "FreeSWITCH daemon pidfile", :type => String, :default => "/var/run/freeswitch/freeswitch.pid"
+
+  def initialize
+    @limits = {
+      :calls => {:critical => opts[:calls_critical], :warning => opts[:calls_warning]}
+    }
+  end
+
+  def dead_proc
+    #return a boolean
+    true
+  end
+
+  def alert(service, state, metric, description)
+    report(
+      :service => service.to_s,
+      :state => state.to_s,
+      :metric => metric.to_f,
+      :description => description
+    )
+  end
+
   def tick
+    #determine how many current calls I have according to FreeSWITCH
+    fs_calls = %x[fs_cli -x "show calls count"| grep -Po '^\\d+'].to_i
 
-  #determine how many current calls I have according to FreeSWITCH
-  fs_calls = %x[fs_cli -x "show calls count"| grep -Po '^\\d+']
-  
-  #determine how many current channels I have according to FreeSWITCH
-  fs_channels = %x[fs_cli -x "show channels count"| grep -Po '^\\d+']
+    #determine how many current channels I have according to FreeSWITCH
+    fs_channels = %x[fs_cli -x "show channels count"| grep -Po '^\\d+'].to_i
 
-  #submit them to riemann
-  report(
-     :service => "FreeSWITCH current calls",
-     :metric => fs_calls.to_i,
-     :state => "info"
-       )
+    #submit them to riemann
+    if fs_calls > @limits[:calls][:critical]
+      alert "FreeSWITCH current calls", :critical, fs_calls, "Number of calls are #{fs_calls}"
+    elsif fs_calls > @limits[:calls][:warning]
+      alert "FreeSWITCH current calls", :warning, fs_calls, "Number of calls are #{fs_calls}"
+    else
+      alert "FreeSWITCH current calls", :ok, fs_calls, "Number of calls are #{fs_calls}"
+    end
 
-  report(
-     :service => "FreeSWITCH current channels",
-     :metric => fs_channels.to_i,
-     :state => "info"
-       )
+    if fs_channels > @limits[:calls][:critical]
+      alert "FreeSWITCH current channels", :critical, fs_channels, "Number of channels are #{fs_channels}"
+    elsif fs_channels > @limits[:calls][:warning]
+      alert "FreeSWITCH current channels", :warning, fs_channels, "Number of channels are #{fs_channels}"
+    else
+      alert "FreeSWITCH current channels", :ok, fs_channels, "Number of channels are #{fs_channels}"
+    end
+
+    if dead_proc
+      alert "FreeSWITCH status", :critical, nil, "FreeSWITCH service status: not running"
+    else
+      alert "FreeSWITCH status", :ok, nil, "FreeSWITCH service status: running"
+    end
+
   end
 end
 
