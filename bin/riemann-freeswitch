@@ -17,7 +17,7 @@ class Riemann::Tools::FreeSWITCH
 
   def dead_proc?(pid)
     begin
-      Process.kill(0, pid)
+      Process.getpgid(pid)
       false
     rescue Errno::ESRCH
       true
@@ -44,6 +44,7 @@ class Riemann::Tools::FreeSWITCH
     begin
       fs_pid = File.read(opts[:pid_file]).to_i
     rescue
+      puts "Couldn't read pidfile: #{opts[:pid_file]}"
       fs_pid = -666
     end
 
