@@ -40,6 +40,10 @@ class Riemann::Tools::Elasticsearch
     "http://#{options[:es_host]}:#{options[:es_port]}/_cluster/health?wait_for_status=#{options[:es_wait_for_status]}&timeout=#{options[:es_timeout]}"
   end
 
+  def indices_health_url
+    "http://#{options[:es_host]}:#{options[:es_port]}/_cat/indices?v"
+  end
+
   def tick
     uri = URI(health_url)
     response = safe_get(uri)
@@ -66,10 +70,23 @@ class Riemann::Tools::Elasticsearch
         "critical"
       end
 
+      indices_status = "\n"
+      if cluster_status != "green"
+        uri = URI(indices_health_url)
+        response = safe_get(uri)
+        if (!response.nil? && response.status == 200)
+          response.body.each_line { |s|
+            if (indices_status.chomp.empty? || /^(red|yellow)/ =~ s)
+              indices_status << s
+            end
+          }
+        end
+      end
+
       report(:host => uri.host,
              :service => "elasticsearch health",
              :state => state,
-             :description => "Elasticsearch cluster: #{cluster_name} - #{cluster_status}")
+             :description => "Elasticsearch cluster: #{cluster_name} - #{cluster_status} - #{indices_status}")
 
       json.each_pair do |k,v|
         report(:host => uri.host,
