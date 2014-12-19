@@ -27,8 +27,8 @@ class Riemann::Tools::Riak
 
   def initialize
     detect_features
-    
-    @httpstatus = true 
+
+    @httpstatus = true
     # What's going on here? --aphyr
     if
       begin
@@ -59,7 +59,7 @@ class Riemann::Tools::Riak
   def detect_features
     @escript = true # Whether escript is present on this machine
     @riakadmin = true # Whether riak-admin is present
-    
+
     if `which escript` =~ /^\s*$/
       @escript = false
     end
@@ -109,6 +109,34 @@ class Riemann::Tools::Riak
         :service => 'riak keys',
         :state => 'unknown',
         :description => keys
+      )
+    end
+  end
+
+  def check_transfers
+    str = if @riakadmin
+      `riak-admin transfers`
+    else
+      nil
+    end
+
+    return if str.nil?
+
+    if str =~ /'#{opts[:node_name]}' waiting to handoff (\d+) partitions/
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak transfers',
+        :state   => 'critical',
+        :metric  => $1.to_i,
+        :description => "waiting to handoff #{$1} partitions"
+      )
+    else
+      report(
+        :host => opts[:riak_host],
+        :service => 'riak transfers',
+        :state   => 'ok',
+        :metric  => 0,
+        :description => "No pending transfers"
       )
     end
   end
@@ -294,6 +322,7 @@ class Riemann::Tools::Riak
     check_stats
     check_ring
     check_disk
+    check_transfers
   end
 end
 
