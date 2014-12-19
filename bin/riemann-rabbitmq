@@ -57,6 +57,11 @@ class Riemann::Tools::Rabbitmq
           req.options[:timeout] = options[:read_timeout]
           req.options[:open_timeout] = options[:open_timeout]
         end
+        report(:host => event_host,
+          :service => "rabbitmq monitoring",
+          :state   => 'ok',
+          :description => "Monitoring operational"
+        )
       rescue => e
         report(:host => event_host,
           :service => "rabbitmq monitoring",
@@ -106,7 +111,13 @@ class Riemann::Tools::Rabbitmq
           errs << "Queue has #{queue['messages_ready']} jobs"
         end
 
-        unless errs.empty?
+        if errs.empty?
+          report(:host    => event_host,
+                 :service => svc,
+                 :state   => "ok",
+                 :description => "Queue is looking good"
+          )
+        else
           report(:host    => event_host,
                  :service => svc,
                  :state   => "critical",
@@ -234,6 +245,12 @@ class Riemann::Tools::Rabbitmq
         )
         return
       end
+
+      report(:host => event_host,
+        :service => "rabbitmq.node.#{n}",
+        :state   => "ok",
+        :description => "Node looks OK to me"
+      )
     end
   end
 
