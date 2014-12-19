@@ -40,6 +40,9 @@ class Riemann::Tools::FreeSWITCH
     # Determine how many current channels I have according to FreeSWITCH
     fs_channels = %x[fs_cli -x "show channels count"| grep -Po '^\\d+'].to_i
 
+    # Determine how many conferences I have according to FreeSWITCH
+    fs_conferences = %x[fs_cli -x "conference list"| grep -Pco '^Conference'].to_i
+
     # Try to read pidfile. If it fails use Devil's dummy PID
     begin
       fs_pid = File.read(opts[:pid_file]).to_i
@@ -64,6 +67,15 @@ class Riemann::Tools::FreeSWITCH
       alert "FreeSWITCH current channels", :warning, fs_channels, "Number of channels are #{fs_channels}"
     else
       alert "FreeSWITCH current channels", :ok, fs_channels, "Number of channels are #{fs_channels}"
+    end
+
+    # Submit conferences to riemann
+    if fs_conferences > @limits[:calls][:critical]
+      alert "FreeSWITCH current conferences", :critical, fs_conferences, "Number of conferences are #{fs_conferences}"
+    elsif fs_conferences > @limits[:calls][:warning]
+      alert "FreeSWITCH current conferences", :warning, fs_conferences, "Number of conferences are #{fs_conferences}"
+    else
+      alert "FreeSWITCH current conferences", :ok, fs_conferences, "Number of conferences are #{fs_conferences}"
     end
 
     # Submit status to riemann
