@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
-#
 
-require 'riemann/tools'
+require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 class Riemann::Tools::Rabbitmq
   include Riemann::Tools
