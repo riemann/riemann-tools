@@ -33,6 +33,20 @@ class Riemann::Tools::FreeSWITCH
     )
   end
 
+  def exec_with_timeout(cmd, timeout)
+    pid = Process.spawn(cmd, {[:err,:out] => :close, :pgroup => true})
+    begin
+      Timeout.timeout(timeout) do
+        Process.waitpid(pid, 0)
+        $?.exitstatus == 0
+      end
+    rescue Timeout::Error
+      Process.kill(15, -Process.getpgid(pid))
+      puts "Killed pid: #{pid}"
+      false
+    end
+  end
+
   def tick
     # Determine how many current calls I have according to FreeSWITCH
     fs_calls = %x[fs_cli -x "show calls count"| grep -Po '^\\d+'].to_i
@@ -83,6 +97,13 @@ class Riemann::Tools::FreeSWITCH
       alert "FreeSWITCH status", :critical, -1, "FreeSWITCH service status: not running"
     else
       alert "FreeSWITCH status", :ok, nil, "FreeSWITCH service status: running"
+    end
+
+    # Submit CLI status to riemann using timeout in case it's unresponsive
+    if exec_with_timeout("fs_cli -x status", 2)
+      alert "FreeSWITCH CLI status", :ok, nil, "FreeSWITCH CLI status: responsive"
+    else
+      alert "FreeSWITCH CLI status", :critical, -1, "FreeSWITCH CLI status: not responding"
     end
 
   end
