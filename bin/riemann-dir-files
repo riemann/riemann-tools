@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Gathers the files present on a directory and submits it to riemann
+# Gets the number of files present on a directory and submits it to riemann
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
