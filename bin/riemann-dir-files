@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+# Gathers the files present on a directory and submits it to riemann
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::DirFiles
+  include Riemann::Tools
+
+  opt :directory, "", :default => '/var/log'
+  opt :service_prefix, "The first part of the service name, before the directory path", :default => "dir-files"
+  opt :warning, "Dir files number warning threshold"
+  opt :critical, "Dir files number critical threshold"
+  opt :alert_on_missing, "Send a critical metric if the directory is missing?", :default => true
+
+  def initialize
+    @dir = opts.fetch(:directory)
+    @service_prefix = opts.fetch(:service_prefix)
+    @warning = opts.fetch(:warning, nil)
+    @critical = opts.fetch(:critical, nil)
+    @alert_on_missing = opts.fetch(:alert_on_missing)
+  end
+
+  def tick
+    if Dir.exists?(@dir)
+      metric = `ls -l '#{@dir}'|grep "^-"|wc -l`.to_i
+      report(
+        :service => "#{@service_prefix} #{@dir}",
+        :metric => metric,
+        :state => state(metric),
+        :tags => ['dir_files']
+      )
+    elsif @alert_on_missing
+      report(
+        :service => "#{@service_prefix} #{@dir} missing",
+        :description => "#{@service_prefix} #{@dir} does not exist",
+        :metric => metric,
+        :state => 'critical',
+        :tags => ['dir_files']
+      )
+    end
+  end
+
+  def state(metric)
+    if @critical && metric > @critical
+      'critical'
+    elsif @warning && metric > @warning
+      'warning'
+    else
+      'ok'
+    end
+  end
+end
+
+Riemann::Tools::DirFiles.run
