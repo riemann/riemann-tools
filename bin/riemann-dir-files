@@ -23,7 +23,7 @@ class Riemann::Tools::DirFiles
 
   def tick
     if Dir.exists?(@dir)
-      metric = `ls -l '#{@dir}'|grep "^-"|wc -l`.to_i
+      metric = Dir.entries(@dir).size - 2
       report(
         :service => "#{@service_prefix} #{@dir}",
         :metric => metric,
