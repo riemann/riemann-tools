@@ -4,11 +4,11 @@
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
-class Riemann::Tools::DirFiles
+class Riemann::Tools::DirFilesCount
   include Riemann::Tools
 
   opt :directory, "", :default => '/var/log'
-  opt :service_prefix, "The first part of the service name, before the directory path", :default => "dir-files"
+  opt :service_prefix, "The first part of the service name, before the directory path", :default => "dir-files-count"
   opt :warning, "Dir files number warning threshold"
   opt :critical, "Dir files number critical threshold"
   opt :alert_on_missing, "Send a critical metric if the directory is missing?", :default => true
@@ -28,7 +28,7 @@ class Riemann::Tools::DirFiles
         :service => "#{@service_prefix} #{@dir}",
         :metric => metric,
         :state => state(metric),
-        :tags => ['dir_files']
+        :tags => ['dir_files_count']
       )
     elsif @alert_on_missing
       report(
@@ -36,7 +36,7 @@ class Riemann::Tools::DirFiles
         :description => "#{@service_prefix} #{@dir} does not exist",
         :metric => metric,
         :state => 'critical',
-        :tags => ['dir_files']
+        :tags => ['dir_files_count']
       )
     end
   end
@@ -52,4 +52,4 @@ class Riemann::Tools::DirFiles
   end
 end
 
-Riemann::Tools::DirFiles.run
+Riemann::Tools::DirFilesCount.run
