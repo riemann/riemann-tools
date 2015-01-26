@@ -17,7 +17,7 @@ class Riemann::Tools::Rabbitmq
   opt :monitor_pass, 'RabbitMQ monitoring user password', type: :string
   opt :monitor_port, 'RabbitMQ monitoring port', type: :int, default: 15672
   opt :monitor_host, 'RabbitMQ monitoring host', type: :string, default: "localhost"
-  opt :monitor_ssl, 'RabbitMQ ssl', type: :string, default: "false"
+  opt :monitor_use_tls, 'RabbitMQ use tls', type: :bool, default: false
 
   opt :max_queue_size, "max number of items in a queue that is acceptable", type: :int, default: 1_000_000
   opt :ignore_max_size_queues, "A regular expression to match queues that shouldn't be size-checked", type: :string
@@ -26,7 +26,7 @@ class Riemann::Tools::Rabbitmq
 
   def base_url
     protocol = "http"
-    if(options[:monitor_ssl]=="true")
+    if (options[:monitor_use_tls]) && (options[:monitor_use_tls]==true)
       protocol = "https"
     end
     "#{protocol}://#{options[:monitor_user]}:#{options[:monitor_pass]}@#{options[:monitor_host]}:#{options[:monitor_port]}/api"
@@ -55,6 +55,7 @@ class Riemann::Tools::Rabbitmq
   def safe_get(uri, event_host)
       # Handle connection timeouts
       response = nil
+      p uri
       begin
         connection = Faraday.new(uri)
         response = connection.get do |req|
