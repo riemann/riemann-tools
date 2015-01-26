@@ -17,6 +17,7 @@ class Riemann::Tools::Rabbitmq
   opt :monitor_pass, 'RabbitMQ monitoring user password', type: :string
   opt :monitor_port, 'RabbitMQ monitoring port', type: :int, default: 15672
   opt :monitor_host, 'RabbitMQ monitoring host', type: :string, default: "localhost"
+  opt :monitor_use_tls, 'RabbitMQ use tls', type: :bool, default: false
 
   opt :max_queue_size, "max number of items in a queue that is acceptable", type: :int, default: 1_000_000
   opt :ignore_max_size_queues, "A regular expression to match queues that shouldn't be size-checked", type: :string
@@ -24,7 +25,11 @@ class Riemann::Tools::Rabbitmq
   opt :node, "Specify a node to monitor", type: :strings
 
   def base_url
-    "http://#{options[:monitor_user]}:#{options[:monitor_pass]}@#{options[:monitor_host]}:#{options[:monitor_port]}/api"
+    protocol = "http"
+    if (options[:monitor_use_tls]) && (options[:monitor_use_tls]==true)
+      protocol = "https"
+    end
+    "#{protocol}://#{options[:monitor_user]}:#{options[:monitor_pass]}@#{options[:monitor_host]}:#{options[:monitor_port]}/api"
   end
 
   def overview_url
