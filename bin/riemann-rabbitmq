@@ -55,7 +55,6 @@ class Riemann::Tools::Rabbitmq
   def safe_get(uri, event_host)
       # Handle connection timeouts
       response = nil
-      p uri
       begin
         connection = Faraday.new(uri)
         response = connection.get do |req|
