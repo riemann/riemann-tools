@@ -2,6 +2,7 @@
 
 # Reports varnish stats to Riemann.
 
+require 'open3'
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 class Riemann::Tools::Varnish
@@ -10,15 +11,32 @@ class Riemann::Tools::Varnish
   opt :varnish_host, "Varnish hostname", :default => `hostname`.chomp
 
   def initialize
-    @vstats = [ "client_conn", 
+    cmd = 'varnishstat -V'
+    Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+      @ver = /varnishstat \(varnish-(\d+)/.match(stderr.read)[1].to_i
+    end
+
+    if @ver >= 4
+      @vstats = [ "MAIN.sess_conn",
+                "MAIN.sess_drop ",
+                "MAIN.client_req",
+                "MAIN.cache_hit",
+                "MAIN.cache_miss" ]
+    else
+      @vstats = [ "client_conn",
                 "client_drop",
                 "client_req",
                 "cache_hit",
                 "cache_miss" ]
+    end
   end
 
   def tick
-    stats = `varnishstat -1 -f #{@vstats.join(",")}`
+    if @ver >= 4
+      stats = `varnishstat -1 -f #{@vstats.join(" -f ")}`
+    else
+      stats = `varnishstat -1 -f #{@vstats.join(",")}`
+    end
     stats.each_line do |stat|
       m = stat.split()
       report(
