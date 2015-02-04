@@ -107,11 +107,11 @@ class Riemann::Tools::Rabbitmq
         svc = "rabbitmq.queue.#{queue['vhost']}.#{queue['name']}"
         errs = []
 
-        if queue['messages_ready'] > 0 and queue['consumers'] == 0
+        if queue['messages_ready']!=nil and queue['messages_ready'] > 0 and queue['consumers'] == 0
           errs << "Queue has jobs but no consumers"
         end
 
-        if (max_size_check_filter.nil? or queue['name'] !~ max_size_check_filter) and queue['messages_ready'] > options[:max_queue_size]
+        if (max_size_check_filter.nil? or queue['name'] !~ max_size_check_filter) and queue['messages_ready']!=nil and queue['messages_ready'] > options[:max_queue_size]
           errs << "Queue has #{queue['messages_ready']} jobs"
         end
 
@@ -142,7 +142,7 @@ class Riemann::Tools::Rabbitmq
 
         stats.each_pair do |k,v|
           service = "#{svc}.#{k}"
-          if k =~ /details$/
+          if k =~ /details$/ and v!=nil
             metric = v['rate']
           else
             metric = v
