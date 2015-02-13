@@ -9,8 +9,8 @@ class Riemann::Tools::DirFilesCount
 
   opt :directory, "", :default => '/var/log'
   opt :service_prefix, "The first part of the service name, before the directory path", :default => "dir-files-count"
-  opt :warning, "Dir files number warning threshold"
-  opt :critical, "Dir files number critical threshold"
+  opt :warning, "Dir files number warning threshold", :type => Integer
+  opt :critical, "Dir files number critical threshold", :type => Integer
   opt :alert_on_missing, "Send a critical metric if the directory is missing?", :default => true
 
   def initialize
