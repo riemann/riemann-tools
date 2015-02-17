@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+# Reports NTP stats to Riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Ntp
+  include Riemann::Tools
+
+  def initialize
+    @hostname = `hostname`.chomp
+  end
+
+  def tick
+    stats = `ntpq -p -n`
+    stats.each_line do |stat|
+      m = stat.split()
+      next if m.grep(/^===/).any? || m.grep(/^remote/).any?
+      @ntp_host = m[0].gsub("*","").gsub("-","").gsub("+","")
+      send("delay",m[7])
+      send("offset",m[8])
+      send("jitter",m[9])
+    end
+  end
+
+  def send(type,metric)
+      report(
+        :host => @hostname,
+        :service => "ntp peer #{@ntp_host} #{type}",
+        :metric => metric.to_f,
+        :state => "ok",
+        :description => "ntp peer #{@ntp_host} #{type}",
+        :tags => ["ntp"]
+      )
+  end
+end
+
+Riemann::Tools::Ntp.run
