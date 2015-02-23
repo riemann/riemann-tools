@@ -16,8 +16,8 @@ class Riemann::Tools::AWS
   opt :secret_key, "Secret access key", :type => String
   opt :region, "AWS region", :type => String, :default => 'eu-west-1'
   opt :dbinstance_identifier, "DBInstanceIdentifier", :type => String
-
   def initialize
+    abort "FATAL: specify a DB instance name, see --help for usage" unless opts[:dbinstance_identifier]
     @cloudwatch = Fog::AWS::CloudWatch.new(:aws_access_key_id => opts[:access_key],
                                            :aws_secret_access_key => opts[:secret_key],
                                            :region => opts[:region])
