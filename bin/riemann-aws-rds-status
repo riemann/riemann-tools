@@ -26,7 +26,6 @@ class Riemann::Tools::AWS
   def tick
     time = Time.new
     ['DatabaseConnections', 'FreeableMemory','FreeStorageSpace',  'NetworkReceiveThroughput','NetworkTransmitThroughput','ReadThroughput','CPUUtilization'].each do |metric|
-      puts metric
       result = @cloudwatch.get_metric_statistics({"Namespace" => 'AWS/RDS', "MetricName" => "#{metric}", "Statistics" => 'Average', "Dimensions" => [{"Name" => "DBInstanceIdentifier", "Value" => "#{opts[:dbinstance_identifier]}"}], "StartTime" => (time-60).to_time.iso8601, "EndTime" => time.to_time.iso8601, "Period" => 60})
       metricsResult = result.data[:body]['GetMetricStatisticsResult']
       puts JSON.dump(metricsResult)
