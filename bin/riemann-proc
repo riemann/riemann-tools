@@ -32,11 +32,12 @@ class Riemann::Tools::Proc
 
   def linux_proc
     process = opts[:proc_regex]
-    running = Integer(`ps axo args | grep '#{process}' | grep -v grep | grep -v riemann-proc | wc -l`)
+    found = `ps axo args | grep '#{process}' | grep -v grep | grep -v riemann-proc`
+    running = found.count("\n")
     if running > @limits[:critical][:max] or running < @limits[:critical][:min]
-      alert "proc #{process}", :critical, running, "process #{process} is running #{running} instances"
+      alert "proc #{process}", :critical, running, "process #{process} is running #{running} instances:\n" + found
     else
-      alert "proc #{process}", :ok, running, "process #{process} is running #{running} instances"
+      alert "proc #{process}", :ok, running, "process #{process} is running #{running} instances:\n" + found
     end
   end
 
