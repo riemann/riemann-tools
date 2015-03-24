@@ -68,6 +68,8 @@ class Riemann::Tools::Net
 
     if @old_state
       state.each do |service, metric|
+        next unless @old_state.has_key?(service)
+
         delta = metric - @old_state[service]
         svc_state = case service
           when /drop$/
