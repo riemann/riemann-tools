@@ -67,7 +67,15 @@ class Riemann::Tools::Net
     state = self.state
 
     if @old_state
+      # Report services from `@old_state` that don't exist in `state` as expired
+      @old_state.reject { |k| state.has_key?(k) }.each do |service, metric|
+        report(:service => service.dup, :state => 'expired')
+      end
+
+      # Report delta for services that have values in both `@old_state` and `state`
       state.each do |service, metric|
+        next unless @old_state.has_key?(service)
+
         delta = metric - @old_state[service]
         svc_state = case service
           when /drop$/

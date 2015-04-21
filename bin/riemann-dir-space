@@ -9,8 +9,8 @@ class Riemann::Tools::DirSpace
 
   opt :directory, "", :default => '/var/log'
   opt :service_prefix, "The first part of the service name, before the directory path", :default => "dir-space"
-  opt :warning, "Dir space warning threshold (in bytes)"
-  opt :critical, "Dir space critical threshold (in bytes)"
+  opt :warning, "Dir space warning threshold (in bytes)", :type => Integer
+  opt :critical, "Dir space critical threshold (in bytes)", :type => Integer
   opt :alert_on_missing, "Send a critical metric if the directory is missing?", :default => true
 
   def initialize
