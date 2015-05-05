@@ -11,6 +11,7 @@ class Riemann::Tools::Elasticsearch
 
   opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
   opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
+  opt :path_prefix, 'Elasticsearch path prefix for proxied installations e.g. "els" for target http://localhost/els/_cluster/health', default: ""
   opt :es_host, 'Elasticsearch host', default: "localhost"
   opt :es_port, 'Elasticsearch port', type: :int, default: 9200
 
@@ -36,7 +37,7 @@ class Riemann::Tools::Elasticsearch
   end
 
   def health_url
-    "http://#{options[:es_host]}:#{options[:es_port]}/_cluster/health"
+    "http://#{options[:es_host]}:#{options[:es_port]}/#{options[:path_prefix]}/_cluster/health"
   end
 
   def tick
