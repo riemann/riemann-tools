@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+# Reports running process count to riemann.
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Proc
+  include Riemann::Tools
+
+  opt :service_name, "name of the service you'll feed to this process.", type: :string
+  opt :csv_mode, "in this mode, we consume a streaming csv of riemann event fields.", default: false
+
+  def initialize
+    abort "FATAL: specify a service_name, see --help for usage" unless opts[:service_name]
+    @fields = $stdin.gets.strip.split(',').map {|f| eval ":#{f}"} if opts[:csv_mode]
+  end
+
+  def run
+    $stdin.each_line do |line|
+      event = if opts[:csv_mode]
+        values = line.strip.split(',')
+        {service: opts[:service_name]}.merge(Hash[@fields.zip(values)])
+      else
+        {
+          metric: line.strip,
+          service: opts[:service_name],
+        }
+      end
+      report(event)
+    end
+  end
+end
+
+Riemann::Tools::Proc.run
