@@ -65,6 +65,7 @@ module Riemann
       end
       
       event = event.merge(attributes)
+      event[:time] = Integer(event[:time]) if event.has_key? :time
 
       riemann << event
     end
