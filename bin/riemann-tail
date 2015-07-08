@@ -3,12 +3,14 @@
 # Reports running process count to riemann.
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
+require 'date'
 
 class Riemann::Tools::Proc
   include Riemann::Tools
 
   opt :service_name, "name of the service you'll feed to this process.", type: :string
   opt :csv_mode, "in this mode, we consume a streaming csv of riemann event fields.", default: false
+  opt :iso_8601, "treat any time field provided as an iso8601 datestamp.", default: false
 
   def initialize
     abort "FATAL: specify a service_name, see --help for usage" unless opts[:service_name]
@@ -26,6 +28,7 @@ class Riemann::Tools::Proc
           service: opts[:service_name],
         }
       end
+      event[:time] = DateTime.iso8601(event[:time]).to_time.to_i if opts[:iso_8601] and event[:time]
       report(event)
     end
   end
