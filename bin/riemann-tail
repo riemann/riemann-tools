@@ -14,7 +14,7 @@ class Riemann::Tools::Proc
 
   def initialize
     abort "FATAL: specify a service_name, see --help for usage" unless opts[:service_name]
-    @fields = $stdin.gets.strip.split(',').map {|f| eval ":#{f}"} if opts[:csv_mode]
+    @fields = $stdin.gets.strip.split(',').map(&:to_sym) if opts[:csv_mode]
   end
 
   def run
