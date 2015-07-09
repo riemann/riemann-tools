@@ -19,17 +19,22 @@ class Riemann::Tools::Proc
 
   def run
     $stdin.each_line do |line|
-      event = if opts[:csv_mode]
-        values = line.strip.split(',')
-        {service: opts[:service_name]}.merge(Hash[@fields.zip(values)])
-      else
-        {
-          metric: line.strip,
-          service: opts[:service_name],
-        }
+      begin
+        event = if opts[:csv_mode]
+          values = line.strip.split(',')
+          {service: opts[:service_name]}.merge(Hash[@fields.zip(values)])
+        else
+          {
+            metric: line.strip,
+            service: opts[:service_name],
+          }
+        end
+        event[:time] = DateTime.iso8601(event[:time]).to_time.to_i if opts[:iso_8601] and event[:time]
+        report(event)
+      rescue => e
+        $stderr.puts "error on input line #{line.inspect}"
+        $stderr.puts "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
       end
-      event[:time] = DateTime.iso8601(event[:time]).to_time.to_i if opts[:iso_8601] and event[:time]
-      report(event)
     end
   end
 end
