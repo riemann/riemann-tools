@@ -63,13 +63,22 @@ class Riemann::Tools::Diskstats
 
     if @old_state
       state.each do |service, metric|
-        delta = metric - @old_state[service]
 
-        report(
-          :service => "diskstats " + service,
-          :metric => (delta.to_f / opts[:interval]),
-          :state => "ok"
-        )
+        if service =~ /io reqs$/
+          report(
+            :service => "diskstats " + service,
+            :metric => metric,
+            :state => "ok"
+          )
+        else
+          delta = metric - @old_state[service]
+
+          report(
+            :service => "diskstats " + service,
+            :metric => (delta.to_f / opts[:interval]),
+            :state => "ok"
+          )
+        end
 
         if service =~ /io time$/
           report(:service => "diskstats " + service.gsub(/time/, 'util'),
