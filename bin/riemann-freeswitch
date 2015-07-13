@@ -65,6 +65,8 @@ class Riemann::Tools::FreeSWITCH
       fs_pid = -666
     end
 
+    fs_threads = fs_pid > 0 ? %x[ps huH p #{fs_pid} | wc -l].to_i : 0
+
     # Submit calls to riemann
     if fs_calls > @limits[:calls][:critical]
       alert "FreeSWITCH current calls", :critical, fs_calls, "Number of calls are #{fs_calls}"
@@ -90,6 +92,11 @@ class Riemann::Tools::FreeSWITCH
       alert "FreeSWITCH current conferences", :warning, fs_conferences, "Number of conferences are #{fs_conferences}"
     else
       alert "FreeSWITCH current conferences", :ok, fs_conferences, "Number of conferences are #{fs_conferences}"
+    end
+
+    # Submit threads to riemann
+    if fs_threads
+      alert "FreeSWITCH current threads", :ok, fs_threads, "Number of threads are #{fs_threads}"
     end
 
     # Submit status to riemann
