@@ -11,6 +11,7 @@ class Riemann::Tools::Elasticsearch
 
   opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
   opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
+  opt :path_prefix, 'Elasticsearch path prefix for proxied installations e.g. "els" for target http://localhost/els/_cluster/health', default: "/"
   opt :es_host, 'Elasticsearch host', default: "localhost"
   opt :es_port, 'Elasticsearch port', type: :int, default: 9200
   opt :es_wait_for_status, 'ES cluster health status to wait for', default: "yellow"
@@ -37,11 +38,17 @@ class Riemann::Tools::Elasticsearch
   end
 
   def health_url
-    "http://#{options[:es_host]}:#{options[:es_port]}/_cluster/health?wait_for_status=#{options[:es_wait_for_status]}&timeout=#{options[:es_timeout]}"
+    path_prefix = options[:path_prefix]
+    path_prefix[0] = '' if path_prefix[0]=='/'
+    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
+    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_cluster/health?wait_for_status=#{options[:es_wait_for_status]}&timeout=#{options[:es_timeout]}"
   end
 
   def indices_health_url
-    "http://#{options[:es_host]}:#{options[:es_port]}/_cat/indices?v"
+    path_prefix = options[:path_prefix]
+    path_prefix[0] = '' if path_prefix[0]=='/'
+    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
+    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_cat/indices?v"
   end
 
   def tick
