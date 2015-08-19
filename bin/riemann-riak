@@ -70,11 +70,15 @@ class Riemann::Tools::Riak
   end
 
   def check_ring
-    if @escript
+    str = if @escript
       str = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-ring #{opts[:node_name]}`.chomp
     elsif @riakadmin
       str = `riak-admin ringready`
+    else
+      nil
     end
+
+    return if str.nil?
 
     if str =~ /^TRUE/
       report(
