@@ -1,0 +1,106 @@
+#!/usr/bin/env ruby
+
+# Reports service and node status to riemann
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+require 'socket'
+require 'net/http'
+require 'uri'
+require 'json'
+
+class Riemann::Tools::ConsulHealth
+  include Riemann::Tools
+
+  opt :consul_host, "Consul API Host (default to localhost)", :default => "localhost"
+  opt :consul_port, "Consul API Host (default to 8500)", :default => "8500"
+  opt :prefix, "prefix to use for all service names when reporting", :default => "consul "
+  opt :minimum_services_per_node, "minimum services per node (default: 0)", :default => 0
+
+  def initialize
+
+    @hostname = opts[:consul_host]
+    @prefix = opts[:prefix]
+    @minimum_services_per_node = opts[:minimum_services_per_node]
+    @underlying_ip = IPSocket.getaddress(@hostname)
+    @consul_leader_url = URI.parse("http://" + opts[:consul_host] + ":" + opts[:consul_port] + "/v1/status/leader")
+    @consul_services_url = URI.parse("http://" + opts[:consul_host] + ":" + opts[:consul_port] + "/v1/catalog/services")
+    @consul_nodes_url = URI.parse("http://" + opts[:consul_host] + ":" + opts[:consul_port] + "/v1/catalog/nodes")
+    @consul_health_url_prefix = "http://" + opts[:consul_host] + ":" + opts[:consul_port] + "/v1/health/service/"
+
+    @last_services_read = Hash.new
+
+  end
+
+  def alert(hostname, service, state, metric, description)
+
+    opts = {  :host => hostname,
+              :service => service.to_s,
+              :state => state.to_s,
+              :metric => metric,
+              :description => description }
+
+    report(opts)
+  end
+
+  def get(url)
+    Net::HTTP.get_response(url).body
+  end
+
+  def tick
+
+    leader = get(@consul_leader_url)
+    leader_hostname = URI.parse("http://" + leader[1..-2]).hostname
+
+    if (leader_hostname == @underlying_ip)
+      nodes = JSON.parse(get(@consul_nodes_url))
+      services = JSON.parse(get(@consul_services_url))
+      services_by_nodes = Hash.new
+
+      for node in nodes
+        node_name = node["Node"]
+        services_by_nodes[node_name] = 0
+      end
+
+
+      # For every service
+      for service in services
+        service_name = service[0]
+        health_url = URI.parse(@consul_health_url_prefix + service_name)
+        health_nodes = JSON.parse(get(health_url))
+
+        totalCount = 0
+        okCount = 0
+
+        for node in health_nodes
+          hostname = node["Node"]["Node"]
+          ok = node["Checks"].all? {|check| check["Status"] == "passing"}
+          alert(hostname, "#{@prefix}#{service_name}", ok ? :ok : :critical, ok ? 1 : 0, JSON.generate(node))
+          totalCount += 1
+          okCount += ok ? 1 : 0
+
+          last_services_by_nodes = services_by_nodes[hostname].to_i
+          services_by_nodes[hostname] = last_services_by_nodes + 1
+        end
+
+        if (@last_services_read[service_name] != nil)
+          lastOk = @last_services_read[service_name]
+          if (lastOk != okCount)
+            alert("total", "#{@prefix}#{service_name}-count", okCount >= lastOk ? :ok : :critical, okCount, "Number of passing #{service_name} is: #{okCount}/#{totalCount}, Last time it was: #{lastOk}")
+          end
+        end
+
+        @last_services_read[service_name] = okCount
+
+      end
+
+      # For every node
+      for node,count in services_by_nodes
+        alert(node, "#{@prefix}total-services", (count >= @minimum_services_per_node) ? :ok : :critical, count, "#{count} services in the specified node")
+      end
+
+    end
+
+  end
+end
+
+Riemann::Tools::ConsulHealth.run
