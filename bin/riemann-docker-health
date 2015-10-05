@@ -17,7 +17,8 @@ class Riemann::Tools::DockerHealth
   opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
   opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
   opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
-  opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'memory', 'disk']
+  opt :host_hostname, "Suffix of host", :type => String, :default => nil
+  opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'memory', 'disk', 'basic']
 
   def get_containers
     Docker::Container.all
@@ -33,7 +34,11 @@ class Riemann::Tools::DockerHealth
       Docker.url = opts[:docker_host]
     end
 
-    @hostname = Socket.gethostname
+    @hostname = opts[:host_hostname]
+    if (@hostname.nil? || !(@hostname.is_a? String) || @hostname.empty?)
+      @hostname = Socket.gethostname
+    end
+
     @cpu_coefficient = 1000 * 1000 * 1000
 
     @limits = {
@@ -43,6 +48,7 @@ class Riemann::Tools::DockerHealth
     }
 
     @last_cpu_reads = Hash.new
+    @last_uptime_reads = Hash.new
 
     opts[:checks].each do |check|
       case check
@@ -52,6 +58,8 @@ class Riemann::Tools::DockerHealth
         @cpu_enabled = true
       when 'memory'
         @memory_enabled = true
+      when 'basic'
+        @basic_inspection_enabled = true
       end
     end
   end
@@ -65,6 +73,8 @@ class Riemann::Tools::DockerHealth
 
     if (container != nil)
       opts[:host] = "#{@hostname}-#{container}"
+    else
+      opts[:host] = @hostname
     end
 
     report(opts)
@@ -90,7 +100,8 @@ class Riemann::Tools::DockerHealth
 
   def cpu(id, name, stats)
 
-    current = stats['precpu_stats']['cpu_usage']['total_usage']
+    current = stats['precpu_stats']['cpu_usage']['total_usage'] / stats['precpu_stats']['cpu_usage']['percpu_usage'].count
+
     unless current
       alert name, :cpu, :unknown, nil, 'no total usage found in docker remote api stats'
       return false
@@ -113,7 +124,7 @@ class Riemann::Tools::DockerHealth
     total = memory_stats['limit'].to_f
     fraction = (usage / total)
 
-    report_pct name, :memory, fraction
+    report_pct name, :memory, fraction, "#{usage} / #{total}"
   end
 
   def disk
@@ -125,6 +136,37 @@ class Riemann::Tools::DockerHealth
       # Calculate capacity
       x = f[4].to_f/100
       report_pct(nil, :disk, x, "#{f[3].to_i / 1024} mb left", "disk #{f[5]}")
+    end
+  end
+
+  def basic_inspection(id, name, inspection)
+
+    state = inspection['State']
+    json_state = JSON.generate(state)
+
+    running = state['Running']
+
+    alert(name, "status",
+          running ? "ok" : "critical",
+          running ? 1 : 0,
+          json_state)
+
+    if (running)
+      start_time = DateTime.rfc3339(state['StartedAt']).to_time.utc.to_i
+      now = DateTime.now.to_time.utc.to_i
+      uptime = now - start_time
+
+      if (@last_uptime_reads[id] != nil)
+        last = @last_uptime_reads[id]
+        restarted = start_time != last
+        alert(name, "uptime",
+              restarted ? "critical" : "ok",
+              uptime,
+              "last 'StartedAt' measure was #{last} (#{Time.at(last).utc.to_s}), " +
+              "now it's #{start_time} (#{Time.at(start_time).utc.to_s})")
+      end
+
+      @last_uptime_reads[id] = start_time
     end
   end
 
@@ -144,6 +186,10 @@ class Riemann::Tools::DockerHealth
 
       stats = Docker::Util.parse_json(container.connection.get("/containers/#{id}/stats", {stream:false}))
 
+      if @basic_inspection_enabled
+        inspection = Docker::Util.parse_json(container.connection.get("/containers/#{id}/json"))
+        basic_inspection(id, name, inspection)
+      end
       if @cpu_enabled
         cpu(id, name, stats)
       end
