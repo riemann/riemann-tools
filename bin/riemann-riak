@@ -29,24 +29,22 @@ class Riemann::Tools::Riak
     detect_features
 
     @httpstatus = true
-    # What's going on here? --aphyr
-    if
-      begin
-        uri = URI.parse(opts[:riak_host])
+
+    begin
+      uri = URI.parse(opts[:riak_host])
       if uri.host == nil
-      uri.host = opts[:riak_host]
+        uri.host = opts[:riak_host]
       end
-        http = Net::HTTP.new(uri.host, opts[:stats_port])
-        http.use_ssl = uri.scheme == 'https'
-          if http.use_ssl?
-              http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-          end
-        http.start do |http|
-        http.get opts[:stats_path]
+      http = Net::HTTP.new(uri.host, opts[:stats_port])
+      http.use_ssl = uri.scheme == 'https'
+      if http.use_ssl?
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
-      rescue => e
-        @httpstatus = false
+      http.start do |h|
+        h.get opts[:stats_path]
       end
+    rescue => _e
+      @httpstatus = false
     end
 
     # we're going to override the emulator setting to allow users to
@@ -70,11 +68,15 @@ class Riemann::Tools::Riak
   end
 
   def check_ring
-    if @escript
+    str = if @escript
       str = `#{File.expand_path(File.dirname(__FILE__))}/riemann-riak-ring #{opts[:node_name]}`.chomp
     elsif @riakadmin
       str = `riak-admin ringready`
+    else
+      nil
     end
+
+    return if str.nil?
 
     if str =~ /^TRUE/
       report(
@@ -182,8 +184,8 @@ class Riemann::Tools::Riak
       if http.use_ssl?
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
-      res = http.start do |http|
-        http.get opts[:stats_path]
+      res = http.start do |h|
+        h.get opts[:stats_path]
       end
     rescue => e
       report(
