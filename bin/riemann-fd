@@ -25,6 +25,7 @@ class Riemann::Tools::Health
   end
 
   def alert(service, state, metric, description)
+    # puts "service: #{service}, state: #{state}, metric: #{metric} description: #{description}" # DEBUG
     report(
       :service => service.to_s,
       :state => state.to_s,
@@ -46,21 +47,24 @@ class Riemann::Tools::Health
     end
 
     unless opts[:processes].nil?
-      `ps --ppid 2 -p 2 --deselect | awk '{print $1}'`.split.each do |process|
+      `ps -h --ppid 2 -p 2 --deselect | awk '{print $1}'`.split.each do |process|
         if File.directory?("/proc/#{process}")
-          used = Float(`ls -l /proc/#{process}/fd | wc -l`)
-          max = Float(`cat /proc/#{process}/limits | grep -i 'Max open files' | awk '{print $4}'`)
-          pid, name, cmd = `ps axo "%p|%c|%a" | grep -w #{process} | grep -v grep`.split('|')
-          used_p = used / max * 100.0
+          used = `find -P /proc/#{process}/fd/. -not -name '.' 2>/dev/null | wc -l`.to_f
+
+          tmp_max = `cat /proc/#{process}/limits 2>/dev/null | grep -i 'Max open files' | awk '{print $4}'`
+          max = tmp_max.to_s.empty? ? 0 : Float(tmp_max)
+          used_p = used / (max * 100.0)
+
+          pid, name, cmd = `ps axo "%p|%c|%a" | grep -w '#{process}' | grep -v grep`.split('|')
           name.strip!
           cmd.strip!
           pid.strip!
 
-          if used_p >= @limits[:process][:critical]
+          if !used_p.nan? && used_p >= @limits[:process][:critical]
             alert "fd #{name} #{process}", :critical, used, "process #{name} #{process} is using #{used}/#{max} fds - (#{cmd})"
-          elsif used_p >= @limits[:process][:warning]
+          elsif !used_p.nan? && used_p >= @limits[:process][:warning]
             alert "fd #{name} #{process}", :warning, used, "process #{name} #{process} is using #{used}/#{max} fds - (#{cmd})"
-          else
+          elsif !used_p.nan?
             alert "fd #{name} #{process}", :ok, used, "process #{name} #{process} is using #{used}/#{max} fds - (#{cmd})"
           end
         end
