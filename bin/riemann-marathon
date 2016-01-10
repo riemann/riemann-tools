@@ -74,7 +74,8 @@ class Riemann::Tools::Marathon
             report(:host => uri.host,
                    :service => "marathon_metric #{t} #{service}",
                    :metric => 1,
-                   :tags => ["metric_name"]
+                   :tags => ["metric_name"],
+                   :ttl => 600
             )
             if counters.respond_to? :each_pair
               counters.each_pair do |k, v|
@@ -82,7 +83,8 @@ class Riemann::Tools::Marathon
                   report(:host => uri.host,
                          :service => "marathon #{service} #{k}",
                          :metric => v,
-                         :tags => ["metric", "#{t}"]
+                         :tags => ["metric", "#{t}"],
+                         :ttl => 60
                   )
                 end
               end
