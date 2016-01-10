@@ -62,7 +62,7 @@ class Riemann::Tools::Marathon
     else
       # Assuming that a 200 will give json
       json = JSON.parse(response.body)
-      state = "green"
+      state = "ok"
 
       report(:host => uri.host,
              :service => "marathon health",
