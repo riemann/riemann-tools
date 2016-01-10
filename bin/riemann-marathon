@@ -17,7 +17,7 @@ class Riemann::Tools::Marathon
 
   def initialize
     options[:interval] = 60
-    options[:ttl] = 60
+    options[:ttl] = 120
   end
 
   # Handles HTTP connections and GET requests safely
