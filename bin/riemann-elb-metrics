@@ -89,12 +89,19 @@ class Riemann::Tools::ELBMetrics
       Fog.credentials_path = options[:fog_credentials_file]
       Fog.credential = options[:fog_credential].to_sym
       connection = Fog::AWS::CloudWatch.new
-    else
-      connection = Fog::AWS::CloudWatch.new({
-        :aws_access_key_id => options[:aws_access],
-        :aws_secret_access_key => options[:aws_secret],
-        :region => options[:aws_region]
-      })
+    else 
+      if options[:aws_access] && options[:aws_secret]
+        connection = Fog::AWS::CloudWatch.new({
+          :aws_access_key_id => options[:aws_access],
+          :aws_secret_access_key => options[:aws_secret],
+          :region => options[:aws_region]
+        })
+      else
+        connection = Fog::AWS::CloudWatch.new({
+          :use_iam_profile => true,
+          :region => options[:aws_region]
+        })        
+      end
     end
 
     options[:elbs].each do |lb|
