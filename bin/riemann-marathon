@@ -47,7 +47,19 @@ class Riemann::Tools::Marathon
     "http://#{options[:marathon_host]}:#{options[:marathon_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/metrics"
   end
 
+  def apps_url
+    path_prefix = options[:path_prefix]
+    path_prefix[0] = '' if path_prefix[0]=='/'
+    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
+    "http://#{options[:marathon_host]}:#{options[:marathon_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/v2/apps"
+  end
+
   def tick
+    tick_health
+    tick_apps
+  end
+  
+  def tick_health
     uri = URI(health_url)
     response = safe_get(uri)
 
@@ -84,11 +96,46 @@ class Riemann::Tools::Marathon
                          :service => "marathon #{service} #{k}",
                          :metric => v,
                          :tags => ["metric", "#{t}"],
-                         :ttl => 60
+                         :ttl => 600
                   )
                 end
               end
             end
+          end
+        end
+      end
+    end
+  end
+
+  def tick_apps
+    uri = URI(apps_url)
+    response = safe_get(uri)
+
+    return if response.nil?
+
+    if response.status != 200
+        report(:host => uri.host,
+          :service => "marathon health",
+          :state => "critical",
+          :description => "HTTP connection error: #{response.status} - #{response.body}"
+        )
+    else
+      # Assuming that a 200 will give json
+      json = JSON.parse(response.body)
+      state = "ok"
+
+      report(:host => uri.host,
+             :service => "marathon health",
+             :state => state)
+
+      json["apps"].each do |app|
+        app.each_pair do |k, v|
+          if v.is_a? Numeric
+            report(:host => uri.host,
+                   :service => "marathon apps#{app["id"]}/#{k}",
+                   :metric => v,
+                   :ttl => 120
+            )
           end
         end
       end
