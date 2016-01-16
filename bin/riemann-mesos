@@ -42,7 +42,16 @@ class Riemann::Tools::Mesos
     "http://#{options[:mesos_host]}:#{options[:mesos_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/metrics/snapshot"
   end
 
+  def slaves_url
+    path_prefix = options[:path_prefix]
+    path_prefix[0] = '' if path_prefix[0]=='/'
+    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
+    "http://#{options[:mesos_host]}:#{options[:mesos_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/master/slaves"
+  end
+
+
   def tick
+    tick_slaves
     uri = URI(health_url)
     response = safe_get(uri)
 
@@ -68,12 +77,53 @@ class Riemann::Tools::Mesos
                :service => "mesos #{k}",
                :metric => v
         )
-
       end
     end
   end
 
+  def tick_slaves
+    uri = URI(slaves_url)
+    response = safe_get(uri)
 
+    return if response.nil?
 
+    if response.status != 200
+        report(:host => uri.host,
+          :service => "mesos health",
+          :state => "critical",
+          :description => "HTTP connection error: #{response.status} - #{response.body}"
+        )
+    else
+      # Assuming that a 200 will give json
+      json = JSON.parse(response.body)
+      state = "ok"
+
+      report(:host => uri.host,
+             :service => "mesos health",
+             :state => state)
+
+      json["slaves"].each do |slave|
+        if slave.respond_to? "each_pair"
+          slave.each_pair do |k,v|
+            if v.respond_to? "each_pair"
+              v.each_pair do |k1,v1|
+                if v1.is_a? Numeric
+                  report(:host => slave["hostname"],
+                         :service => "mesos slave/#{k}/#{k1}",
+                         :metric => v1
+                  )
+                end
+              end
+            elsif v.is_a? Numeric
+              report(:host => slave["hostname"],
+                     :service => "mesos slave/#{k}",
+                     :metric => v
+              )
+            end
+          end
+        end
+      end
+    end
+  end 
 end
 Riemann::Tools::Mesos.run
