@@ -43,7 +43,44 @@ class Riemann::Tools::Elasticsearch
     "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_cluster/health"
   end
 
+  def indices_url
+    path_prefix = options[:path_prefix]
+    path_prefix[0] = '' if path_prefix[0]=='/'
+    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
+    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_stats/index,store"
+  end
+
+  def tick_indices
+    uri = URI(indices_url)
+    response = safe_get(uri)
+
+    return if response.nil?
+
+    if response.status != 200
+        report(:host => uri.host,
+          :service => "elasticsearch health",
+          :state => "critical",
+          :description => "HTTP connection error: #{response.status} - #{response.body}"
+        )
+    else
+      # Assuming that a 200 will give json
+      json = JSON.parse(response.body)
+
+      json["indices"].each_pair do |k,v|
+        report(:host => uri.host,
+               :service => "elasticsearch index/#{k}/primaries/size_in_bytes",
+               :metric => v["primaries"]["store"]["size_in_bytes"]
+        )
+        report(:host => uri.host,
+               :service => "elasticsearch index/#{k}/total/size_in_bytes",
+               :metric => v["total"]["store"]["size_in_bytes"]
+        )
+      end
+    end
+  end
+
   def tick
+    tick_indices
     uri = URI(health_url)
     response = safe_get(uri)
 
