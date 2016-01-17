@@ -28,7 +28,6 @@ gemspec = Gem::Specification.new do |s|
   s.add_dependency 'fog', '>= 1.4.0'
   s.add_dependency 'faraday', '>= 0.8.5'
   s.add_dependency 'nokogiri', '>= 1.5.6'
-  s.add_dependency 'docker-api', '>= 1.22.0'
 
   s.files = FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
   s.executables |= Dir.entries('bin/')
