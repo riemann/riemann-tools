@@ -9,8 +9,10 @@ testing. I've got a whole bunch of these internally for monitoring Redis, Riak,
 queues, etc. Most have internal configuration dependencies, so it'll be a while
 before I can extract them for re-use.
 
+See additional programs in the [Riemann GitHub account](https://github.com/riemann/).
+
 Get started
-==========
+===========
 
 ``` bash
 gem install riemann-tools
