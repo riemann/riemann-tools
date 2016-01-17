@@ -24,7 +24,6 @@ gemspec = Gem::Specification.new do |s|
   s.add_dependency 'riemann-client', '>= 0.2.2'
   s.add_dependency 'trollop', '>= 1.16.2'
   s.add_dependency 'yajl-ruby', '>= 1.1.0'
-  s.add_dependency 'fog', '>= 1.4.0'
   s.add_dependency 'nokogiri', '>= 1.5.6'
 
   s.files = FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
