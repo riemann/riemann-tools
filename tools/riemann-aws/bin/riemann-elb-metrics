@@ -1,0 +1,160 @@
+#!/usr/bin/env ruby
+
+require 'riemann/tools'
+
+$0 = __FILE__
+
+class Riemann::Tools::ELBMetrics
+  include Riemann::Tools
+  require 'fog'
+  require 'time'
+
+  opt :fog_credentials_file, "Fog credentials file", :type => String
+  opt :fog_credential, "Fog credentials to use", :type => String
+  opt :aws_access, "AWS Access Key", :type => String
+  opt :aws_secret, "AWS Secret Key", :type => String
+  opt :aws_region, "AWS Region", :type => String, :default => "eu-west-1"
+  opt :aws_azs, "List of AZs to aggregate against", :type => :strings, :default => [ "all_az" ]
+  opt :elbs, "List of ELBs to pull metrics from", :type => :strings, :required => true
+
+  def standard_metrics
+    # ELB metric types, from:
+    # http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/CW_Support_For_AWS.html#elb-metricscollected
+    metric_options = {
+      "Latency" => {
+        "Unit" => "Seconds",
+        "Statistics" => ["Maximum", "Minimum", "Average" ]
+      },
+      "RequestCount" => {
+        "Unit" => "Count",
+        "Statistics" => [ "Sum" ]
+      },
+      "HealthyHostCount" => {
+        "Units" => "Count",
+        "Statistics" => [ "Minimum", "Maximum", "Average" ]
+      },
+      "UnHealthyHostCount" => {
+        "Units" => "Count",
+        "Statistics" => [ "Minimum", "Maximum", "Average" ]
+      },
+      "HTTPCode_ELB_4XX" => {
+        "Units" => "Count",
+        "Statistics" => [ "Sum" ]
+      },
+      "HTTPCode_ELB_5XX" => {
+        "Units" => "Count",
+        "Statistics" => [ "Sum" ]
+      },
+      "HTTPCode_Backend_2XX" => {
+        "Units" => "Count",
+        "Statistics" => [ "Sum" ]
+      },
+      "HTTPCode_Backend_3XX" => {
+        "Units" => "Count",
+        "Statistics" => [ "Sum" ]
+      },
+      "HTTPCode_Backend_4XX" => {
+        "Units" => "Count",
+        "Statistics" => [ "Sum" ]
+      },
+      "HTTPCode_Backend_5XX" => {
+        "Units" => "Count",
+        "Statistics" => [ "Sum" ]
+      }
+    }
+
+    metric_options
+  end
+
+  def base_metrics
+    # get last 60 seconds
+    start_time = (Time.now.utc - 60).iso8601
+    end_time = Time.now.utc.iso8601
+
+    # The base query that all metrics would get
+    metric_base = {
+      "Namespace" => "AWS/ELB",
+      "StartTime" => start_time,
+      "EndTime" => end_time,
+      "Period" => 60,
+    }
+
+    metric_base
+  end
+
+
+  def tick
+    if options[:fog_credentials_file]
+      Fog.credentials_path = options[:fog_credentials_file]
+      Fog.credential = options[:fog_credential].to_sym
+      connection = Fog::AWS::CloudWatch.new
+    else 
+      if options[:aws_access] && options[:aws_secret]
+        connection = Fog::AWS::CloudWatch.new({
+          :aws_access_key_id => options[:aws_access],
+          :aws_secret_access_key => options[:aws_secret],
+          :region => options[:aws_region]
+        })
+      else
+        connection = Fog::AWS::CloudWatch.new({
+          :use_iam_profile => true,
+          :region => options[:aws_region]
+        })        
+      end
+    end
+
+    options[:elbs].each do |lb|
+
+      metric_options = standard_metrics
+      metric_base_options = base_metrics
+
+      options[:aws_azs].each do |az|
+        metric_options.keys.sort.each do |metric_type|
+          merged_options = metric_base_options.merge(metric_options[metric_type])
+          merged_options["MetricName"] = metric_type
+          if az == "all_az"
+            merged_options["Dimensions"] = [ { "Name" => "LoadBalancerName", "Value" => lb } ]
+          else
+            merged_options["Dimensions"] = [
+              { "Name" => "LoadBalancerName", "Value" => lb },
+              { "Name" => "AvailabilityZone" , "Value" => az}
+            ]
+          end
+
+          result = connection.get_metric_statistics(merged_options)
+
+          # "If no response codes in the category 2XX-5XX range are sent to clients within 
+          # the given time period, values for these metrics will not be recorded in CloudWatch"
+          #next if result.body["GetMetricStatisticsResult"]["Datapoints"].empty? && metric_type =~ /[2345]XX/
+          #
+          # BUG:
+          # Metrics are reported every 60 seconds, but sometimes there isn't one there yet.
+          # We can skip that, or do something else?
+          next if result.body["GetMetricStatisticsResult"]["Datapoints"].empty?
+
+          # We should only ever have a single data point
+          result.body["GetMetricStatisticsResult"]["Datapoints"][0].keys.sort.each do |stat_type|
+            next if stat_type == "Unit"
+            next if stat_type == "Timestamp"
+
+            unit = result.body["GetMetricStatisticsResult"]["Datapoints"][0]["Unit"]
+            metric = result.body["GetMetricStatisticsResult"]["Datapoints"][0][stat_type]
+            event = Hash.new
+            event = {
+              host: lb,
+              service: "elb.#{az}.#{metric_type}.#{stat_type}",
+              ttl: 60,
+              description: "#{lb} #{metric_type} #{stat_type} (#{unit})",
+              tags: [ "production", "elb_metrics" ],
+              metric: metric
+            }
+
+            report(event)
+          end
+        end
+      end
+    end
+  end
+end
+
+Riemann::Tools::ELBMetrics.run
