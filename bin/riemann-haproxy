@@ -26,11 +26,17 @@ class Riemann::Tools::Haproxy
             :host    => @uri.host,
             :service => "#{ns} #{property}",
             :metric  => metric.to_f,
-            :state   =>  (['UP', 'OPEN'].include?(row['status']) ? 'ok' : 'critical'),
             :tags    => ['haproxy']
           )
         end
       end
+
+      report(
+        :host    => @uri.host,
+        :service => "#{ns} state",
+        :state   => (['UP', 'OPEN'].include?(row['status']) ? 'ok' : 'critical'),
+        :tags    => ['haproxy']
+      )
     end
   end
 
