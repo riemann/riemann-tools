@@ -6,7 +6,7 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 class Riemann::Tools::Net
   include Riemann::Tools
-  
+
   opt :interfaces, "Interfaces to monitor", :type => :strings, :default => nil
   opt :ignore_interfaces, "Interfaces to ignore", :type => :strings, :default =>['lo']
 
