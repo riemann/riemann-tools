@@ -15,9 +15,10 @@ gemspec = Gem::Specification.new do |s|
   s.version = '0.1.0'
   s.author = 'Shani Elharrar'
   s.email = ''
-  s.homepage = 'https://github.com/riemann/riemann-docker'
+  s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
   s.summary = 'Submits Docker container stats to riemann.'
+  s.license = 'MIT'
 
   s.add_dependency 'riemann-tools', '>= 0.2.7'
   s.add_dependency 'docker-api', '>= 1.22.0'

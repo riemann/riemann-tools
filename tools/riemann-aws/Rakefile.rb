@@ -15,9 +15,10 @@ gemspec = Gem::Specification.new do |s|
   s.version = '0.1.0'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
-  s.homepage = 'https://github.com/riemann/riemann-aws'
+  s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'Submits aws stats to riemann.'
+  s.summary = 'Submits AWS stats to riemann.'
+  s.license = 'MIT'
 
   s.add_dependency 'riemann-tools', '>= 0.2.7'
   s.add_dependency 'fog', '>= 1.4.0'

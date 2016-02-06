@@ -2,6 +2,7 @@ require 'rubygems'
 require 'rubygems/package_task'
 require 'rdoc/task'
 require 'find'
+require 'rake'
 
 # Don't include resource forks in tarballs on Mac OS X.
 ENV['COPY_EXTENDED_ATTRIBUTES_DISABLE'] = 'true'
@@ -43,3 +44,14 @@ RDoc::Task.new do |rd|
 
   rd.rdoc_files.include('lib/**/*.rb')
 end
+
+desc "Recursively build all gems"
+task :rbuild do
+  Dir.glob("tools/**") do |dir|
+    Dir.chdir(dir)
+    sh "rake gem"
+    Dir.chdir("../..")
+  end
+end
+
+
