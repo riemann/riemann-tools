@@ -15,9 +15,10 @@ gemspec = Gem::Specification.new do |s|
   s.version = '0.1.0'
   s.author = 'Gavin Sandie'
   s.email = 'beach@vicecity.co.uk'
-  s.homepage = 'https://github.com/riemann/riemann-elasticsearch'
+  s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
   s.summary = 'Submits elasticsearch stats to riemann.'
+  s.license = 'MIT'
 
   s.add_dependency 'riemann-tools', '>= 0.2.7'
   s.add_dependency 'faraday', '>= 0.8.5'

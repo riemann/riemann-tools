@@ -15,9 +15,10 @@ gemspec = Gem::Specification.new do |s|
   s.version = '0.1.1'
   s.author = 'Giulio Eulisse'
   s.email = 'giulio.eulisse@cern.ch'
-  s.homepage = 'https://github.com/riemann/riemann-marathon'
+  s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
   s.summary = 'Submits marathon stats to riemann.'
+  s.license = 'MIT'
 
   s.add_dependency 'riemann-tools', '>= 0.2.7'
   s.add_dependency 'faraday', '>= 0.8.5'
