@@ -12,15 +12,15 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-rabbitmq'
 
   s.name = 'riemann-rabbitmq'
-  s.version = '0.1.1'
+  s.version = '0.1.2'
   s.author = 'Gavin Sandie'
   s.email = 'beach@vicecity.co.uk'
   s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'Submits rabbitmq stats to riemann.'
+  s.summary = 'Submits RabbitMQ stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.7'
+  s.add_dependency 'riemann-tools', '>= 0.2.8'
   s.add_dependency 'faraday', '>= 0.8.5'
   s.add_dependency 'json'
 
