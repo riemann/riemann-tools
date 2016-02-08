@@ -13,6 +13,7 @@ class Riemann::Tools::Elasticsearch
   opt :path_prefix, 'Elasticsearch path prefix for proxied installations e.g. "els" for target http://localhost/els/_cluster/health', default: "/"
   opt :es_host, 'Elasticsearch host', default: "localhost"
   opt :es_port, 'Elasticsearch port', type: :int, default: 9200
+  opt :es_search_index, 'Elasticsearch index to fetch search statistics for', default: "_all"
 
 
   # Handles HTTP connections and GET requests safely
@@ -49,6 +50,14 @@ class Riemann::Tools::Elasticsearch
     "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_stats/index,store"
   end
 
+  def search_url
+    es_search_index = options[:es_search_index]
+    path_prefix = options[:path_prefix]
+    path_prefix[0] = '' if path_prefix[0]=='/'
+    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
+    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/#{es_search_index}/_stats/search"
+  end
+
   def tick_indices
     uri = URI(indices_url)
     response = safe_get(uri)
@@ -78,8 +87,42 @@ class Riemann::Tools::Elasticsearch
     end
   end
 
+  def tick_search
+    uri = URI(search_url)
+    response = safe_get(uri)
+
+    return if response.nil?
+
+    if response.status != 200
+      report(:host => uri.host,
+             :service => "elasticsearch health",
+             :state => "critical",
+             :description => "HTTP connection error: #{response.status} - #{response.body}"
+      )
+    else
+      es_search_index = options[:es_search_index]
+      # Assuming that a 200 will give json
+      json = JSON.parse(response.body)
+
+      json["_all"].each_pair do |type, data|
+        query = data["search"]["query_time_in_millis"].to_f / data["search"]["query_total"].to_f
+        fetch = data["search"]["fetch_time_in_millis"].to_f / data["search"]["fetch_total"].to_f
+
+        report(:host => uri.host,
+               :service => "elasticsearch search/#{es_search_index}/query",
+               :metric => query
+        )
+        report(:host => uri.host,
+               :service => "elasticsearch search/#{es_search_index}/fetch",
+               :metric => fetch
+        )
+      end
+    end
+  end
+
   def tick
     tick_indices
+    tick_search
     uri = URI(health_url)
     response = safe_get(uri)
 
