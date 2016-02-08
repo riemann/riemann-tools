@@ -36,54 +36,59 @@ class Riemann::Tools::Elasticsearch
       response
   end
 
-  def health_url
+  def make_es_url(path)
     path_prefix = options[:path_prefix]
     path_prefix[0] = '' if path_prefix[0]=='/'
     path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
-    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_cluster/health"
+    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/#{path}"
+  end
+
+  def health_url
+    make_es_url("_cluster/health")
   end
 
   def indices_url
-    path_prefix = options[:path_prefix]
-    path_prefix[0] = '' if path_prefix[0]=='/'
-    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
-    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/_stats/index,store"
+    make_es_url("_stats/index,store")
   end
 
   def search_url
     es_search_index = options[:es_search_index]
-    path_prefix = options[:path_prefix]
-    path_prefix[0] = '' if path_prefix[0]=='/'
-    path_prefix[path_prefix.length-1] = '' if path_prefix[path_prefix.length-1]=='/'
-    "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length>0?'/':''}#{path_prefix}/#{es_search_index}/_stats/search"
+    make_es_url("#{es_search_index}/_stats/search")
+  end
+
+  def response_is_bad(response)
+    return true if response.nil?
+
+    is_bad = response.status != 200
+    if is_bad
+      report(:host => uri.host,
+             :service => "elasticsearch health",
+             :state => "critical",
+             :description => "HTTP connection error: #{response.status} - #{response.body}"
+      )
+    end
+
+    is_bad
   end
 
   def tick_indices
     uri = URI(indices_url)
     response = safe_get(uri)
 
-    return if response.nil?
+    return if (response_is_bad(response))
 
-    if response.status != 200
-        report(:host => uri.host,
-          :service => "elasticsearch health",
-          :state => "critical",
-          :description => "HTTP connection error: #{response.status} - #{response.body}"
-        )
-    else
-      # Assuming that a 200 will give json
-      json = JSON.parse(response.body)
+    # Assuming that a 200 will give json
+    json = JSON.parse(response.body)
 
-      json["indices"].each_pair do |k,v|
-        report(:host => uri.host,
-               :service => "elasticsearch index/#{k}/primaries/size_in_bytes",
-               :metric => v["primaries"]["store"]["size_in_bytes"]
-        )
-        report(:host => uri.host,
-               :service => "elasticsearch index/#{k}/total/size_in_bytes",
-               :metric => v["total"]["store"]["size_in_bytes"]
-        )
-      end
+    json["indices"].each_pair do |k,v|
+      report(:host => uri.host,
+             :service => "elasticsearch index/#{k}/primaries/size_in_bytes",
+             :metric => v["primaries"]["store"]["size_in_bytes"]
+      )
+      report(:host => uri.host,
+             :service => "elasticsearch index/#{k}/total/size_in_bytes",
+             :metric => v["total"]["store"]["size_in_bytes"]
+      )
     end
   end
 
@@ -91,33 +96,25 @@ class Riemann::Tools::Elasticsearch
     uri = URI(search_url)
     response = safe_get(uri)
 
-    return if response.nil?
+    return if (response_is_bad(response))
 
-    if response.status != 200
+    es_search_index = options[:es_search_index]
+    # Assuming that a 200 will give json
+    json = JSON.parse(response.body)
+
+    json["_all"].each_pair do |type, data|
+      query = data["search"]["query_time_in_millis"].to_f / data["search"]["query_total"].to_f
+      fetch = data["search"]["fetch_time_in_millis"].to_f / data["search"]["fetch_total"].to_f
+
       report(:host => uri.host,
-             :service => "elasticsearch health",
-             :state => "critical",
-             :description => "HTTP connection error: #{response.status} - #{response.body}"
+             :service => "elasticsearch search/#{es_search_index}/query",
+             :metric => query
       )
-    else
-      es_search_index = options[:es_search_index]
-      # Assuming that a 200 will give json
-      json = JSON.parse(response.body)
-
-      json["_all"].each_pair do |type, data|
-        query = data["search"]["query_time_in_millis"].to_f / data["search"]["query_total"].to_f
-        fetch = data["search"]["fetch_time_in_millis"].to_f / data["search"]["fetch_total"].to_f
-
-        report(:host => uri.host,
-               :service => "elasticsearch search/#{es_search_index}/query",
-               :metric => query
-        )
-        report(:host => uri.host,
-               :service => "elasticsearch search/#{es_search_index}/fetch",
-               :metric => fetch
-        )
-      end
-    end
+      report(:host => uri.host,
+             :service => "elasticsearch search/#{es_search_index}/fetch",
+             :metric => fetch
+      )
+  end
   end
 
   def tick
@@ -126,42 +123,35 @@ class Riemann::Tools::Elasticsearch
     uri = URI(health_url)
     response = safe_get(uri)
 
-    return if response.nil?
+    return if (response_is_bad(response))
 
-    if response.status != 200
-        report(:host => uri.host,
-          :service => "elasticsearch health",
-          :state => "critical",
-          :description => "HTTP connection error: #{response.status} - #{response.body}"
-        )
-    else
-      # Assuming that a 200 will give json
-      json = JSON.parse(response.body)
-      cluster_name = json.delete("cluster_name")
-      cluster_status = json.delete("status")
-      state = case cluster_status
-      when "green"
-        "ok"
-      when "yellow"
-        "warning"
-      when "red"
-        "critical"
-      end
-
-      report(:host => uri.host,
-             :service => "elasticsearch health",
-             :state => state,
-             :description => "Elasticsearch cluster: #{cluster_name} - #{cluster_status}")
-
-      json.each_pair do |k,v|
-        report(:host => uri.host,
-               :service => "elasticsearch #{k}",
-               :metric => v,
-               :description => "Elasticsearch cluster #{k}"
-        )
-
-      end
+    # Assuming that a 200 will give json
+    json = JSON.parse(response.body)
+    cluster_name = json.delete("cluster_name")
+    cluster_status = json.delete("status")
+    state = case cluster_status
+    when "green"
+      "ok"
+    when "yellow"
+      "warning"
+    when "red"
+      "critical"
     end
+
+    report(:host => uri.host,
+           :service => "elasticsearch health",
+           :state => state,
+           :description => "Elasticsearch cluster: #{cluster_name} - #{cluster_status}")
+
+    json.each_pair do |k,v|
+      report(:host => uri.host,
+             :service => "elasticsearch #{k}",
+             :metric => v,
+             :description => "Elasticsearch cluster #{k}"
+      )
+
+    end
+
   end
 
 
