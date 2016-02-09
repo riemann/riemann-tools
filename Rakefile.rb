@@ -13,7 +13,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-tools'
 
   s.name = 'riemann-tools'
-  s.version = '0.2.6'
+  s.version = '0.2.8'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/aphyr/riemann-tools'
@@ -45,11 +45,21 @@ RDoc::Task.new do |rd|
   rd.rdoc_files.include('lib/**/*.rb')
 end
 
-desc "Recursively build all gems"
+desc 'Update CHANGELOG'
+task :changelog do
+  begin
+    require 'github_changelog_generator'
+  rescue LoadError
+    'Install the GitHub Changelog Generator - gem install github_changelog_generator'
+  end
+  sh 'github_changelog_generator -u riemann -p riemann-tools'
+end
+
+desc 'Recursively build all gems'
 task :rbuild do
   Dir.glob("tools/**") do |dir|
     Dir.chdir(dir)
-    sh "rake gem"
+    sh 'rake gem'
     Dir.chdir("../..")
   end
 end

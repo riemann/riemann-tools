@@ -17,10 +17,10 @@ gemspec = Gem::Specification.new do |s|
   s.email = 'giulio.eulisse@cern.ch'
   s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'Submits marathon stats to riemann.'
+  s.summary = 'Submits Marathon stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.7'
+  s.add_dependency 'riemann-tools', '>= 0.2.8'
   s.add_dependency 'faraday', '>= 0.8.5'
   s.add_dependency 'json'
 
