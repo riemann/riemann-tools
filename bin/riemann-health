@@ -27,6 +27,7 @@ class Riemann::Tools::Health
     case (ostype = `uname -s`.chomp.downcase)
     when 'darwin'
       @cores = `sysctl -n hw.ncpu`.to_i
+      @df = `df -P -t noiso9660`
       @cpu = method :darwin_cpu
       @disk = method :disk
       @load = method :darwin_load
@@ -34,12 +35,14 @@ class Riemann::Tools::Health
       darwin_top
     when 'freebsd'
       @cores = `sysctl -n hw.ncpu`.to_i
+      @df = `df -P -t noiso9660`
       @cpu = method :freebsd_cpu
       @disk = method :disk
       @load = method :freebsd_load
       @memory = method :freebsd_memory
     else
       @cores = cores
+      @df = `df -P --exclude-type=iso9660`
       puts "WARNING: OS '#{ostype}' not explicitly supported. Falling back to Linux" unless ostype == "linux"
       @cpu = method :linux_cpu
       @disk = method :disk
@@ -243,7 +246,7 @@ class Riemann::Tools::Health
   end
 
   def disk
-    `df -P`.split(/\n/).each do |r|
+    @df.split(/\n/).each do |r|
       f = r.split(/\s+/)
       next if f[0] == 'Filesystem'
       next unless f[0] =~ /\// # Needs at least one slash in the mount path
