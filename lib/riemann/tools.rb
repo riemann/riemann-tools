@@ -55,7 +55,7 @@ module Riemann
     def report(event)
       if options[:tag]
         # Work around a bug with beefcake which can't take frozen strings.
-        event[:tags] = options[:tag].map(&:dup)
+        event[:tags] = [*event.fetch(:tags, [])] + options[:tag].map(&:dup)
       end
 
       event[:ttl] ||= (options[:ttl] || (options[:interval] * 2))
@@ -63,7 +63,7 @@ module Riemann
       if options[:event_host]
         event[:host] = options[:event_host].dup
       end
-      
+
       event = event.merge(attributes)
 
       riemann << event
