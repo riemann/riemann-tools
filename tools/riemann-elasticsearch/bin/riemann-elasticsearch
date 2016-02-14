@@ -56,26 +56,23 @@ class Riemann::Tools::Elasticsearch
     make_es_url("#{es_search_index}/_stats/search")
   end
 
-  def response_is_bad(response)
-    return true if response.nil?
-
-    is_bad = response.status != 200
-    if is_bad
+  def is_bad?(response, uri)
+    if response.success?
+      false
+    else
       report(:host => uri.host,
              :service => "elasticsearch health",
              :state => "critical",
-             :description => "HTTP connection error: #{response.status} - #{response.body}"
+             :description => response.nil? ? "HTTP response is empty!" : "HTTP connection error: #{response.status} - #{response.body}"
       )
     end
-
-    is_bad
   end
 
   def tick_indices
     uri = URI(indices_url)
     response = safe_get(uri)
 
-    return if (response_is_bad(response))
+    return if response.is_bad?(uri)
 
     # Assuming that a 200 will give json
     json = JSON.parse(response.body)
@@ -96,7 +93,7 @@ class Riemann::Tools::Elasticsearch
     uri = URI(search_url)
     response = safe_get(uri)
 
-    return if (response_is_bad(response))
+    return if response.is_bad?(uri)
 
     es_search_index = options[:es_search_index]
     # Assuming that a 200 will give json
@@ -114,7 +111,7 @@ class Riemann::Tools::Elasticsearch
              :service => "elasticsearch search/#{es_search_index}/fetch",
              :metric => fetch
       )
-  end
+    end
   end
 
   def tick
@@ -123,20 +120,20 @@ class Riemann::Tools::Elasticsearch
     uri = URI(health_url)
     response = safe_get(uri)
 
-    return if (response_is_bad(response))
+    return if response.is_bad?(uri)
 
     # Assuming that a 200 will give json
     json = JSON.parse(response.body)
     cluster_name = json.delete("cluster_name")
     cluster_status = json.delete("status")
     state = case cluster_status
-    when "green"
-      "ok"
-    when "yellow"
-      "warning"
-    when "red"
-      "critical"
-    end
+              when "green"
+                "ok"
+              when "yellow"
+                "warning"
+              when "red"
+                "critical"
+            end
 
     report(:host => uri.host,
            :service => "elasticsearch health",
