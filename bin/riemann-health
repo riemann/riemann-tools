@@ -39,7 +39,7 @@ class Riemann::Tools::Health
       @load = method :freebsd_load
       @memory = method :freebsd_memory
     else
-      @cores = cores
+      @cores = `nproc`.to_i
       puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == "linux"
       @cpu = method :linux_cpu
       @disk = method :disk
@@ -68,23 +68,6 @@ class Riemann::Tools::Health
       :metric => metric.to_f,
       :description => description
     )
-  end
-
-  def cores
-    i = 0;
-    File.read("/proc/cpuinfo").split(/\n\n/).inject({}) do |cores, p|
-      physical_id = p[/physical id\s+:\s+(\d+)/, 1]
-      core_id = p[/core id\s+:\s+(\d+)/, 1]
-      if physical_id and core_id
-        cores["#{physical_id}:#{core_id}"] = true
-      elsif physical_id
-        cores["#{physical_id}:"] = true
-      else
-        cores[i += 1] = true;
-      end
-
-      cores
-    end.size
   end
 
   def report_pct(service, fraction, report)
