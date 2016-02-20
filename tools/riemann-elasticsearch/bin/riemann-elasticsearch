@@ -72,7 +72,7 @@ class Riemann::Tools::Elasticsearch
     uri = URI(indices_url)
     response = safe_get(uri)
 
-    return if response.is_bad?(uri)
+    return if is_bad?(response, uri)
 
     # Assuming that a 200 will give json
     json = JSON.parse(response.body)
@@ -93,7 +93,7 @@ class Riemann::Tools::Elasticsearch
     uri = URI(search_url)
     response = safe_get(uri)
 
-    return if response.is_bad?(uri)
+    return if is_bad?(response, uri)
 
     es_search_index = options[:es_search_index]
     # Assuming that a 200 will give json
@@ -120,7 +120,7 @@ class Riemann::Tools::Elasticsearch
     uri = URI(health_url)
     response = safe_get(uri)
 
-    return if response.is_bad?(uri)
+    return if is_bad?(response, uri)
 
     # Assuming that a 200 will give json
     json = JSON.parse(response.body)
