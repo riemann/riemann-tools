@@ -24,10 +24,9 @@ class Riemann::Tools::Health
       :load => {:critical => opts[:load_critical], :warning => opts[:load_warning]},
       :memory => {:critical => opts[:memory_critical], :warning => opts[:memory_warning]}
     }
-    case (ostype = `uname -s`.chomp.downcase)
+    case (@ostype = `uname -s`.chomp.downcase)
     when 'darwin'
       @cores = `sysctl -n hw.ncpu`.to_i
-      @df = `df -P -t noiso9660`
       @cpu = method :darwin_cpu
       @disk = method :disk
       @load = method :darwin_load
@@ -35,15 +34,13 @@ class Riemann::Tools::Health
       darwin_top
     when 'freebsd'
       @cores = `sysctl -n hw.ncpu`.to_i
-      @df = `df -P -t noiso9660`
       @cpu = method :freebsd_cpu
       @disk = method :disk
       @load = method :freebsd_load
       @memory = method :freebsd_memory
     else
       @cores = cores
-      @df = `df -P --exclude-type=iso9660`
-      puts "WARNING: OS '#{ostype}' not explicitly supported. Falling back to Linux" unless ostype == "linux"
+      puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == "linux"
       @cpu = method :linux_cpu
       @disk = method :disk
       @load = method :linux_load
@@ -245,8 +242,17 @@ class Riemann::Tools::Health
     report_pct :memory,  @topdata[:memory], "usage\n\n#{`ps -eo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
   end
 
+  def df
+    case @ostype
+    when 'darwin', 'freebsd'
+      `df -P -t noiso9660`
+    else
+      `df -P --exclude-type=iso9660`
+    end
+  end
+
   def disk
-    @df.split(/\n/).each do |r|
+    df.split(/\n/).each do |r|
       f = r.split(/\s+/)
       next if f[0] == 'Filesystem'
       next unless f[0] =~ /\// # Needs at least one slash in the mount path
