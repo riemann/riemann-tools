@@ -179,24 +179,30 @@ class Riemann::Tools::DockerHealth
 
     # Get CPU, Memory and Load of each container
     containers = get_containers()
-    containers.each do |container|
+    threads = []
 
-      id = container.id
-      name = get_container_name(container)
+    containers.each do |ctr|
+      threads << Thread.new(ctr) do |container|
 
-      stats = Docker::Util.parse_json(container.connection.get("/containers/#{id}/stats", {stream:false}))
+        id = container.id
+        name = get_container_name(container)
 
-      if @basic_inspection_enabled
-        inspection = Docker::Util.parse_json(container.connection.get("/containers/#{id}/json"))
-        basic_inspection(id, name, inspection)
-      end
-      if @cpu_enabled
-        cpu(id, name, stats)
-      end
-      if @memory_enabled
-        memory(id, name, stats)
+        stats = Docker::Util.parse_json(container.connection.get("/containers/#{id}/stats", {stream:false}))
+
+        if @basic_inspection_enabled
+          inspection = Docker::Util.parse_json(container.connection.get("/containers/#{id}/json"))
+           basic_inspection(id, name, inspection)
+          end
+          if @cpu_enabled
+            cpu(id, name, stats)
+        end
+        if @memory_enabled
+          memory(id, name, stats)
+        end
       end
     end
+
+    threads.each {|thr| thr.join }
 
   end
 end
