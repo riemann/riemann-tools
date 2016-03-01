@@ -202,8 +202,13 @@ class Riemann::Tools::DockerHealth
       end
     end
 
-    threads.each {|thr| thr.join }
-
+    threads.each do |thread|
+      begin
+        thread.join
+      rescue => e
+        $stderr.puts "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
+      end
+    end
   end
 end
 
