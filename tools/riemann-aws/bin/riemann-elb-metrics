@@ -127,10 +127,13 @@ class Riemann::Tools::ELBMetrics
           # the given time period, values for these metrics will not be recorded in CloudWatch"
           #next if result.body["GetMetricStatisticsResult"]["Datapoints"].empty? && metric_type =~ /[2345]XX/
           #
-          # BUG:
-          # Metrics are reported every 60 seconds, but sometimes there isn't one there yet.
-          # We can skip that, or do something else?
-          next if result.body["GetMetricStatisticsResult"]["Datapoints"].empty?
+          if result.body["GetMetricStatisticsResult"]["Datapoints"].empty?
+            standard_metrics[metric_type]['Statistics'].each do |stat_type|
+              event = event(lb, az, metric_type, stat_type, 0.0)
+              report(event)
+            end
+            next
+          end
 
           # We should only ever have a single data point
           result.body["GetMetricStatisticsResult"]["Datapoints"][0].keys.sort.each do |stat_type|
@@ -139,21 +142,24 @@ class Riemann::Tools::ELBMetrics
 
             unit = result.body["GetMetricStatisticsResult"]["Datapoints"][0]["Unit"]
             metric = result.body["GetMetricStatisticsResult"]["Datapoints"][0][stat_type]
-            event = Hash.new
-            event = {
-              host: lb,
-              service: "elb.#{az}.#{metric_type}.#{stat_type}",
-              ttl: 60,
-              description: "#{lb} #{metric_type} #{stat_type} (#{unit})",
-              tags: [ "production", "elb_metrics" ],
-              metric: metric
-            }
-
+            event = event(lb, az, metric_type, stat_type, metric, unit)
             report(event)
           end
         end
       end
     end
+  end
+
+  private
+  def event(lb, az, metric_type, stat_type, metric, unit=nil)
+    event = {
+      host: lb,
+      service: "elb.#{az}.#{metric_type}.#{stat_type}",
+      ttl: 60,
+      description: "#{lb} #{metric_type} #{stat_type} (#{unit})",
+      tags: ["elb_metrics"],
+      metric: metric
+    }
   end
 end
 
