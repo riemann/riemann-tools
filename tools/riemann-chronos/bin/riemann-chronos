@@ -74,11 +74,10 @@ class Riemann::Tools::Chronos
     else
       # Assuming that a 200 will give json
       json = JSON.parse(response.body)
-      state = "ok"
 
       report(:host => uri.host,
              :service => "chronos health",
-             :state => state)
+             :state => "ok")
 
       json.each_pair do |t, d|
         if d.respond_to? :each_pair
@@ -122,11 +121,10 @@ class Riemann::Tools::Chronos
     else
       # Assuming that a 200 will give json
       json = JSON.parse(response.body)
-      state = "ok"
 
       report(:host => uri.host,
              :service => "chronos health",
-             :state => state)
+             :state => "ok")
 
       json.each do |job|
         job.each_pair do |k, v|
