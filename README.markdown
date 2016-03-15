@@ -63,6 +63,7 @@ To install the AWS tools.
 * riemann-marathon - Monitor Marathon.
 * riemann-munin - Monitor Munin.
 * riemann-riak - Monitor Riak.
+* riemann-chronos - Monitor Chronos.
 
 There are also a number of additional, stand-alone tools, contained in
 the [Riemann GitHub account](https://github.com/riemann/).
