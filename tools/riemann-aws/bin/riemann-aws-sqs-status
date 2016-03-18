@@ -13,9 +13,16 @@ class Riemann::Tools::AWS
   opt :region, "AWS region", :type => String, :default => 'us-east-1'
   opt :queue, "SQS Queue name", :type => String
   def initialize
-    @sqs = Fog::AWS::SQS.new(:aws_access_key_id => opts[:access_key],
-                             :aws_secret_access_key => opts[:secret_key],
-                             :region => opts[:region])
+    if opts.has_key?('access_key') and opts.has_key?('secret_key')
+      creds = {
+        :aws_access_key_id => opts[:access_key],
+        :aws_secret_access_key => opts[:secret_key]
+      }
+    else
+      creds = { :use_iam_profile => true }
+    end
+    creds['region'] = opts[:region]
+    @sqs = Fog::AWS::SQS.new(creds)
     response = @sqs.list_queues({'QueueNamePrefix' => opts[:queue]})
     @queue_url = response[:body]['QueueUrls'].first
   end
