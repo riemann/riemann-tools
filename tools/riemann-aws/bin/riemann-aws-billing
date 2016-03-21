@@ -25,7 +25,15 @@ class Riemann::Tools::AWSBilling
       Fog.credential = opts[:fog_credential].to_sym
       @cloudwatch = Fog::AWS::CloudWatch.new
     else
-      @cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => opts[:secret_key], :aws_access_key_id => opts[:access_key])
+      if opts.has_key?('secret_key') and opts.has_key?('access_key')
+        creds = {
+          :aws_secret_access_key => opts[:secret_key],
+          :aws_access_key_id => opts[:access_key]
+        }
+      else
+        creds = { :use_iam_profile => true }
+      end
+      @cloudwatch = Fog::AWS::CloudWatch.new(creds)
       @start_time = (Time.now.utc - opts[:time_start]).iso8601
       @end_time = (Time.now.utc - opts[:time_end]).iso8601
     end

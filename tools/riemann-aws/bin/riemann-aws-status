@@ -17,10 +17,17 @@ class Riemann::Tools::AWS
   opt :event_warning, "Number of days before event. Defaults to nil (i.e. when the event appears)", :default => nil
 
   def initialize
-    @compute = Fog::Compute.new(:aws_access_key_id => opts[:access_key],
-                                :aws_secret_access_key => opts[:secret_key],
-                                :region => opts[:region],
-                                :provider => 'AWS')
+    if opts.has_key?('secret_key') and opts.has_key?('access_key')
+      creds = {
+        :aws_secret_access_key => opts[:secret_key],
+        :aws_access_key_id => opts[:access_key]
+      }
+    else
+      creds = { :use_iam_profile => true }
+    end
+    creds['region'] = opts[:region]
+    creds['provider'] = 'AWS'
+    @compute = Fog::Compute.new(creds)
   end
 
   def tick
