@@ -131,6 +131,7 @@ class Riemann::Tools::Rabbitmq
 
         stats = (queue['message_stats'] || {}).merge(
                   'messages'                        => queue['messages'],
+                  'message_bytes'                   => queue['message_bytes'],
                   'messages_details'                => queue['messages_details'],
                   'messages_ready'                  => queue['messages_ready'],
                   'messages_ready_details'          => queue['messages_ready_details'],
