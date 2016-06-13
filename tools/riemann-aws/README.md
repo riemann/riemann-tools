@@ -46,3 +46,9 @@ riemann-elb-metrics --help
 ```
 riemann-s3-status --help
 ```
+
+### Riemann S3 Count by listing objects
+
+```
+riemann-s3-list --help
+```

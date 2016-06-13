@@ -14,7 +14,7 @@ class Riemann::Tools::S3Metrics
   opt :aws_access, "AWS Access Key", :type => String
   opt :aws_secret, "AWS Secret Key", :type => String
   opt :aws_region, "AWS Region", :type => String, :default => "eu-west-1"
-  opt :buckets, "List of buckets to pull metrics from", :type => :strings, :required => true
+  opt :buckets, "Buckets to pull metrics from, multi=true", :type => String, :multi => true, :required => true
   opt :statistic, "Statistic to retrieve, multi=true, e.g. --statistic=Average --statistic=Maximum", :type => String, :multi => true, :required => true
 
 
@@ -68,7 +68,10 @@ class Riemann::Tools::S3Metrics
         # puts metric_base_options
         result = connection.get_metric_statistics(metric_base_options)
         # puts result
-        result.body["GetMetricStatisticsResult"]["Datapoints"][0].keys.sort.each do |stat_type|
+        if result.body["GetMetricStatisticsResult"]["Datapoints"].empty?
+          next
+        end
+          result.body["GetMetricStatisticsResult"]["Datapoints"][0].keys.sort.each do |stat_type|
           next if stat_type == "Unit"
           next if stat_type == "Timestamp"
 
