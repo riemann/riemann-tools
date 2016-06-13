@@ -42,11 +42,7 @@ class Riemann::Tools::S3Metrics
 
     options[:buckets].each do |bucket|
 
-      # puts metric_base_options
-      # result = connection.get_bucket(bucket)
-      # puts result.inspect
       directory = connection.directories.get(bucket)
-      p directory
       count = 0
       directory.files.each do |file|
         puts file
