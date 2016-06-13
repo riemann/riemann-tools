@@ -40,3 +40,9 @@ riemann-aws-status --help
 ```
 riemann-elb-metrics --help
 ```
+
+### Riemann S3 Status
+
+```
+riemann-s3-status --help
+```
