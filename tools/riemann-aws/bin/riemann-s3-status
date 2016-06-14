@@ -65,9 +65,7 @@ class Riemann::Tools::S3Metrics
             {"Name" => "BucketName", "Value" => bucket},
             {"Name" => "StorageType", "Value" => "AllStorageTypes"}]
 
-        # puts metric_base_options
         result = connection.get_metric_statistics(metric_base_options)
-        # puts result
         if result.body["GetMetricStatisticsResult"]["Datapoints"].empty?
           next
         end
@@ -77,7 +75,6 @@ class Riemann::Tools::S3Metrics
 
           unit = result.body["GetMetricStatisticsResult"]["Datapoints"][0]["Unit"]
           metric = result.body["GetMetricStatisticsResult"]["Datapoints"][0][stat_type]
-          puts metric
           event = event(bucket, result.body["GetMetricStatisticsResult"]["Label"], stat_type, unit, metric)
           report(event)
         end

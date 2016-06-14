@@ -41,7 +41,7 @@ riemann-aws-status --help
 riemann-elb-metrics --help
 ```
 
-### Riemann S3 Status
+### Riemann S3 Status by asking Cloudwatch
 
 ```
 riemann-s3-status --help

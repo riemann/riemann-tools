@@ -45,7 +45,6 @@ class Riemann::Tools::S3Metrics
       directory = connection.directories.get(bucket)
       count = 0
       directory.files.each do |file|
-        puts file
         count = count +1
         if (options[:max_objects]>0 && count>options[:max_objects])
           break
@@ -58,7 +57,6 @@ class Riemann::Tools::S3Metrics
         event = event(bucket, "objectCount", count, "All objects counted, threshold=#{options[:max_objects]}", "ok")
         report(event)
       end
-      puts count
     end
   end
 
