@@ -23,7 +23,7 @@ riemann-aws-billing --help
 riemann-aws-rds-status --help
 ```
 
-### Riemann AWS SQS Satus
+### Riemann AWS SQS Status
 
 ```
 riemann-aws-sqs-status --help
