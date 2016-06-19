@@ -17,7 +17,7 @@ class Riemann::Tools::AWS
   opt :dbinstance_identifier, "DBInstanceIdentifier", :type => String
   def initialize
     abort "FATAL: specify a DB instance name, see --help for usage" unless opts[:dbinstance_identifier]
-    if opts.has_key?('access_key') and opts.has_key?('secret_key')
+    if opts[:access_key] and opts[:secret_key]
       creds = {
         :aws_access_key_id => opts[:access_key],
         :aws_secret_access_key => opts[:secret_key]
@@ -34,7 +34,6 @@ class Riemann::Tools::AWS
     ['DatabaseConnections', 'FreeableMemory', 'FreeStorageSpace', 'NetworkReceiveThroughput', 'NetworkTransmitThroughput', 'ReadThroughput', 'CPUUtilization'].each do |metric|
       result = @cloudwatch.get_metric_statistics({"Namespace" => 'AWS/RDS', "MetricName" => "#{metric}", "Statistics" => 'Average', "Dimensions" => [{"Name" => "DBInstanceIdentifier", "Value" => "#{opts[:dbinstance_identifier]}"}], "StartTime" => (time-120).to_time.iso8601, "EndTime" => time.to_time.iso8601, "Period" => 60})
       metricsResult = result.data[:body]['GetMetricStatisticsResult']
-      puts JSON.dump(metricsResult)
       if (metricsResult['Datapoints'].length>0)
         datapoint = metricsResult['Datapoints'][0]
         ev = {:metric => datapoint['Average'],

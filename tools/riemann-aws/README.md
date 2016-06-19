@@ -40,3 +40,15 @@ riemann-aws-status --help
 ```
 riemann-elb-metrics --help
 ```
+
+### Riemann S3 Status by asking Cloudwatch
+
+```
+riemann-s3-status --help
+```
+
+### Riemann S3 Count by listing objects
+
+```
+riemann-s3-list --help
+```

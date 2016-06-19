@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+
+require 'riemann/tools'
+
+$0 = __FILE__
+
+class Riemann::Tools::S3Metrics
+  include Riemann::Tools
+  require 'fog'
+  require 'time'
+
+  opt :fog_credentials_file, "Fog credentials file", :type => String
+  opt :fog_credential, "Fog credentials to use", :type => String
+  opt :aws_access, "AWS Access Key", :type => String
+  opt :aws_secret, "AWS Secret Key", :type => String
+  opt :aws_region, "AWS Region", :type => String, :default => "eu-west-1"
+  opt :buckets, "Buckets to pull metrics from, multi=true", :type => String, :multi => true, :required => true
+  opt :max_objects, "Max number of objects to list before stopping to save bandwidth", :default => -1
+
+
+  def tick
+    if options[:fog_credentials_file]
+      Fog.credentials_path = options[:fog_credentials_file]
+      Fog.credential = options[:fog_credential].to_sym
+      connection = Fog::Storage.new
+    else
+      if options[:aws_access] && options[:aws_secret]
+        connection = Fog::Storage.new({
+                                          :provider => "AWS",
+                                          :aws_access_key_id => options[:aws_access],
+                                          :aws_secret_access_key => options[:aws_secret],
+                                          :region => options[:aws_region]
+                                      })
+      else
+        connection = Fog::Storage.new({
+                                          :provider => "AWS",
+                                          :use_iam_profile => true,
+                                          :region => options[:aws_region]
+                                      })
+      end
+    end
+
+    options[:buckets].each do |bucket|
+
+      directory = connection.directories.get(bucket)
+      count = 0
+      directory.files.each do |file|
+        count = count +1
+        if (options[:max_objects]>0 && count>options[:max_objects])
+          break
+        end
+      end
+      if (options[:max_objects]>0 && count>options[:max_objects])
+        event = event(bucket, "objectCount", count, "count was bigger than threshold #{options[:max_objects]}", "warning")
+        report(event)
+      else
+        event = event(bucket, "objectCount", count, "All objects counted, threshold=#{options[:max_objects]}", "ok")
+        report(event)
+      end
+    end
+  end
+
+  private
+  def event(bucket, label, metric, description, severity)
+    event = {
+        host: "bucket_#{bucket}",
+        service: "s3.#{label}",
+        ttl: 300,
+        description: "#{bucket} #{description}",
+        tags: ["s3_metrics"],
+        metric: metric,
+        state: severity
+    }
+  end
+end
+
+Riemann::Tools::S3Metrics.run
