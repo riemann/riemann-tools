@@ -1,5 +1,51 @@
 # Change Log
 
+## [0.2.11](https://github.com/riemann/riemann-tools/tree/0.2.11) (2016-12-04)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.10...0.2.11)
+
+**Closed issues:**
+
+- Docker image to run riemann-tools [\#164](https://github.com/riemann/riemann-tools/issues/164)
+- riemann-varnish error [\#158](https://github.com/riemann/riemann-tools/issues/158)
+
+**Merged pull requests:**
+
+- Corrected kvm running instance count [\#161](https://github.com/riemann/riemann-tools/pull/161) ([TheBigfoot](https://github.com/TheBigfoot))
+- fix typo [\#160](https://github.com/riemann/riemann-tools/pull/160) ([david-resnick](https://github.com/david-resnick))
+- Adding basic s3 bucket metrics [\#159](https://github.com/riemann/riemann-tools/pull/159) ([peterneubauer](https://github.com/peterneubauer))
+- Modified aws-rds-status and aws-sqs-status to default to IAM profile … [\#157](https://github.com/riemann/riemann-tools/pull/157) ([gorandev](https://github.com/gorandev))
+- Create riemann-chronos based on riemann-marathon [\#156](https://github.com/riemann/riemann-tools/pull/156) ([pdericson](https://github.com/pdericson))
+- Riemann Aws ELB: send 0 metric on empty result [\#155](https://github.com/riemann/riemann-tools/pull/155) ([krakatoa](https://github.com/krakatoa))
+- Make riemann-docker multithreaded [\#154](https://github.com/riemann/riemann-tools/pull/154) ([gfv](https://github.com/gfv))
+
+## [0.2.10](https://github.com/riemann/riemann-tools/tree/0.2.10) (2016-03-01)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.9...0.2.10)
+
+**Closed issues:**
+
+- Riemann health stopped updating disk usage [\#148](https://github.com/riemann/riemann-tools/issues/148)
+- Load average on AWS does not divide by number of cores [\#97](https://github.com/riemann/riemann-tools/issues/97)
+
+**Merged pull requests:**
+
+- Fixed issue with static disk monitoring [\#153](https://github.com/riemann/riemann-tools/pull/153) ([jamtur01](https://github.com/jamtur01))
+- correctly call is\_bad? method [\#151](https://github.com/riemann/riemann-tools/pull/151) ([anho](https://github.com/anho))
+
+## [0.2.9](https://github.com/riemann/riemann-tools/tree/0.2.9) (2016-02-20)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.8...0.2.9)
+
+**Closed issues:**
+
+- Build a new gem file and publish [\#139](https://github.com/riemann/riemann-tools/issues/139)
+- Dependency net-ssh \>= 3 requires ruby 2.0 [\#126](https://github.com/riemann/riemann-tools/issues/126)
+
+**Merged pull requests:**
+
+- Create ISSUE\_TEMPLATE.md [\#149](https://github.com/riemann/riemann-tools/pull/149) ([jamtur01](https://github.com/jamtur01))
+- Improved riemann-proc [\#147](https://github.com/riemann/riemann-tools/pull/147) ([ktf](https://github.com/ktf))
+- gather some simple metrics on query and fetch time [\#144](https://github.com/riemann/riemann-tools/pull/144) ([anho](https://github.com/anho))
+- Release 0.2.8 [\#140](https://github.com/riemann/riemann-tools/pull/140) ([jamtur01](https://github.com/jamtur01))
+
 ## [0.2.8](https://github.com/riemann/riemann-tools/tree/0.2.8) (2016-02-09)
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.7...0.2.8)
 
