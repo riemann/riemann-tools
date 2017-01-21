@@ -115,8 +115,15 @@ class Riemann::Tools::Elasticsearch
   end
 
   def tick
-    tick_indices
-    tick_search
+    begin
+      tick_indices
+      tick_search
+    rescue Exception => e
+      report(:host => options[:es_host],
+             :service => "elasticsearch error",
+             :state => "critical",
+             :description => "Elasticsearch cluster error: #{e.message}")
+    end
     uri = URI(health_url)
     response = safe_get(uri)
 
