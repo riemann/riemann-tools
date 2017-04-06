@@ -48,7 +48,7 @@ class Riemann::Tools::Elasticsearch
   end
 
   def indices_url
-    make_es_url("_stats/index,store")
+    make_es_url("_stats/store")
   end
 
   def search_url
