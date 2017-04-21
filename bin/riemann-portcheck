@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+# Checks for open tcp ports.
+# (c) Max Voit 2017
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Portcheck
+  include Riemann::Tools
+  require 'socket'
+
+  opt :hostname, "Host, defaults to localhost", :default => `hostname`.chomp
+  opt :ports, "List of ports to check, e.g. '-r 80 443'", :type => :ints
+
+  def initialize
+          @hostname = opts.fetch(:hostname)
+          @ports = opts.fetch(:ports)
+  end
+
+  def tick
+    for thisport in @ports
+          portopen = Socket.tcp(@hostname, thisport, connect_timeout: 5) { true
+} rescue false
+          if portopen
+                state = "ok"
+          else
+                state = "critical"
+          end
+      report(
+           :host    => "#{@hostname}",
+           :service => "port #{thisport}",
+           :state   => "#{state}",
+           :tags    => ["portcheck"]
+      )
+    end
+  end
+
+end
+
+Riemann::Tools::Portcheck.run
