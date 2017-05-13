@@ -34,9 +34,9 @@ class Riemann::Tools::AWSBilling
         creds = { :use_iam_profile => true }
       end
       @cloudwatch = Fog::AWS::CloudWatch.new(creds)
-      @start_time = (Time.now.utc - opts[:time_start]).iso8601
-      @end_time = (Time.now.utc - opts[:time_end]).iso8601
     end
+    @start_time = (Time.now.utc - opts[:time_start]).iso8601
+    @end_time = (Time.now.utc - opts[:time_end]).iso8601
   end
 
   def tick
