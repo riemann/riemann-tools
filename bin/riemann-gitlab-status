@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+# Gathers Gitlab components' statuses and uptimes to submit them to Riemann.
+# See http://doc.gitlab.com/omnibus/maintenance/README.html
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::GitLab
+  include Riemann::Tools
+
+  opt :command, "GitLab Status Command", :default => 'gitlab-ctl status'
+  opt :components, "Gitlab Components to monitor", :type => :strings, :multi => true, :default => ["nginx", "unicorn", "redis", "sidekiq"]
+
+  def initialize
+    @command = opts[:command]
+    @components = opts[:components].to_set
+    # sample output:
+    #
+    # run: logrotate: (pid 32713) 706s; run: log: (pid 5834) 53799s
+    # down: nginx: 3s, normally up; run: log: (pid 5725) 55653s
+    # run: redis: (pid 5564) 53824s; run: log: (pid 5563) 53824s
+    # run: sidekiq: (pid 5663) 53811s; run: log: (pid 5662) 53811s
+    # down: unicorn: 3s, normally up; run: log: (pid 5613) 55627s
+    @component_up_re = /^run: (\S+): \(pid \d+\) (\d+)s;/
+  end
+
+  def get_statuses
+    statuses = Hash.new
+    `#{@command}`.each_line { |line|
+      status = @component_up_re.match(line)
+      if !status.nil?
+        statuses[status[1]] = status[2].to_i
+      end
+    }
+    statuses
+  end
+
+  def report_uptime(component, value)
+    report({
+      :service     => "gitlab #{component}",
+      :state       => value > 0 ? 'ok' : 'critical',
+      :description => "Component #{component} was up for #{value} seconds",
+      :metric      => value,
+      :tags        => ['gitlab', "#{component}"]
+    })
+  end
+
+  def tick
+    statuses = get_statuses
+    @components.each { |component|
+      uptime = statuses[component]
+      report_uptime(component, uptime.nil? ? 0 : uptime)
+    }
+  end
+
+end
+
+Riemann::Tools::GitLab.run
