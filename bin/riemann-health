@@ -36,8 +36,20 @@ class Riemann::Tools::Health
       @cores = `sysctl -n hw.ncpu`.to_i
       @cpu = method :freebsd_cpu
       @disk = method :disk
-      @load = method :freebsd_load
+      @load = method :bsd_load
       @memory = method :freebsd_memory
+    when 'openbsd'
+      @cores = `sysctl -n hw.ncpu`.to_i
+      @cpu = method :openbsd_cpu
+      @disk = method :disk
+      @load = method :bsd_load
+      @memory = method :openbsd_memory
+    when 'sunos'
+      @cores = `mpstat -a 2>/dev/null`.split[33].to_i
+      @cpu = method :sunos_cpu
+      @disk = method :disk
+      @load = method :bsd_load
+      @memory = method :sunos_memory
     else
       @cores = `nproc`.to_i
       puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == "linux"
@@ -145,7 +157,47 @@ class Riemann::Tools::Health
     @old_cpu = [u2, n2, s2, t2, i2]
   end
 
-  def freebsd_load
+  def openbsd_cpu
+    u2, n2, s2, t2, i2 = `sysctl -n kern.cp_time 2>/dev/null`.split(',').map{ |e| e.to_i } #OpenBSD separates with ,
+
+    if @old_cpu
+      u1, n1, s1, t1, i1 = @old_cpu
+
+      used = (u2+n2+s2+t2) - (u1+n1+s1+t1)
+      total = used + i2-i1
+      fraction = used.to_f / total
+
+      report_pct :cpu, fraction, "user+nice+sytem+interrupt\n\n#{`ps -axo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    end
+
+    @old_cpu = [u2, n2, s2, t2, i2]
+  end
+
+  def sunos_cpu
+    mpstats = `mpstat -a 2>/dev/null`.split
+    u2 = mpstats[29].to_i
+    s2 = mpstats[30].to_i
+    t2 = mpstats[31].to_i
+    i2 = mpstats[32].to_i
+
+    if @old_cpu
+      u1, s1, t1, i1 = @old_cpu
+
+      used = (u2+s2+t2) - (u1+s1+t1)
+      total = used + i2-i1
+      if i2 == i1 && used == 0 #If the system is <1% used in both samples then total will be 0 + (99 - 99), avoid a div by 0
+        fraction = 0
+      else
+        fraction = used.to_f / total
+      end
+
+      report_pct :cpu, fraction, "user+sytem+interrupt\n\n#{`ps -ao pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    end
+
+    @old_cpu = [u2, s2, t2, i2]
+  end
+
+  def bsd_load
     m = `uptime`.split(':')[-1].chomp.gsub(/\s+/,'').split(',')
     load = m[0].to_f / @cores
     if load > @limits[:load][:critical]
@@ -162,6 +214,21 @@ class Riemann::Tools::Health
     fraction = (meminfo[1].to_f + meminfo[2].to_f) / meminfo[0].to_f
 
     report_pct :memory, fraction, "used\n\n#{`ps -axo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+  end
+
+  def openbsd_memory
+    meminfo = `vmstat 2>/dev/null`.chomp.split
+    fraction = meminfo[28].to_f / meminfo[29].to_f #The ratio of active to free memory unlike the others :(
+
+    report_pct :memory, fraction, "used\n\n#{`ps -axo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+  end
+
+  def sunos_memory
+    meminfo = `vmstat 2>/dev/null`.chomp.split
+    total_mem = `prtconf | grep Memory`.split[2].to_f * 1024 # reports in GB but vmstat is in MB
+    fraction = ( total_mem - meminfo[32].to_f ) / total_mem
+
+    report_pct :memory, fraction, "used\n\n#{`ps -ao pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
   end
 
   def darwin_top
@@ -227,8 +294,10 @@ class Riemann::Tools::Health
 
   def df
     case @ostype
-    when 'darwin', 'freebsd'
+    when 'darwin', 'freebsd', 'openbsd'
       `df -P -t noiso9660`
+    when 'sunos'
+      `df -P` # Is there a good way to exlude iso9660 here?
     else
       `df -P --exclude-type=iso9660`
     end
