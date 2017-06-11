@@ -13,24 +13,25 @@ class Riemann::Tools::Portcheck
   opt :ports, "List of ports to check, e.g. '-r 80 443'", :type => :ints
 
   def initialize
-          @hostname = opts.fetch(:hostname)
-          @ports = opts.fetch(:ports)
+    @hostname = opts.fetch(:hostname)
+    @ports = opts.fetch(:ports)
   end
 
   def tick
     for thisport in @ports
-          portopen = Socket.tcp(@hostname, thisport, connect_timeout: 5) { true
-} rescue false
-          if portopen
-                state = "ok"
-          else
-                state = "critical"
-          end
+	  # try opening tcp connection with 5s timeout;
+      # if this fails, the port is considered closed
+      portopen = Socket.tcp(@hostname, thisport, connect_timeout: 5) { true } rescue false
+        if portopen
+          state = "ok"
+        else
+          state = "critical"
+        end
       report(
-           :host    => "#{@hostname}",
-           :service => "port #{thisport}",
-           :state   => "#{state}",
-           :tags    => ["portcheck"]
+        :host    => "#{@hostname}",
+        :service => "port #{thisport}",
+        :state   => "#{state}",
+        :tags    => ["portcheck"]
       )
     end
   end

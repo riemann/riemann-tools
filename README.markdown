@@ -39,7 +39,7 @@ ship with the `riemann-tools` gem, including:
 * riemann-fd - Linux file descriptor use.
 * riemann-kvminstance - Monitor KVM instances.
 * riemann-ntp - Monitor NTP.
-* riemann-portcheck - Monitor open tcp ports.
+* riemann-portcheck - Monitor open TCP ports.
 
 Also contained in the repository are a number of stand-alone monitoring
 tools, which are shipped as separate gems.
