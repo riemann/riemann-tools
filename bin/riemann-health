@@ -239,7 +239,10 @@ class Riemann::Tools::Health
       f = r.split(/\s+/)
       next if f[0] == 'Filesystem'
       next unless f[0] =~ /\// # Needs at least one slash in the mount path
-
+      if f[5] == '/'
+        f[5] = '/root'
+      end
+        
       # Calculate capacity
       x = f[4].to_f/100
 
