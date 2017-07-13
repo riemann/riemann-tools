@@ -240,7 +240,7 @@ class Riemann::Tools::Health
       next if f[0] == 'Filesystem'
       next unless f[0] =~ /\// # Needs at least one slash in the mount path
       if f[5] == '/'
-        f[5] = '/Main Partition'
+        f[5] = '/Main_Partition'
       end
         
       # Calculate capacity
