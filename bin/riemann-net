@@ -6,7 +6,7 @@ require File.expand_path('../../lib/riemann/tools', __FILE__)
 
 class Riemann::Tools::Net
   include Riemann::Tools
-  
+
   opt :interfaces, "Interfaces to monitor", :type => :strings, :default => nil
   opt :ignore_interfaces, "Interfaces to ignore", :type => :strings, :default =>['lo']
 
@@ -45,7 +45,7 @@ class Riemann::Tools::Net
           s[service] = value
         end
       end
-      
+
       s
     end
 
@@ -62,7 +62,7 @@ class Riemann::Tools::Net
 
     state
   end
-  
+
   def tick
     state = self.state
 
@@ -79,13 +79,13 @@ class Riemann::Tools::Net
         delta = metric - @old_state[service]
         svc_state = case service
           when /drop$/
-            if metric > 0
+            if delta > 0
               'warning'
             else
               'ok'
             end
           when /errs$/
-            if metric > 0
+            if delta > 0
               'warning'
             else
               'ok'
@@ -105,5 +105,5 @@ class Riemann::Tools::Net
     @old_state = state
   end
 end
-  
+
 Riemann::Tools::Net.run
