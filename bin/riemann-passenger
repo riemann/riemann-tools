@@ -17,35 +17,34 @@ class Riemann::Tools::PassengerStatus
   
   def passenger_pool_metrics
     app_hash = {}
-    passenger_output = passenger_output.split("\n")
-    passenger_output.each_with_index do |line, index|
+    passenger_output.split("\n").each_with_index do |line, index|
       if line[/Max pool size/]
         alert "Passenger Max_pool_size", "ok",  line[/\d.*$/], ""
       elsif line[/Processes/]
         alert "Passenger Current_process_number", "ok", line[/\d.*$/], ""
       elsif line[/App root/]
         application = line[/\/.*$/].split("/")[-2].gsub!(".","_")
-        app_hash[application] = index
+        unless app_hash.key?(application)
+          app_hash[application] = []
+        end
+        app_hash[application] << passenger_output.split("\n")[index + 3].split()[4]
       else
         next
       end
     end
-
+      
     unless app_hash.empty?
-      mem_hash = {}
-      app_hash.each do |application, index|
-        
-      passenger_app_load(mem_hash)
+      passenger_app_load(app_hash)
     end
   end
   
   def passenger_app_load(app_hash)
-    app_hash.each do |app, index|
+    app_hash.each do |app, mem_array|
       instances = mem_array.length
       alert "Passenger #{app} total_instances", "ok", instances, ""
       i = 0
       mem_array.each do |memory|
-        alert "Passenger #{app} instance_#{i}_memory", "ok", memory, ""
+        alert "Passenger #{app} instance_#{i}", "ok", memory, ""
         i += 1
       end
     end
@@ -67,4 +66,3 @@ class Riemann::Tools::PassengerStatus
 end
 
 Riemann::Tools::PassengerStatus.run
-
