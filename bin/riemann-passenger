@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+# Collects Passenger metrics and submits them to Riemann
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::PassengerStatus
+  include Riemann::Tools
+
+  def initialize
+    raise 'Must run as root' unless Process.uid == 0
+  end
+
+  def passenger_output
+    `passenger-status`
+  end
+  
+  def passenger_pool_metrics
+    app_hash = {}
+    passenger_output = passenger_output.split("\n")
+    passenger_output.each_with_index do |line, index|
+      if line[/Max pool size/]
+        alert "Passenger Max_pool_size", "ok",  line[/\d.*$/], ""
+      elsif line[/Processes/]
+        alert "Passenger Current_process_number", "ok", line[/\d.*$/], ""
+      elsif line[/App root/]
+        application = line[/\/.*$/].split("/")[-2].gsub!(".","_")
+        app_hash[application] = index
+      else
+        next
+      end
+    end
+
+    unless app_hash.empty?
+      mem_hash = {}
+      app_hash.each do |application, index|
+        
+      passenger_app_load(mem_hash)
+    end
+  end
+  
+  def passenger_app_load(app_hash)
+    app_hash.each do |app, index|
+      instances = mem_array.length
+      alert "Passenger #{app} total_instances", "ok", instances, ""
+      i = 0
+      mem_array.each do |memory|
+        alert "Passenger #{app} instance_#{i}_memory", "ok", memory, ""
+        i += 1
+      end
+    end
+  end
+  
+  def alert(service, state, metric, description)
+    report(
+      :service => service.to_s,
+      :state => state.to_s,
+      :metric => metric.to_f,
+      :description => description
+    )
+  end
+  
+  def tick
+    passenger_pool_metrics
+  end
+
+end
+
+Riemann::Tools::PassengerStatus.run
+
