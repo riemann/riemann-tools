@@ -48,7 +48,7 @@ class Riemann::Tools::PassengerStatus
     index_hash.each do |application, index|
       mem_hash[application] = []
       process_hash[application] = []
-      index += 3
+      index += 2
       until output_array[index][/Memory/].nil? && output_array[index][/Processed/].nil?
         if !output_array[index][/Memory/].nil?
           memory = output_array[index].split(" ")[4]
@@ -58,7 +58,7 @@ class Riemann::Tools::PassengerStatus
           process_hash[application] << processed
         end
         index += 1
-        if index > output_array.length
+        if index >= output_array.length
           break
         end
       end
@@ -90,9 +90,9 @@ class Riemann::Tools::PassengerStatus
   
   def passenger_app_processing(process_hash)
     return nil if process_hash.empty?
-    process_hash.each do |app, process_hash|
+    process_hash.each do |app, process_array|
       i = 0
-      mem_array.each do |processed|
+      process_array.each do |processed|
         alert "Passenger #{app} instance_#{i}_processed", "ok", processed, ""
         i += 1
       end
