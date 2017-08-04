@@ -33,30 +33,38 @@ class Riemann::Tools::PassengerStatus
       end
     end
       
-    app_hash = passenger_app_memory(index_hash, output_array)
-    passenger_app_load app_hash
+    mem_hash, process_hash = passenger_app_memory(index_hash, output_array)
+    passenger_app_load mem_hash
     passenger_app_requests(index_hash, output_array)
+    passenger_app_processing process_hash
   end
   
   def passenger_app_memory(index_hash, output_array)
     return nil if index_hash.empty?
 
-    app_hash = {}
+    mem_hash = {}
+    process_hash = {}
 
     index_hash.each do |application, index|
-      app_hash[application] = []
+      mem_hash[application] = []
+      process_hash[application] = []
       index += 3
-      until output_array[index][/Memory/].nil?
-        memory = output_array[index].split(" ")[4]
-        app_hash[application] << memory
-        index += 2
+      until output_array[index][/Memory/].nil? && output_array[index][/Processed/].nil?
+        if !output_array[index][/Memory/].nil?
+          memory = output_array[index].split(" ")[4]
+          mem_hash[application] << memory
+        elsif !output_array[index][/Processed/].nil?
+          processed = output_array[index].split(" ")[6]
+          process_hash[application] << processed
+        end
+        index += 1
         if index > output_array.length
           break
         end
       end
     end
     
-    return app_hash
+    return mem_hash, process_hash
   end
   
   def passenger_app_requests(index_hash, output_array)
@@ -67,14 +75,25 @@ class Riemann::Tools::PassengerStatus
     end
   end
 
-  def passenger_app_load(app_hash)
-    return nil if app_hash.empty?
-    app_hash.each do |app, mem_array|
+  def passenger_app_load(mem_hash)
+    return nil if mem_hash.empty?
+    mem_hash.each do |app, mem_array|
       instances = mem_array.length
       alert "Passenger #{app} total_instances", "ok", instances, ""
       i = 0
       mem_array.each do |memory|
         alert "Passenger #{app} instance_#{i}_memory", "ok", memory, ""
+        i += 1
+      end
+    end
+  end
+  
+  def passenger_app_processing(process_hash)
+    return nil if process_hash.empty?
+    process_hash.each do |app, process_hash|
+      i = 0
+      mem_array.each do |processed|
+        alert "Passenger #{app} instance_#{i}_processed", "ok", processed, ""
         i += 1
       end
     end
