@@ -23,6 +23,8 @@ class Riemann::Tools::PassengerStatus
         alert "Passenger Max_pool_size", "ok",  line[/\d.*$/], ""
       elsif line[/Processes/]
         alert "Passenger Current_process_number", "ok", line[/\d.*$/], ""
+      elsif line[/top-level/]
+        alert "Passenger Current_top_level_queue_requests", "ok", line[/\d.*$/], ""
       elsif line[/App root/]
         application = line[/\/.*$/].split("/")[-2].gsub!(".","_")
         index_hash[application] = index
@@ -32,7 +34,8 @@ class Riemann::Tools::PassengerStatus
     end
       
     app_hash = passenger_app_memory(index_hash, output_array)
-    passenger_app_load(app_hash)
+    passenger_app_load app_hash
+    passenger_app_requests(index_hash, output_array)
   end
   
   def passenger_app_memory(index_hash, output_array)
@@ -56,6 +59,14 @@ class Riemann::Tools::PassengerStatus
     return app_hash
   end
   
+  def passenger_app_requests(index_hash, output_array)
+    return nil if index_hash.empty?
+    index_hash.each do |app, index|
+      group_requests = output_array[index+1][/\d.*$/]
+      alert "Passenger #{app} application_queue_requests", "ok", group_requests, ""
+    end
+  end
+
   def passenger_app_load(app_hash)
     return nil if app_hash.empty?
     app_hash.each do |app, mem_array|
