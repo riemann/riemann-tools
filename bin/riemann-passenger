@@ -12,7 +12,7 @@ class Riemann::Tools::PassengerStatus
   end
 
   def passenger_output
-    `passenger-status`
+    `RBENV_VERSION=system passenger-status`
   end
   
   def passenger_pool_metrics
