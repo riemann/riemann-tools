@@ -20,7 +20,7 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits elasticsearch stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.11'
+  s.add_dependency 'riemann-tools', '>= 0.2.13'
   s.add_dependency 'faraday', '>= 0.8.5'
   s.add_dependency 'json'
 

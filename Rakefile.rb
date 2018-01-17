@@ -13,7 +13,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-tools'
 
   s.name = 'riemann-tools'
-  s.version = '0.2.12'
+  s.version = '0.2.13'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/aphyr/riemann-tools'
@@ -22,7 +22,7 @@ gemspec = Gem::Specification.new do |s|
   s.description = 'Utilities which submit events to Riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-client', '>= 0.2.2'
+  s.add_dependency 'riemann-client', '>= 0.2.6'
   s.add_dependency 'trollop', '>= 1.16.2'
   s.add_dependency 'json', '~> 1.8'
 

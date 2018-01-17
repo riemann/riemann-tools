@@ -20,7 +20,7 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits munin stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.8'
+  s.add_dependency 'riemann-tools', '>= 0.2.13'
   s.add_dependency 'munin-ruby', '>= 0.2.1'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a

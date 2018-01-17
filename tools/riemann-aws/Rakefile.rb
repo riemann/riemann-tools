@@ -20,7 +20,7 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits AWS stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.11'
+  s.add_dependency 'riemann-tools', '>= 0.2.13'
   s.add_dependency 'fog', '>= 1.4.0'
   s.add_dependency 'json'
 
