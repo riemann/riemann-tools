@@ -79,13 +79,13 @@ class Riemann::Tools::Net
         delta = metric - @old_state[service]
         svc_state = case service
           when /drop$/
-            if metric > 0
+            if delta > 0
               'warning'
             else
               'ok'
             end
           when /errs$/
-            if metric > 0
+            if delta > 0
               'warning'
             else
               'ok'
