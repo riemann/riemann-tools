@@ -1,5 +1,42 @@
 # Change Log
 
+## [Unreleased](https://github.com/riemann/riemann-tools/tree/HEAD)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.12...HEAD)
+
+**Closed issues:**
+
+- riemann-net: Non-zero drop/error always mapped to warning state [\#177](https://github.com/riemann/riemann-tools/issues/177)
+- riemann-consul: incorrect treatment of return value for leader query [\#175](https://github.com/riemann/riemann-tools/issues/175)
+- Riemann-aws fails to use instance profile with error regarding required aws keys [\#169](https://github.com/riemann/riemann-tools/issues/169)
+- riemann-zookeeper fails silently on zookeeper 3.3.x and below [\#98](https://github.com/riemann/riemann-tools/issues/98)
+- Riemann riak tools spins up 2 erlang vms with the same node name simulataneously, causing one to fail [\#71](https://github.com/riemann/riemann-tools/issues/71)
+- Service scripts [\#40](https://github.com/riemann/riemann-tools/issues/40)
+
+**Merged pull requests:**
+
+- riemann-net: Warn only on non-zero drop/error delta [\#183](https://github.com/riemann/riemann-tools/pull/183) ([sslavic](https://github.com/sslavic))
+- Fix for riemann/riemann-tools/issues/175 [\#176](https://github.com/riemann/riemann-tools/pull/176) ([pieterbreed](https://github.com/pieterbreed))
+- support prefixes for AWS S3 list [\#173](https://github.com/riemann/riemann-tools/pull/173) ([peterneubauer](https://github.com/peterneubauer))
+- Add OpenBSD and Illumos \(sunos in uname -s\) to riemann-health [\#172](https://github.com/riemann/riemann-tools/pull/172) ([telser](https://github.com/telser))
+- Fixing initialization failure when fog credentials are specified. [\#171](https://github.com/riemann/riemann-tools/pull/171) ([derekslager](https://github.com/derekslager))
+- Add riemann-portcheck [\#170](https://github.com/riemann/riemann-tools/pull/170) ([sdx23](https://github.com/sdx23))
+- \_stats/index/store isn't supported anymore in ES 5 but it looks like … [\#168](https://github.com/riemann/riemann-tools/pull/168) ([looprock](https://github.com/looprock))
+
+## [0.2.12](https://github.com/riemann/riemann-tools/tree/0.2.12) (2017-01-22)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.11...0.2.12)
+
+**Closed issues:**
+
+- riemann-elasticsearch: needs exception handling [\#166](https://github.com/riemann/riemann-tools/issues/166)
+- Is riemann-docker not support disk I/O and net I/O monitoring? [\#162](https://github.com/riemann/riemann-tools/issues/162)
+
+**Merged pull requests:**
+
+- Add exception handling [\#167](https://github.com/riemann/riemann-tools/pull/167) ([rogeruiz](https://github.com/rogeruiz))
+- Update riemann-proc [\#165](https://github.com/riemann/riemann-tools/pull/165) ([knackjax](https://github.com/knackjax))
+- JSON dependency version set to ~\> 1.8 [\#163](https://github.com/riemann/riemann-tools/pull/163) ([markdingram](https://github.com/markdingram))
+
 ## [0.2.11](https://github.com/riemann/riemann-tools/tree/0.2.11) (2016-12-04)
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.10...0.2.11)
 
@@ -271,7 +308,7 @@
 - Update host-val with even-host only if really set [\#23](https://github.com/riemann/riemann-tools/pull/23) ([bipthelin](https://github.com/bipthelin))
 - Fallback to riak-admin if nothing else works [\#21](https://github.com/riemann/riemann-tools/pull/21) ([bipthelin](https://github.com/bipthelin))
 - Default event hostname [\#20](https://github.com/riemann/riemann-tools/pull/20) ([timshadel](https://github.com/timshadel))
-- Add memcached monitoring support for riemann-tools. [\#19](https://github.com/riemann/riemann-tools/pull/19) ([franckcuny](https://github.com/franckcuny))
+- Add memcached monitoring support for riemann-tools. [\#19](https://github.com/riemann/riemann-tools/pull/19) ([fcuny](https://github.com/fcuny))
 - Typo in rieman-riak using :servie instead of :service [\#18](https://github.com/riemann/riemann-tools/pull/18) ([dgtized](https://github.com/dgtized))
 
 ## [0.0.9](https://github.com/riemann/riemann-tools/tree/0.0.9) (2012-12-08)
