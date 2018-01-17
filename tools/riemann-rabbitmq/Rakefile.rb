@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-rabbitmq'
 
   s.name = 'riemann-rabbitmq'
-  s.version = '0.1.2'
+  s.version = '0.1.3'
   s.author = 'Gavin Sandie'
   s.email = 'beach@vicecity.co.uk'
   s.homepage = 'https://github.com/riemann/riemann-tools'

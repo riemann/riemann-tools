@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-elasticsearch'
 
   s.name = 'riemann-elasticsearch'
-  s.version = '0.2.3'
+  s.version = '0.2.4'
   s.author = 'Gavin Sandie'
   s.email = 'beach@vicecity.co.uk'
   s.homepage = 'https://github.com/riemann/riemann-tools'

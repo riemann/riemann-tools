@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-chronos'
 
   s.name = 'riemann-chronos'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
   s.author = 'Peter Ericson'
   s.email = 'peter.ericson@cba.com.au'
   s.homepage = 'https://github.com/riemann/riemann-tools'

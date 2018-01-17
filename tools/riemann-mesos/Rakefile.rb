@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-mesos'
 
   s.name = 'riemann-mesos'
-  s.version = '0.1.1'
+  s.version = '0.1.2'
   s.author = 'Giulio Eulisse'
   s.email = 'giulio.eulisse@cern.ch'
   s.homepage = 'https://github.com/riemann/riemann-tools'

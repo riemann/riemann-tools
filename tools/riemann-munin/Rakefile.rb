@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-munin'
 
   s.name = 'riemann-munin'
-  s.version = '0.1.1'
+  s.version = '0.1.2'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/riemann/riemann-tools'

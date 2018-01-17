@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-aws'
 
   s.name = 'riemann-aws'
-  s.version = '0.1.3'
+  s.version = '0.1.4'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/riemann/riemann-tools'

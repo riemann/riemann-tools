@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-docker'
 
   s.name = 'riemann-docker'
-  s.version = '0.1.2'
+  s.version = '0.1.3'
   s.author = 'Shani Elharrar'
   s.email = ''
   s.homepage = 'https://github.com/riemann/riemann-tools'
