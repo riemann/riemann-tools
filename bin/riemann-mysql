@@ -32,7 +32,6 @@ class Riemann::Tools::MysqlStatus
 
   def mysql_status_process
     @status = mysql_status.split(' ')
-    puts @status
     status_names = [
       "Uptime",
       "Threads",
@@ -66,10 +65,10 @@ class Riemann::Tools::MysqlStatus
   end
 
   def status_finder(status_name)
-    status_name_index = status.index{ |x| x[/#{Regexp.quote(status_name)}/] }
+    status_name_index = @status.index{ |x| x[/#{Regexp.quote(status_name)}/] }
     return nil if status_name_index == nil
     status_name_index += 1 if status_name == "Open" 
-    status_value = status[status_name_index + 1].to_i
+    status_value = @status[status_name_index + 1].to_i
   end
 
   def alert(service, state, metric, description)
