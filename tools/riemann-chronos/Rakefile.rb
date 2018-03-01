@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-chronos'
 
   s.name = 'riemann-chronos'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
   s.author = 'Peter Ericson'
   s.email = 'peter.ericson@cba.com.au'
   s.homepage = 'https://github.com/riemann/riemann-tools'
@@ -20,7 +20,7 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits Chronos stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.8'
+  s.add_dependency 'riemann-tools', '>= 0.2.13'
   s.add_dependency 'faraday', '>= 0.8.5'
   s.add_dependency 'json'
 

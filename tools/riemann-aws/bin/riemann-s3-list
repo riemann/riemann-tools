@@ -14,7 +14,7 @@ class Riemann::Tools::S3Metrics
   opt :aws_access, "AWS Access Key", :type => String
   opt :aws_secret, "AWS Secret Key", :type => String
   opt :aws_region, "AWS Region", :type => String, :default => "eu-west-1"
-  opt :buckets, "Buckets to pull metrics from, multi=true", :type => String, :multi => true, :required => true
+  opt :buckets, "Buckets to pull metrics from, multi=true, can have a prefix like mybucket/prefix", :type => String, :multi => true, :required => true
   opt :max_objects, "Max number of objects to list before stopping to save bandwidth", :default => -1
 
 
@@ -40,21 +40,25 @@ class Riemann::Tools::S3Metrics
       end
     end
 
-    options[:buckets].each do |bucket|
-
-      directory = connection.directories.get(bucket)
+    options[:buckets].each do |url|
+      split = url.split('/')
+      bucket = split[0]
+      prefix = ""
+      if (split[1])
+        prefix = url[(split[0].length+1)..-1]
+      end
       count = 0
-      directory.files.each do |file|
+      connection.directories.get(bucket, prefix: prefix).files.map do |file|
         count = count +1
         if (options[:max_objects]>0 && count>options[:max_objects])
           break
         end
       end
       if (options[:max_objects]>0 && count>options[:max_objects])
-        event = event(bucket, "objectCount", count, "count was bigger than threshold #{options[:max_objects]}", "warning")
+        event = event(url, "objectCount", count, "count was bigger than threshold #{options[:max_objects]}", "warning")
         report(event)
       else
-        event = event(bucket, "objectCount", count, "All objects counted, threshold=#{options[:max_objects]}", "ok")
+        event = event(url, "objectCount", count, "All objects counted, threshold=#{options[:max_objects]}", "ok")
         report(event)
       end
     end

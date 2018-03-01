@@ -12,7 +12,7 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-riak'
 
   s.name = 'riemann-riak'
-  s.version = '0.1.1'
+  s.version = '0.1.2'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/riemann/riemann-tools'
@@ -20,7 +20,7 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits riak stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 0.2.8'
+  s.add_dependency 'riemann-tools', '>= 0.2.13'
   s.add_dependency 'yajl-ruby', '>= 1.1.0'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
