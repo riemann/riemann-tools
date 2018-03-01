@@ -109,7 +109,7 @@ class Riemann::Tools::Health
       total = used + i2-i1
       fraction = used.to_f / total
 
-      report_pct :cpu, fraction, "user+nice+system\n\n#{`ps -eo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+      report_pct :cpu, fraction, "user+nice+system\n\n#{`ps -eo pcpu,pid,args --no-headers | sort -nrb -k1 | head -10`.chomp}"
     end
 
     @old_cpu = [u2, n2, s2, i2]
@@ -138,7 +138,7 @@ class Riemann::Tools::Health
     total = m['MemTotal'].to_i
     fraction = 1 - (free.to_f / total)
 
-    report_pct :memory, fraction, "used\n\n#{`ps -eo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :memory, fraction, "used\n\n#{`ps -eo pmem,pid,args --no-headers | sort -nrb -k1 | head -10`.chomp}"
   end
 
   def freebsd_cpu
@@ -308,7 +308,10 @@ class Riemann::Tools::Health
       f = r.split(/\s+/)
       next if f[0] == 'Filesystem'
       next unless f[0] =~ /\// # Needs at least one slash in the mount path
-
+      if f[5] == '/'
+        f[5] = '/MainPartition'
+      end
+        
       # Calculate capacity
       x = f[4].to_f/100
 

@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+# Collects Uptime metrics and submits them to Riemann
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::Uptime
+  include Riemann::Tools
+
+  def initialize
+    raise 'Must run as root' unless Process.uid == 0
+  end
+
+  def uptime
+    File.read("/proc/uptime").split.first
+  end
+  
+  def uptime_tracking
+    current_time = uptime.to_f
+    alert "Uptime", "ok", current_time, ""
+  end
+  
+  def alert(service, state, metric, description)
+    report(
+      :service => service.to_s,
+      :state => state.to_s,
+      :metric => metric.to_f,
+      :description => description
+    )
+  end
+  
+  def tick
+    uptime_tracking
+  end
+
+end
+
+Riemann::Tools::PassengerStatus.run

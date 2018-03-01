@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+
+# Collects Passenger metrics and submits them to Riemann
+
+require File.expand_path('../../lib/riemann/tools', __FILE__)
+
+class Riemann::Tools::MysqlStatus
+  include Riemann::Tools
+
+  def initialize
+    raise 'Must run as root' unless Process.uid == 0
+  end
+
+  def mysql_processes
+    `mysqladmin processlist`
+  end
+  
+  def mysql_process_status
+    process_list = mysql_processes.split("\n")
+    count = 0
+    process_list[3..-3].each do |line|
+      process_details = line.split("|")
+      next if process_details[5] =~ [/Sleep/]
+      count += 1
+    end
+    alert "MySQL Active_Processes", "ok", count, ""
+  end
+
+  def mysql_status
+    `mysqladmin status`
+  end
+
+  def mysql_status_process
+    @status = mysql_status.split(' ')
+    status_names = [
+      "Uptime",
+      "Threads",
+      "Questions",
+      "queries",
+      "Opens",
+      "Open",
+      "avg"
+    ]
+    status_values = []
+
+    status_names.collect! do |name|
+      status_values << status_finder(name)
+      case name
+      when "Questions"
+        name = "Total Queries"
+      when "queries"
+        name = "Slow Queries"
+      when "Open"
+        name = "Open Tables"
+      when "avg"
+        name = "Avg. Queries per Second"
+      else
+        name
+      end
+    end    
+
+    status_names.each_index do |index|
+      alert "MySQL " + status_names[index], "ok", status_values[index], ""
+    end
+  end
+
+  def status_finder(status_name)
+    status_name_index = @status.index{ |x| x[/#{Regexp.quote(status_name)}/] }
+    return nil if status_name_index == nil
+    status_name_index += 1 if status_name == "Open" 
+    status_value = @status[status_name_index + 1].to_i
+  end
+
+  def alert(service, state, metric, description)
+    report(
+      :service => service.to_s,
+      :state => state.to_s,
+      :metric => metric.to_f,
+      :description => description
+    )
+  end
+
+  def tick
+    mysql_process_status
+    mysql_status_process
+  end
+
+end
+
+Riemann::Tools::MysqlStatus.run
