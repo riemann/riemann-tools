@@ -1,8 +1,16 @@
 # Change Log
 
-## [Unreleased](https://github.com/riemann/riemann-tools/tree/HEAD)
+## [0.2.14](https://github.com/riemann/riemann-tools/tree/0.2.14) (2018-09-14)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.13...0.2.14)
 
-[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.12...HEAD)
+**Closed issues:**
+
+- Trollop gem replaced by optimist [\#186](https://github.com/riemann/riemann-tools/issues/186)
+- Regex format to check multiple processes [\#181](https://github.com/riemann/riemann-tools/issues/181)
+- riemann-health - full command support [\#180](https://github.com/riemann/riemann-tools/issues/180)
+
+## [0.2.13](https://github.com/riemann/riemann-tools/tree/0.2.13) (2018-01-17)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.12...0.2.13)
 
 **Closed issues:**
 
