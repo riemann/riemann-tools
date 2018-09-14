@@ -13,18 +13,18 @@ gemspec = Gem::Specification.new do |s|
   s.rubyforge_project = 'riemann-tools'
 
   s.name = 'riemann-tools'
-  s.version = '0.2.13'
+  s.version = '0.2.14'
   s.author = 'Kyle Kingsbury'
   s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/aphyr/riemann-tools'
   s.platform = Gem::Platform::RUBY
   s.summary = 'Utilities which submit events to Riemann.'
-  s.description = 'Utilities which submit events to Riemann.'
+  s.description = 'Collection of utilities which submit events to Riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-client', '>= 0.2.6'
-  s.add_dependency 'trollop', '>= 1.16.2'
-  s.add_dependency 'json', '~> 1.8'
+  s.add_runtime_dependency 'riemann-client', '~> 0.2', '>= 0.2.6'
+  s.add_runtime_dependency 'optimist', '~> 3.0', '>= 3.0.0'
+  s.add_runtime_dependency 'json', '~> 1.8'
 
   s.files = FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
   s.executables |= Dir.entries('bin/')

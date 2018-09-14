@@ -1,6 +1,6 @@
 module Riemann
   module Tools
-    require 'trollop'
+    require 'optimist'
     require 'riemann/client'
 
     def self.included(base)
@@ -16,11 +16,11 @@ module Riemann
         end
 
         def options
-          p = Trollop::Parser.new
+          p = Optimist::Parser.new
           @opts.each do |o|
             p.send *o
           end
-          Trollop::with_standard_exception_handling(p) do
+          Optimist::with_standard_exception_handling(p) do
             p.parse ARGV
           end
         end
