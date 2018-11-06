@@ -24,7 +24,7 @@ gemspec = Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'riemann-client', '~> 0.2', '>= 0.2.6'
   s.add_runtime_dependency 'optimist', '~> 3.0', '>= 3.0.0'
-  s.add_runtime_dependency 'json', '~> 1.8'
+  s.add_runtime_dependency 'json', '>= 1.8'
 
   s.files = FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
   s.executables |= Dir.entries('bin/')
