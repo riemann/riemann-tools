@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
 

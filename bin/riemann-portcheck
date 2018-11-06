@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Checks for open tcp ports.
 # (c) Max Voit 2017

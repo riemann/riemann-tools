@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 $LOAD_PATH.unshift File.expand_path("#{File.dirname(__FILE__)}/../vodpod-common/lib")
 require 'rubygems'

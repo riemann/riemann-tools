@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Gathers the space used by a directory and submits it to riemann
 

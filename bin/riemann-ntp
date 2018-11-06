@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Reports NTP stats to Riemann.
 
