@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Connects to a server (first arg) and populates it with a constant stream of
 # events for testing.

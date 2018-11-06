@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Reports current file descriptor use to riemann.
 # By default reports the total system fd usage, can also report usage of individual processes

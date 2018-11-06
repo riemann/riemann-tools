@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Gets the number of files present on a directory and submits it to riemann
 

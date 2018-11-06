@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Gathers haproxy CSV statistics and submits them to Riemann.
 
