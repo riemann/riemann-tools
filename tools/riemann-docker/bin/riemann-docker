@@ -10,7 +10,7 @@ class Riemann::Tools::DockerHealth
   include Riemann::Tools
   include Docker
 
-  opt :docker_host, "Docker Container Host (see https://github.com/swipely/docker-api#host)", :default => nil
+  opt :docker_host, "Docker Container Host (see https://github.com/swipely/docker-api#host)", :type => String, :default => nil
   opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
   opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
   opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
