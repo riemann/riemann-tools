@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Gathers load balancer statistics from Cloudant.com (shared cluster) and submits them to Riemann.
 

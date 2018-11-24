@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Gathers network interface statistics and submits them to Riemann.
 

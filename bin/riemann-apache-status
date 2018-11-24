@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Collects Apache metrics and submits them to Riemann
 # More information can be found at http://httpd.apache.org/docs/2.4/mod/mod_status.html

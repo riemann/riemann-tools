@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+Process.setproctitle($0)
 
 # Reports current CPU, disk, load average, and memory use to riemann.
 
