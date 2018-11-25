@@ -15,11 +15,6 @@ function getPackageList {
 	[ -z "$1" ] || echo -n " $1:`getVersion $1`"
 }
 
-function dockerfile {
-	local packages=`getPackageList $1`
-	sed "s/^ARG RUBY_GEMS=.*/ARG RUBY_GEMS=\"$packages\"/" < $ROOT_DIR/.docker/Dockerfile.tmpl
-}
-
 # Need to log in before we can push.
 [ -z "$DOCKER_USER" ] && echo "DOCKER_USER is not set" && exit 1
 [ -z "$DOCKER_PASS" ] && echo "DOCKER_PASS is not set" && exit 1
@@ -30,6 +25,11 @@ version=`getVersion $tool`
 name=${IMAGE_PREFIX}riemann-tools${tool/riemann/}
 
 echo "==> Publishing $name:$version and :latest"
-dockerfile $tool | docker build --cache-from $name:latest -f - -t $name:$version -t $name:latest $ROOT_DIR/.docker
+docker pull $name:latest
+docker build --cache-from $name:latest \
+	--build-arg RUBY_GEMS="`getPackageList $tool`" \
+	-t $name:$version -t $name:latest \
+	$ROOT_DIR/.docker
+
 docker push $name:$version
 docker push $name:latest
