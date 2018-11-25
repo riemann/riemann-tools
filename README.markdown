@@ -16,6 +16,7 @@ Get started
 gem install riemann-tools
 riemann-health --host my.riemann.server
 ```
+
 Riemann-tools programs
 ======================
 
@@ -70,6 +71,11 @@ To install the AWS tools.
 
 There are also a number of additional, stand-alone tools, contained in
 the [Riemann GitHub account](https://github.com/riemann/).
+
+Build status
+============
+
+[![Build Status](https://travis-ci.com/riemann/riemann-tools.svg?branch=master)](https://travis-ci.com/riemann/riemann-tools)
 
 License
 =======
