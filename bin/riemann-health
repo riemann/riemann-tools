@@ -58,6 +58,7 @@ class Riemann::Tools::Health
       @disk = method :disk
       @load = method :linux_load
       @memory = method :linux_memory
+      @supports_exclude_type = `df --help 2>&1 | grep -e "--exclude-type"` != ""
     end
 
     opts[:checks].each do |check|
@@ -300,7 +301,11 @@ class Riemann::Tools::Health
     when 'sunos'
       `df -P` # Is there a good way to exlude iso9660 here?
     else
-      `df -P --exclude-type=iso9660`
+      if @supports_exclude_type
+        `df -P --exclude-type=iso9660`
+      else
+        `df -P`
+      end
     end
   end
 
