@@ -302,7 +302,7 @@ class Riemann::Tools::Health
       `df -P` # Is there a good way to exlude iso9660 here?
     else
       if @supports_exclude_type
-        `df -P --exclude-type=iso9660`
+        `df -P --exclude-type=iso9660 --exclude-type=nfs`
       else
         `df -P`
       end
