@@ -34,6 +34,11 @@ module Riemann
         opt :attribute, "Attribute to add to the event", :type => String, :multi => true
         opt :timeout, "Timeout (in seconds) when waiting for acknowledgements", :default => 30
         opt :tcp, "Use TCP transport instead of UDP (improves reliability, slight overhead.", :default => true
+        opt :tls, "Use TLS for securing traffic", :default => false
+        opt :tls_key, "TLS Key to use when using TLS", :type => String
+        opt :tls_cert, "TLS Certificate to use when using TLS", :type => String
+        opt :tls_ca_cert, "Trusted CA Certificate when using TLS", :type => String
+        opt :tls_verify, "Verify TLS peer when using TLS", :default => true
       end
     end
 
@@ -73,9 +78,14 @@ module Riemann
       r = Riemann::Client.new(
         :host    => options[:host],
         :port    => options[:port],
-        :timeout => options[:timeout]
+        :timeout => options[:timeout],
+        :ssl        => options[:tls],
+        :key_file   => options[:tls_key],
+        :cert_file  => options[:tls_cert],
+        :ca_file    => options[:tls_ca_cert],
+        :ssl_verify => options[:tls_verify],
       )
-      if options[:tcp]
+      if options[:tcp] || options[:tls]
         r.tcp
       else
         r
