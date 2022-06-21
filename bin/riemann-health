@@ -4,9 +4,11 @@ Process.setproctitle($0)
 # Reports current CPU, disk, load average, and memory use to riemann.
 
 require File.expand_path('../../lib/riemann/tools', __FILE__)
+require File.expand_path('../../lib/riemann/tools/utils', __FILE__)
 
 class Riemann::Tools::Health
   include Riemann::Tools
+  include Riemann::Tools::Utils
 
   opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
   opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
@@ -111,7 +113,7 @@ class Riemann::Tools::Health
       total = used + i2-i1
       fraction = used.to_f / total
 
-      report_pct :cpu, fraction, "user+nice+system\n\n#{`ps -eo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+      report_pct :cpu, fraction, "user+nice+system\n\n#{reverse_numeric_sort_with_header(`ps -eo pcpu,pid,comm`)}"
     end
 
     @old_cpu = [u2, n2, s2, i2]
@@ -140,7 +142,7 @@ class Riemann::Tools::Health
     total = m['MemTotal'].to_i
     fraction = 1 - (free.to_f / total)
 
-    report_pct :memory, fraction, "used\n\n#{`ps -eo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :memory, fraction, "used\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
   end
 
   def freebsd_cpu
@@ -153,7 +155,7 @@ class Riemann::Tools::Health
       total = used + i2-i1
       fraction = used.to_f / total
 
-      report_pct :cpu, fraction, "user+nice+sytem+interrupt\n\n#{`ps -axo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+      report_pct :cpu, fraction, "user+nice+sytem+interrupt\n\n#{reverse_numeric_sort_with_header(`ps -axo pcpu,pid,comm`)}"
     end
 
     @old_cpu = [u2, n2, s2, t2, i2]
@@ -169,7 +171,7 @@ class Riemann::Tools::Health
       total = used + i2-i1
       fraction = used.to_f / total
 
-      report_pct :cpu, fraction, "user+nice+sytem+interrupt\n\n#{`ps -axo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+      report_pct :cpu, fraction, "user+nice+sytem+interrupt\n\n#{reverse_numeric_sort_with_header(`ps -axo pcpu,pid,comm`)}"
     end
 
     @old_cpu = [u2, n2, s2, t2, i2]
@@ -193,7 +195,7 @@ class Riemann::Tools::Health
         fraction = used.to_f / total
       end
 
-      report_pct :cpu, fraction, "user+sytem+interrupt\n\n#{`ps -ao pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+      report_pct :cpu, fraction, "user+sytem+interrupt\n\n#{reverse_numeric_sort_with_header(`ps -ao pcpu,pid,comm`)}"
     end
 
     @old_cpu = [u2, s2, t2, i2]
@@ -215,14 +217,14 @@ class Riemann::Tools::Health
     meminfo = `sysctl -n vm.stats.vm.v_page_count vm.stats.vm.v_wire_count vm.stats.vm.v_active_count 2>/dev/null`.chomp.split
     fraction = (meminfo[1].to_f + meminfo[2].to_f) / meminfo[0].to_f
 
-    report_pct :memory, fraction, "used\n\n#{`ps -axo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :memory, fraction, "used\n\n#{reverse_numeric_sort_with_header(`ps -axo pmem,pid,comm`)}"
   end
 
   def openbsd_memory
     meminfo = `vmstat 2>/dev/null`.chomp.split
     fraction = meminfo[28].to_f / meminfo[29].to_f #The ratio of active to free memory unlike the others :(
 
-    report_pct :memory, fraction, "used\n\n#{`ps -axo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :memory, fraction, "used\n\n#{reverse_numeric_sort_with_header(`ps -axo pmem,pid,comm`)}"
   end
 
   def sunos_memory
@@ -230,7 +232,7 @@ class Riemann::Tools::Health
     total_mem = `prtconf | grep Memory`.split[2].to_f * 1024 # reports in GB but vmstat is in MB
     fraction = ( total_mem - meminfo[32].to_f ) / total_mem
 
-    report_pct :memory, fraction, "used\n\n#{`ps -ao pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :memory, fraction, "used\n\n#{reverse_numeric_sort_with_header(`ps -ao pmem,pid,comm`)}"
   end
 
   def darwin_top
@@ -266,7 +268,7 @@ class Riemann::Tools::Health
       alert 'cpu', :unknown, nil, "unable to get CPU stats from top"
       return false
     end
-    report_pct :cpu,  @topdata[:cpu], "usage\n\n#{`ps -eo pcpu,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :cpu,  @topdata[:cpu], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pcpu,pid,comm`)}"
   end
 
   def darwin_load
@@ -291,7 +293,7 @@ class Riemann::Tools::Health
       alert 'memory', :unknown, nil, "unable to get memory data from top"
       return false
     end
-    report_pct :memory,  @topdata[:memory], "usage\n\n#{`ps -eo pmem,pid,comm | sort -nrb -k1 | head -10`.chomp}"
+    report_pct :memory,  @topdata[:memory], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
   end
 
   def df
