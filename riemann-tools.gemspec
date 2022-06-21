@@ -32,4 +32,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'json', '>= 1.8'
   spec.add_runtime_dependency 'optimist', '~> 3.0', '>= 3.0.0'
   spec.add_runtime_dependency 'riemann-client', '~> 1.0'
+
+  spec.add_development_dependency 'rspec'
 end
