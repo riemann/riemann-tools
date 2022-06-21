@@ -1,4 +1,6 @@
-require_relative 'riemann/tools/version'
+require 'riemann/tools/version'
+
+require 'bundler/gem_tasks'
 
 require 'github_changelog_generator/task'
 
