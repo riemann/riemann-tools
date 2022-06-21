@@ -7,7 +7,9 @@ Riemann-health, for example, submits events about the current CPU, load,
 memory, and disk use. Also available is `riemann-bench`, which submits
 randomly distributed metrics for load testing.
 
-[![Gem Version](https://badge.fury.io/rb/riemann-tools.svg)](https://badge.fury.io/rb/riemann-tools)
+[![Gem Version](https://badge.fury.io/rb/riemann-tools.svg)](https://badge.fury.io/rb/riemann-tools) [![CI](https://github.com/riemann/riemann-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/riemann/riemann-tools/actions/workflows/ci.yml)
+
+
 
 Get started
 ===========
