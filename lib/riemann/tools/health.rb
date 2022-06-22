@@ -9,7 +9,7 @@ class Riemann::Tools::Health
   opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
   opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
   opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
-  opt :disk_ignorefs, "A list of filesystem types to ignore", :default => ['iso9660', 'nfs']
+  opt :disk_ignorefs, "A list of filesystem types to ignore", :default => ['anon_inodefs', 'autofs', 'cd9660', 'devfs', 'devtmpfs', 'fdescfs', 'iso9660', 'linprocfs', 'linsysfs', 'nfs', 'procfs']
   opt :load_warning, "Load warning threshold (load average / core)", :default => 3
   opt :load_critical, "Load critical threshold (load average / core)", :default => 8
   opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
