@@ -10,8 +10,8 @@ class Riemann::Tools::Health
   opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
   opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
   opt :disk_ignorefs, "A list of filesystem types to ignore", :default => ['anon_inodefs', 'autofs', 'cd9660', 'devfs', 'devtmpfs', 'fdescfs', 'iso9660', 'linprocfs', 'linsysfs', 'nfs', 'procfs']
-  opt :load_warning, "Load warning threshold (load average / core)", :default => 3
-  opt :load_critical, "Load critical threshold (load average / core)", :default => 8
+  opt :load_warning, "Load warning threshold (load average / core)", :default => 3.0
+  opt :load_critical, "Load critical threshold (load average / core)", :default => 8.0
   opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
   opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
   opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'load', 'memory', 'disk']
