@@ -15,7 +15,7 @@ class Riemann::Tools::Net
   def state
     f = File.read('/proc/net/dev')
     state = f.split("\n").inject({}) do |s, line|
-      if line =~ /\s*(\w+?):\s*([\s\d]+)\s*/
+      if line =~ /\A\s*([[:alnum:]-]+?):\s*([\s\d]+)\s*/
         iface = $1
 
         ['rx bytes',
