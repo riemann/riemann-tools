@@ -1,6 +1,32 @@
-# Change Log
+# Changelog
+
+## [1.0.0](https://github.com/riemann/riemann-tools/tree/1.0.0) (2022-06-21)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.14...1.0.0)
+
+**Implemented enhancements:**
+
+- Add support for TLS [\#196](https://github.com/riemann/riemann-tools/pull/196) ([smortex](https://github.com/smortex))
+- Hide riemann-tools parameters from process table [\#188](https://github.com/riemann/riemann-tools/pull/188) ([dch](https://github.com/dch))
+
+**Fixed bugs:**
+
+- Fix cpu and memory usage sorting [\#198](https://github.com/riemann/riemann-tools/pull/198) ([smortex](https://github.com/smortex))
+- Exclude NFS from df [\#193](https://github.com/riemann/riemann-tools/pull/193) ([sheremetyev](https://github.com/sheremetyev))
+- Fix df --exclude-type on alpine [\#192](https://github.com/riemann/riemann-tools/pull/192) ([Beanow](https://github.com/Beanow))
+
+**Closed issues:**
+
+- Official docker image\(s\) [\#189](https://github.com/riemann/riemann-tools/issues/189)
+- Could not set docker-host via CLI [\#184](https://github.com/riemann/riemann-tools/issues/184)
+- No support for TLS [\#142](https://github.com/riemann/riemann-tools/issues/142)
+
+**Merged pull requests:**
+
+- Implement automated docker builds of included tools. [\#190](https://github.com/riemann/riemann-tools/pull/190) ([Beanow](https://github.com/Beanow))
 
 ## [0.2.14](https://github.com/riemann/riemann-tools/tree/0.2.14) (2018-09-14)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.13...0.2.14)
 
 **Closed issues:**
@@ -10,6 +36,7 @@
 - riemann-health - full command support [\#180](https://github.com/riemann/riemann-tools/issues/180)
 
 ## [0.2.13](https://github.com/riemann/riemann-tools/tree/0.2.13) (2018-01-17)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.12...0.2.13)
 
 **Closed issues:**
@@ -32,6 +59,7 @@
 - \_stats/index/store isn't supported anymore in ES 5 but it looks like … [\#168](https://github.com/riemann/riemann-tools/pull/168) ([looprock](https://github.com/looprock))
 
 ## [0.2.12](https://github.com/riemann/riemann-tools/tree/0.2.12) (2017-01-22)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.11...0.2.12)
 
 **Closed issues:**
@@ -46,6 +74,7 @@
 - JSON dependency version set to ~\> 1.8 [\#163](https://github.com/riemann/riemann-tools/pull/163) ([markdingram](https://github.com/markdingram))
 
 ## [0.2.11](https://github.com/riemann/riemann-tools/tree/0.2.11) (2016-12-04)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.10...0.2.11)
 
 **Closed issues:**
@@ -64,6 +93,7 @@
 - Make riemann-docker multithreaded [\#154](https://github.com/riemann/riemann-tools/pull/154) ([gfv](https://github.com/gfv))
 
 ## [0.2.10](https://github.com/riemann/riemann-tools/tree/0.2.10) (2016-03-01)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.9...0.2.10)
 
 **Closed issues:**
@@ -77,6 +107,7 @@
 - correctly call is\_bad? method [\#151](https://github.com/riemann/riemann-tools/pull/151) ([anho](https://github.com/anho))
 
 ## [0.2.9](https://github.com/riemann/riemann-tools/tree/0.2.9) (2016-02-20)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.8...0.2.9)
 
 **Closed issues:**
@@ -92,6 +123,7 @@
 - Release 0.2.8 [\#140](https://github.com/riemann/riemann-tools/pull/140) ([jamtur01](https://github.com/jamtur01))
 
 ## [0.2.8](https://github.com/riemann/riemann-tools/tree/0.2.8) (2016-02-09)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.7...0.2.8)
 
 **Closed issues:**
@@ -121,17 +153,16 @@
 - Fix/str maybe nil [\#123](https://github.com/riemann/riemann-tools/pull/123) ([jsvisa](https://github.com/jsvisa))
 - Added AWS SQS monitor [\#121](https://github.com/riemann/riemann-tools/pull/121) ([krakatoa](https://github.com/krakatoa))
 - Added docker-health tool [\#120](https://github.com/riemann/riemann-tools/pull/120) ([shanielh](https://github.com/shanielh))
-
-## [0.2.7](https://github.com/riemann/riemann-tools/tree/0.2.7) (2015-07-17)
-[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.6...0.2.7)
-
-**Merged pull requests:**
-
 - riemann-freeswitch sends number of threads used by Freeswitch [\#118](https://github.com/riemann/riemann-tools/pull/118) ([krakatoa](https://github.com/krakatoa))
 - Change the way `ioreqs` metric is handled [\#117](https://github.com/riemann/riemann-tools/pull/117) ([pariviere](https://github.com/pariviere))
 - add option to specify a proxied path prefix [\#115](https://github.com/riemann/riemann-tools/pull/115) ([peterneubauer](https://github.com/peterneubauer))
 
+## [0.2.7](https://github.com/riemann/riemann-tools/tree/0.2.7) (2015-07-17)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.6...0.2.7)
+
 ## [0.2.6](https://github.com/riemann/riemann-tools/tree/0.2.6) (2015-04-21)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.5...0.2.6)
 
 **Closed issues:**
@@ -154,6 +185,7 @@
 - Added check and switch for Varnish 4 [\#105](https://github.com/riemann/riemann-tools/pull/105) ([jamtur01](https://github.com/jamtur01))
 
 ## [0.2.5](https://github.com/riemann/riemann-tools/tree/0.2.5) (2015-01-26)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.3...0.2.5)
 
 **Merged pull requests:**
@@ -163,6 +195,7 @@
 - add directory space use monitoring [\#96](https://github.com/riemann/riemann-tools/pull/96) ([tcrayford](https://github.com/tcrayford))
 
 ## [0.2.3](https://github.com/riemann/riemann-tools/tree/0.2.3) (2015-01-06)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.2...0.2.3)
 
 **Merged pull requests:**
@@ -179,6 +212,7 @@
 - Fix typo in riemann-health [\#86](https://github.com/riemann/riemann-tools/pull/86) ([jsyrjala](https://github.com/jsyrjala))
 
 ## [0.2.2](https://github.com/riemann/riemann-tools/tree/0.2.2) (2014-06-30)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.1...0.2.2)
 
 **Closed issues:**
@@ -193,6 +227,7 @@
 - riemann-redis migrated to https://github.com/riemann/riemann-redis [\#81](https://github.com/riemann/riemann-tools/pull/81) ([fborgnia](https://github.com/fborgnia))
 
 ## [0.2.1](https://github.com/riemann/riemann-tools/tree/0.2.1) (2014-03-26)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.0...0.2.1)
 
 **Merged pull requests:**
@@ -204,6 +239,7 @@
 - Added basic metric monitoring for zookeeper [\#73](https://github.com/riemann/riemann-tools/pull/73) ([aterreno](https://github.com/aterreno))
 
 ## [0.2.0](https://github.com/riemann/riemann-tools/tree/0.2.0) (2014-01-23)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.9...0.2.0)
 
 **Closed issues:**
@@ -216,6 +252,7 @@
 - Add Apache Httpd Metrics [\#72](https://github.com/riemann/riemann-tools/pull/72) ([dmichel1](https://github.com/dmichel1))
 
 ## [0.1.9](https://github.com/riemann/riemann-tools/tree/0.1.9) (2013-12-10)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.8...0.1.9)
 
 **Merged pull requests:**
@@ -224,9 +261,11 @@
 - workaround for beefcake frozen string issue [\#68](https://github.com/riemann/riemann-tools/pull/68) ([maxnewbould](https://github.com/maxnewbould))
 
 ## [0.1.8](https://github.com/riemann/riemann-tools/tree/0.1.8) (2013-11-11)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.6...0.1.8)
 
 ## [0.1.6](https://github.com/riemann/riemann-tools/tree/0.1.6) (2013-11-11)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.7...0.1.6)
 
 **Closed issues:**
@@ -242,6 +281,7 @@
 - Set run\_id property to zero [\#66](https://github.com/riemann/riemann-tools/pull/66) ([gsandie](https://github.com/gsandie))
 
 ## [0.1.7](https://github.com/riemann/riemann-tools/tree/0.1.7) (2013-10-18)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.5...0.1.7)
 
 **Closed issues:**
@@ -253,6 +293,7 @@
 - add riemann-proc running process counter [\#63](https://github.com/riemann/riemann-tools/pull/63) ([cmerrick](https://github.com/cmerrick))
 
 ## [0.1.5](https://github.com/riemann/riemann-tools/tree/0.1.5) (2013-10-15)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.3...0.1.5)
 
 **Closed issues:**
@@ -277,6 +318,7 @@
 - Add missing tx errors to riemann-net [\#44](https://github.com/riemann/riemann-tools/pull/44) ([gsandie](https://github.com/gsandie))
 
 ## [0.1.3](https://github.com/riemann/riemann-tools/tree/0.1.3) (2013-05-28)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.2...0.1.3)
 
 **Closed issues:**
@@ -292,6 +334,7 @@
 - Add ability to add attributes from CLI [\#38](https://github.com/riemann/riemann-tools/pull/38) ([lwf](https://github.com/lwf))
 
 ## [0.1.2](https://github.com/riemann/riemann-tools/tree/0.1.2) (2013-04-30)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.0.9...0.1.2)
 
 **Closed issues:**
@@ -318,8 +361,10 @@
 - Default event hostname [\#20](https://github.com/riemann/riemann-tools/pull/20) ([timshadel](https://github.com/timshadel))
 - Add memcached monitoring support for riemann-tools. [\#19](https://github.com/riemann/riemann-tools/pull/19) ([fcuny](https://github.com/fcuny))
 - Typo in rieman-riak using :servie instead of :service [\#18](https://github.com/riemann/riemann-tools/pull/18) ([dgtized](https://github.com/dgtized))
+- Add riemann-aws-status [\#13](https://github.com/riemann/riemann-tools/pull/13) ([lwf](https://github.com/lwf))
 
 ## [0.0.9](https://github.com/riemann/riemann-tools/tree/0.0.9) (2012-12-08)
+
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/version-0.0.2...0.0.9)
 
 **Merged pull requests:**
@@ -327,7 +372,6 @@
 - fix overflowing text from ps by swapping args for comm [\#17](https://github.com/riemann/riemann-tools/pull/17) ([dch](https://github.com/dch))
 - Fix darwin cpu usage. Show used cpu instead of idle [\#15](https://github.com/riemann/riemann-tools/pull/15) ([henrikno](https://github.com/henrikno))
 - Fix core count on darwin [\#14](https://github.com/riemann/riemann-tools/pull/14) ([henrikno](https://github.com/henrikno))
-- Add riemann-aws-status [\#13](https://github.com/riemann/riemann-tools/pull/13) ([lwf](https://github.com/lwf))
 - Add riemann-diskstats [\#12](https://github.com/riemann/riemann-tools/pull/12) ([lwf](https://github.com/lwf))
 - Reflect each haproxy config as its own unique status [\#11](https://github.com/riemann/riemann-tools/pull/11) ([perezd](https://github.com/perezd))
 - allow for a commandline configurable TTL. [\#10](https://github.com/riemann/riemann-tools/pull/10) ([perezd](https://github.com/perezd))
@@ -342,5 +386,8 @@
 
 ## [version-0.0.2](https://github.com/riemann/riemann-tools/tree/version-0.0.2) (2012-04-17)
 
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/4970399184a9dbec5f4aa247ccfde43b2b9e0dbc...version-0.0.2)
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
