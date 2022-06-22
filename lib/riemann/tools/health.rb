@@ -311,7 +311,6 @@ class Riemann::Tools::Health
     df.split(/\n/).each do |r|
       f = r.split(/\s+/)
       next if f[0] == 'Filesystem'
-      next unless f[0] =~ /\// # Needs at least one slash in the mount path
 
       # Calculate capacity
       x = f[4].to_f/100
