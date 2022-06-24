@@ -59,7 +59,7 @@ module Riemann
         end
       end
 
-      def get_connection
+      def connection
         response = nil
         begin
           response = Net::HTTP.get(@uri)
@@ -82,7 +82,7 @@ module Riemann
       end
 
       def tick
-        return if (response = get_connection).nil?
+        return if (response = connection).nil?
 
         response.each_line do |line|
           metrics = {}

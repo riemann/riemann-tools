@@ -18,7 +18,6 @@ module Riemann
       opt :cloudant_password, 'Cloudant pasword', type: :string, required: true
 
       def tick
-        json = JSON.parse(get_json.body)
         json.each do |node|
           return if node['svname'] == 'BACKEND' # this is just a sum of all nodes.
 
@@ -47,7 +46,7 @@ module Riemann
         end
       end
 
-      def get_json
+      def json
         http = Net::HTTP.new('cloudant.com', 443)
         http.use_ssl = true
         http.start do |h|
@@ -55,6 +54,7 @@ module Riemann
           get.basic_auth opts[:cloudant_username], opts[:cloudant_password]
           h.request get
         end
+        JSON.parse(http.boby)
       end
     end
   end

@@ -26,7 +26,7 @@ module Riemann
       opt :host_hostname, 'Suffix of host', type: String, default: nil
       opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu memory disk basic]
 
-      def get_containers
+      def containers
         Docker::Container.all
       end
 
@@ -169,7 +169,6 @@ module Riemann
         disk if @disk_enabled
 
         # Get CPU, Memory and Load of each container
-        containers = get_containers
         threads = []
 
         containers.each do |ctr|
