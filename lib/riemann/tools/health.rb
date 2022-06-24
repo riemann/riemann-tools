@@ -26,7 +26,7 @@ module Riemann
           cpu: { critical: opts[:cpu_critical], warning: opts[:cpu_warning] },
           disk: { critical: opts[:disk_critical], warning: opts[:disk_warning] },
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
-          memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] }
+          memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
         }
         case (@ostype = `uname -s`.chomp.downcase)
         when 'darwin'
@@ -83,7 +83,7 @@ module Riemann
           service: service.to_s,
           state: state.to_s,
           metric: metric.to_f,
-          description: description
+          description: description,
         )
       end
 
@@ -106,7 +106,7 @@ module Riemann
           return false
         end
         u2, n2, s2, i2 = [Regexp.last_match(1), Regexp.last_match(2), Regexp.last_match(3),
-                          Regexp.last_match(4)].map(&:to_i)
+                          Regexp.last_match(4),].map(&:to_i)
 
         if @old_cpu
           u1, n1, s1, i1 = @old_cpu

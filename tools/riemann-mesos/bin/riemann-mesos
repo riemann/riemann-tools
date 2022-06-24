@@ -32,10 +32,12 @@ module Riemann
             req.options[:open_timeout] = options[:open_timeout]
           end
         rescue StandardError => e
-          report(host: uri.host,
-                 service: 'mesos health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{e.class} - #{e.message}")
+          report(
+            host: uri.host,
+            service: 'mesos health',
+            state: 'critical',
+            description: "HTTP connection error: #{e.class} - #{e.message}",
+          )
         end
         response
       end
@@ -62,23 +64,29 @@ module Riemann
         return if response.nil?
 
         if response.status != 200
-          report(host: uri.host,
-                 service: 'mesos health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{response.status} - #{response.body}")
+          report(
+            host: uri.host,
+            service: 'mesos health',
+            state: 'critical',
+            description: "HTTP connection error: #{response.status} - #{response.body}",
+          )
         else
           # Assuming that a 200 will give json
           json = JSON.parse(response.body)
           state = 'ok'
 
-          report(host: uri.host,
-                 service: 'mesos health',
-                 state: state)
+          report(
+            host: uri.host,
+            service: 'mesos health',
+            state: state,
+          )
 
           json.each_pair do |k, v|
-            report(host: uri.host,
-                   service: "mesos #{k}",
-                   metric: v)
+            report(
+              host: uri.host,
+              service: "mesos #{k}",
+              metric: v,
+            )
           end
         end
       end
@@ -90,18 +98,22 @@ module Riemann
         return if response.nil?
 
         if response.status != 200
-          report(host: uri.host,
-                 service: 'mesos health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{response.status} - #{response.body}")
+          report(
+            host: uri.host,
+            service: 'mesos health',
+            state: 'critical',
+            description: "HTTP connection error: #{response.status} - #{response.body}",
+          )
         else
           # Assuming that a 200 will give json
           json = JSON.parse(response.body)
           state = 'ok'
 
-          report(host: uri.host,
-                 service: 'mesos health',
-                 state: state)
+          report(
+            host: uri.host,
+            service: 'mesos health',
+            state: state,
+          )
 
           json['slaves'].each do |slave|
             next unless slave.respond_to? 'each_pair'
@@ -111,14 +123,18 @@ module Riemann
                 v.each_pair do |k1, v1|
                   next unless v1.is_a? Numeric
 
-                  report(host: slave['hostname'],
-                         service: "mesos slave/#{k}/#{k1}",
-                         metric: v1)
+                  report(
+                    host: slave['hostname'],
+                    service: "mesos slave/#{k}/#{k1}",
+                    metric: v1,
+                  )
                 end
               elsif v.is_a? Numeric
-                report(host: slave['hostname'],
-                       service: "mesos slave/#{k}",
-                       metric: v)
+                report(
+                  host: slave['hostname'],
+                  service: "mesos slave/#{k}",
+                  metric: v,
+                )
               end
             end
           end

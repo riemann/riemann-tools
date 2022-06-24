@@ -32,7 +32,7 @@ module Riemann
               host: @uri.host,
               service: "#{ns} #{property}",
               metric: metric.to_f,
-              tags: ['haproxy']
+              tags: ['haproxy'],
             )
           end
 
@@ -40,7 +40,7 @@ module Riemann
             host: @uri.host,
             service: "#{ns} state",
             state: (%w[UP OPEN].include?(row['status']) ? 'ok' : 'critical'),
-            tags: ['haproxy']
+            tags: ['haproxy'],
           )
         end
       end

@@ -34,7 +34,7 @@ module Riemann
           creds = if opts.key?('secret_key') && opts.key?('access_key')
                     {
                       aws_secret_access_key: opts[:secret_key],
-                      aws_access_key_id: opts[:access_key]
+                      aws_access_key_id: opts[:access_key],
                     }
                   else
                     { use_iam_profile: true }
@@ -49,22 +49,22 @@ module Riemann
         opts[:services].each do |service|
           data = @cloudwatch.get_metric_statistics({
                                                      'Statistics' => ['Maximum'],
-                                                     'StartTime' => @start_time,
-                                                     'EndTime' => @end_time,
-                                                     'Period' => 3600,
-                                                     'Unit' => 'None',
+                                                     'StartTime'  => @start_time,
+                                                     'EndTime'    => @end_time,
+                                                     'Period'     => 3600,
+                                                     'Unit'       => 'None',
                                                      'MetricName' => 'EstimatedCharges',
-                                                     'Namespace' => 'AWS/Billing',
+                                                     'Namespace'  => 'AWS/Billing',
                                                      'Dimensions' => [
                                                        {
-                                                         'Name' => 'ServiceName',
-                                                         'Value' => service
+                                                         'Name'  => 'ServiceName',
+                                                         'Value' => service,
                                                        },
                                                        {
-                                                         'Name' => 'Currency',
-                                                         'Value' => 'USD'
-                                                       }
-                                                     ]
+                                                         'Name'  => 'Currency',
+                                                         'Value' => 'USD',
+                                                       },
+                                                     ],
                                                    }).body['GetMetricStatisticsResult']['Datapoints']
 
           data.each do |metrics|
@@ -79,7 +79,7 @@ module Riemann
               description: "AWS Estimate Charges for #{service}",
               tags: ['aws_billing'],
               state: 'ok',
-              metric: value
+              metric: value,
             }
 
             report event

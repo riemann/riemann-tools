@@ -1,4 +1,6 @@
 ---
+Layout/HashAlignment:
+  EnforcedHashRocketStyle: table
 Layout/LineLength:
   Enabled: false
 Metrics/AbcSize:
@@ -22,3 +24,9 @@ Naming/MethodParameterName:
     - lb # load balancer
 Style/Documentation:
   Enabled: false
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma

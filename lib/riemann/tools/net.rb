@@ -46,10 +46,10 @@ module Riemann
            'tx fifo',
            'tx colls',
            'tx carrier',
-           'tx compressed'].map do |service|
+           'tx compressed',].map do |service|
             "#{iface} #{service}"
           end.zip( # rubocop:disable Style/MultilineBlockChain
-            Regexp.last_match(2).split(/\s+/).map(&:to_i)
+            Regexp.last_match(2).split(/\s+/).map(&:to_i),
           ).each do |service, value|
             state[service] = value
           end
@@ -92,7 +92,7 @@ module Riemann
             report(
               service: service.dup,
               metric: (delta.to_f / opts[:interval]),
-              state: svc_state
+              state: svc_state,
             )
           end
         end

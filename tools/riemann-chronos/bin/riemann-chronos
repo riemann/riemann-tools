@@ -37,10 +37,12 @@ module Riemann
             req.options[:open_timeout] = options[:open_timeout]
           end
         rescue StandardError => e
-          report(host: uri.host,
-                 service: 'chronos health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{e.class} - #{e.message}")
+          report(
+            host: uri.host,
+            service: 'chronos health',
+            state: 'critical',
+            description: "HTTP connection error: #{e.class} - #{e.message}",
+          )
         end
         response
       end
@@ -71,37 +73,45 @@ module Riemann
         return if response.nil?
 
         if response.status != 200
-          report(host: uri.host,
-                 service: 'chronos health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{response.status} - #{response.body}")
+          report(
+            host: uri.host,
+            service: 'chronos health',
+            state: 'critical',
+            description: "HTTP connection error: #{response.status} - #{response.body}",
+          )
         else
           # Assuming that a 200 will give json
           json = JSON.parse(response.body)
 
-          report(host: uri.host,
-                 service: 'chronos health',
-                 state: 'ok')
+          report(
+            host: uri.host,
+            service: 'chronos health',
+            state: 'ok',
+          )
 
           json.each_pair do |t, d|
             next unless d.respond_to? :each_pair
 
             d.each_pair do |service, counters|
-              report(host: uri.host,
-                     service: "chronos_metric #{t} #{service}",
-                     metric: 1,
-                     tags: ['metric_name'],
-                     ttl: 600)
+              report(
+                host: uri.host,
+                service: "chronos_metric #{t} #{service}",
+                metric: 1,
+                tags: ['metric_name'],
+                ttl: 600,
+              )
               next unless counters.respond_to? :each_pair
 
               counters.each_pair do |k, v|
                 next unless v.is_a? Numeric
 
-                report(host: uri.host,
-                       service: "chronos #{service} #{k}",
-                       metric: v,
-                       tags: ['metric', t.to_s],
-                       ttl: 600)
+                report(
+                  host: uri.host,
+                  service: "chronos #{service} #{k}",
+                  metric: v,
+                  tags: ['metric', t.to_s],
+                  ttl: 600,
+                )
               end
             end
           end
@@ -115,26 +125,32 @@ module Riemann
         return if response.nil?
 
         if response.status != 200
-          report(host: uri.host,
-                 service: 'chronos health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{response.status} - #{response.body}")
+          report(
+            host: uri.host,
+            service: 'chronos health',
+            state: 'critical',
+            description: "HTTP connection error: #{response.status} - #{response.body}",
+          )
         else
           # Assuming that a 200 will give json
           json = JSON.parse(response.body)
 
-          report(host: uri.host,
-                 service: 'chronos health',
-                 state: 'ok')
+          report(
+            host: uri.host,
+            service: 'chronos health',
+            state: 'ok',
+          )
 
           json.each do |job|
             job.each_pair do |k, v|
               next unless v.is_a? Numeric
 
-              report(host: uri.host,
-                     service: "chronos job #{job['name']} #{k}",
-                     metric: v,
-                     ttl: 120)
+              report(
+                host: uri.host,
+                service: "chronos job #{job['name']} #{k}",
+                metric: v,
+                ttl: 120,
+              )
             end
           end
         end

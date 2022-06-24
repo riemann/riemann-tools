@@ -40,7 +40,7 @@ module Riemann
             host: @hostname.to_s,
             service: "port #{thisport}",
             state: state.to_s,
-            tags: ['portcheck']
+            tags: ['portcheck'],
           )
         end
       end

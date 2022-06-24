@@ -20,13 +20,13 @@ class RiakStatus
     get: {
       50 => 1000,
       95 => 2000,
-      99 => 10_000
+      99 => 10_000,
     },
     put: {
       50 => 1000,
       95 => 2000,
-      99 => 10_000
-    }
+      99 => 10_000,
+    },
   }.freeze
 
   def initialize(opts = {})
@@ -40,7 +40,7 @@ class RiakStatus
       service: "riak #{subservice}",
       state: state,
       metric: metric,
-      description: description
+      description: description,
     )
   end
 
@@ -94,7 +94,7 @@ class RiakStatus
       Vodpod.alert(
         service: 'riak',
         state: :critical,
-        description: "error fetching /stats: #{e.class}, #{e.message}"
+        description: "error fetching /stats: #{e.class}, #{e.message}",
       )
       return
     end
@@ -105,14 +105,14 @@ class RiakStatus
       Vodpod.alert(
         service: 'riak',
         state: :critical,
-        description: "stats returned HTTP #{res.code}:\n\n#{res.body}"
+        description: "stats returned HTTP #{res.code}:\n\n#{res.body}",
       )
       return
     end
 
     Vodpod.alert(
       service: 'riak',
-      state: :ok
+      state: :ok,
     )
 
     # Gets/puts/rr

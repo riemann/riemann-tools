@@ -31,7 +31,7 @@ module Riemann
           service: service.to_s,
           state: state.to_s,
           metric: metric.to_f,
-          description: description
+          description: description,
         )
       end
 
@@ -82,25 +82,25 @@ module Riemann
             service: "proc #{pid}-#{start_s}/rss",
             state: state_s.to_s,
             metric: rss.to_f,
-            description: command
+            description: command,
           )
           report(
             service: "proc #{pid}-#{start_s}/vsize",
             state: state_s.to_s,
             metric: vsize.to_f,
-            description: command
+            description: command,
           )
           report(
             service: "proc #{pid}-#{start_s}/running",
             state: state_s.to_s,
             metric: running.to_f,
-            description: command
+            description: command,
           )
           report(
             service: "proc #{pid}-#{start_s}/cputime",
             state: state_s.to_s,
             metric: cputime_seconds,
-            description: command
+            description: command,
           )
         end
       end

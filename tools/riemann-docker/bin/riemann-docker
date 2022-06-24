@@ -45,7 +45,7 @@ module Riemann
         @limits = {
           cpu: { critical: opts[:cpu_critical], warning: opts[:cpu_warning] },
           disk: { critical: opts[:disk_critical], warning: opts[:disk_warning] },
-          memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] }
+          memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
         }
 
         @last_cpu_reads = {}
@@ -66,10 +66,12 @@ module Riemann
       end
 
       def alert(container, service, state, metric, description)
-        opts = {  service: service.to_s,
-                  state: state.to_s,
-                  metric: metric.to_f,
-                  description: description }
+        opts = {
+          service: service.to_s,
+          state: state.to_s,
+          metric: metric.to_f,
+          description: description,
+        }
 
         opts[:host] = if !container.nil?
                         "#{@hostname}-#{container}"
@@ -140,10 +142,12 @@ module Riemann
 
         running = state['Running']
 
-        alert(name, 'status',
-              running ? 'ok' : 'critical',
-              running ? 1 : 0,
-              json_state)
+        alert(
+          name, 'status',
+          running ? 'ok' : 'critical',
+          running ? 1 : 0,
+          json_state,
+        )
 
         return unless running
 
@@ -154,11 +158,13 @@ module Riemann
         unless @last_uptime_reads[id].nil?
           last = @last_uptime_reads[id]
           restarted = start_time != last
-          alert(name, 'uptime',
-                restarted ? 'critical' : 'ok',
-                uptime,
-                "last 'StartedAt' measure was #{last} (#{Time.at(last).utc}), " \
-                "now it's #{start_time} (#{Time.at(start_time).utc})")
+          alert(
+            name, 'uptime',
+            restarted ? 'critical' : 'ok',
+            uptime,
+            "last 'StartedAt' measure was #{last} (#{Time.at(last).utc}), " \
+            "now it's #{start_time} (#{Time.at(start_time).utc})",
+          )
         end
 
         @last_uptime_reads[id] = start_time

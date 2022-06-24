@@ -22,7 +22,7 @@ module Riemann
       def initialize
         @limits = {
           fd: { critical: opts[:fd_sys_critical], warning: opts[:fd_sys_warning] },
-          process: { critical: opts[:fd_proc_critical], warning: opts[:fd_proc_warning] }
+          process: { critical: opts[:fd_proc_critical], warning: opts[:fd_proc_warning] },
         }
         ostype = `uname -s`.chomp.downcase
         case ostype
@@ -39,7 +39,7 @@ module Riemann
           service: service.to_s,
           state: state.to_s,
           metric: metric.to_f,
-          description: description
+          description: description,
         )
       end
 

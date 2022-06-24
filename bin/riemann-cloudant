@@ -28,7 +28,7 @@ module Riemann
           report(
             service: ns,
             state: (node['status'] == 'UP' ? 'ok' : 'critical'),
-            tags: ['cloudant', cluster_name]
+            tags: ['cloudant', cluster_name],
           )
 
           # report property->metric of each node.
@@ -40,7 +40,7 @@ module Riemann
               service: "#{ns} #{property}",
               metric: metric.to_f,
               state: (node['status'] == 'UP' ? 'ok' : 'critical'),
-              tags: ['cloudant', cluster_name]
+              tags: ['cloudant', cluster_name],
             )
           end
         end

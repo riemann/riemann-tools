@@ -62,7 +62,7 @@ module Riemann
           report(
             service: 'nginx health',
             state: 'critical',
-            description: "Connection error: #{e.class} - #{e.message}"
+            description: "Connection error: #{e.class} - #{e.message}",
           )
         end
 
@@ -71,7 +71,7 @@ module Riemann
         report(
           service: 'nginx health',
           state: 'ok',
-          description: 'Nginx status connection ok'
+          description: 'Nginx status connection ok',
         )
 
         values = @re.match(response).to_a[1, 7].map(&:to_i)
@@ -81,7 +81,7 @@ module Riemann
                    service: "nginx #{key}",
                    metric: value,
                    state: state(key, value),
-                   tags: ['nginx']
+                   tags: ['nginx'],
                  })
         end
       end

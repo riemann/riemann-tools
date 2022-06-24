@@ -40,7 +40,7 @@ module Riemann
         state: s,
         host: state[:host],
         service: state[:service],
-        description: "at #{Time.now}"
+        description: "at #{Time.now}",
       }
     end
 
@@ -66,7 +66,7 @@ module Riemann
           state: 'ok',
           description: 'Starting up',
           host: host,
-          service: service
+          service: service,
         }
       end
     end

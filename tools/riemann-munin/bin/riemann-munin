@@ -26,7 +26,7 @@ module Riemann
                 service: "#{service} #{part}",
                 metric: metric.to_f,
                 state: 'ok',
-                tags: ['munin']
+                tags: ['munin'],
               )
             end
           end

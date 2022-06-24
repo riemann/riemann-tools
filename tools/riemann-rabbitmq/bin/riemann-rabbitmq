@@ -59,15 +59,19 @@ module Riemann
             req.options[:timeout] = options[:read_timeout]
             req.options[:open_timeout] = options[:open_timeout]
           end
-          report(host: event_host,
-                 service: 'rabbitmq monitoring',
-                 state: 'ok',
-                 description: 'Monitoring operational')
+          report(
+            host: event_host,
+            service: 'rabbitmq monitoring',
+            state: 'ok',
+            description: 'Monitoring operational',
+          )
         rescue StandardError => e
-          report(host: event_host,
-                 service: 'rabbitmq monitoring',
-                 state: 'critical',
-                 description: "HTTP connection error: #{e.class} - #{e.message}")
+          report(
+            host: event_host,
+            service: 'rabbitmq monitoring',
+            state: 'critical',
+            description: "HTTP connection error: #{e.class} - #{e.message}",
+          )
         end
         response
       end
@@ -79,15 +83,19 @@ module Riemann
         return if response.nil?
 
         if response.status != 200
-          report(host: event_host,
-                 service: 'rabbitmq.queue',
-                 state: 'critical',
-                 description: "HTTP connection error to /api/queues: #{response.status} - #{response.body}")
+          report(
+            host: event_host,
+            service: 'rabbitmq.queue',
+            state: 'critical',
+            description: "HTTP connection error to /api/queues: #{response.status} - #{response.body}",
+          )
         else
-          report(host: event_host,
-                 service: 'rabbitmq.queue',
-                 state: 'ok',
-                 description: 'HTTP connection ok')
+          report(
+            host: event_host,
+            service: 'rabbitmq.queue',
+            state: 'ok',
+            description: 'HTTP connection ok',
+          )
 
           json = JSON.parse(response.body)
 
@@ -100,26 +108,30 @@ module Riemann
             errs << "Queue has #{queue['messages_ready']} jobs" if (max_size_check_filter.nil? || queue['name'] !~ (max_size_check_filter)) && !queue['messages_ready'].nil? && (queue['messages_ready'] > options[:max_queue_size])
 
             if errs.empty?
-              report(host: event_host,
-                     service: svc,
-                     state: 'ok',
-                     description: 'Queue is looking good')
+              report(
+                host: event_host,
+                service: svc,
+                state: 'ok',
+                description: 'Queue is looking good',
+              )
             else
-              report(host: event_host,
-                     service: svc,
-                     state: 'critical',
-                     description: errs.join('; '))
+              report(
+                host: event_host,
+                service: svc,
+                state: 'critical',
+                description: errs.join('; '),
+              )
             end
 
             stats = (queue['message_stats'] || {}).merge(
-              'messages' => queue['messages'],
-              'messages_details' => queue['messages_details'],
-              'messages_ready' => queue['messages_ready'],
-              'messages_ready_details' => queue['messages_ready_details'],
-              'messages_unacknowledged' => queue['messages_unacknowledged'],
+              'messages'                        => queue['messages'],
+              'messages_details'                => queue['messages_details'],
+              'messages_ready'                  => queue['messages_ready'],
+              'messages_ready_details'          => queue['messages_ready_details'],
+              'messages_unacknowledged'         => queue['messages_unacknowledged'],
               'messages_unacknowledged_details' => queue['messages_unacknowledged_details'],
-              'consumers' => queue['consumers'],
-              'memory' => queue['memory']
+              'consumers'                       => queue['consumers'],
+              'memory'                          => queue['memory'],
             )
 
             stats.each_pair do |k, v|
@@ -132,10 +144,12 @@ module Riemann
 
               # TODO: Set state via thresholds which can be configured
 
-              report(host: event_host,
-                     service: service,
-                     metric: metric,
-                     description: 'RabbitMQ monitor')
+              report(
+                host: event_host,
+                service: service,
+                metric: metric,
+                description: 'RabbitMQ monitor',
+              )
             end
           end
         end
@@ -150,15 +164,19 @@ module Riemann
         json = JSON.parse(response.body)
 
         if response.status != 200
-          report(host: event_host,
-                 service: 'rabbitmq',
-                 state: 'critical',
-                 description: "HTTP connection error: #{response.status} - #{response.body}")
+          report(
+            host: event_host,
+            service: 'rabbitmq',
+            state: 'critical',
+            description: "HTTP connection error: #{response.status} - #{response.body}",
+          )
         else
-          report(host: event_host,
-                 service: 'rabbitmq monitoring',
-                 state: 'ok',
-                 description: 'HTTP connection ok')
+          report(
+            host: event_host,
+            service: 'rabbitmq monitoring',
+            state: 'ok',
+            description: 'HTTP connection ok',
+          )
 
           %w[message_stats queue_totals object_totals].each do |stat|
             # NOTE: / BUG ?
@@ -176,10 +194,12 @@ module Riemann
 
               # TODO: Set state via thresholds which can be configured
 
-              report(host: event_host,
-                     service: service,
-                     metric: metric,
-                     description: 'RabbitMQ monitor')
+              report(
+                host: event_host,
+                service: service,
+                metric: metric,
+                description: 'RabbitMQ monitor',
+              )
             end
           end
         end
@@ -194,15 +214,19 @@ module Riemann
 
           if response.status != 200
             if response.status == 404
-              report(host: event_host,
-                     service: "rabbitmq.node.#{n}",
-                     state: 'critical',
-                     description: 'Node was not found in the cluster')
+              report(
+                host: event_host,
+                service: "rabbitmq.node.#{n}",
+                state: 'critical',
+                description: 'Node was not found in the cluster',
+              )
             else
-              report(host: event_host,
-                     service: "rabbitmq.node.#{n}",
-                     state: 'critical',
-                     description: "HTTP error: #{response.status} - #{response.body}")
+              report(
+                host: event_host,
+                service: "rabbitmq.node.#{n}",
+                state: 'critical',
+                description: "HTTP error: #{response.status} - #{response.body}",
+              )
             end
             break
           end
@@ -210,25 +234,31 @@ module Riemann
           json = JSON.parse(response.body)
 
           if json['mem_alarm']
-            report(host: event_host,
-                   service: "rabbitmq.node.#{n}",
-                   state: 'critical',
-                   description: 'Memory alarm has triggered; job submission throttled')
+            report(
+              host: event_host,
+              service: "rabbitmq.node.#{n}",
+              state: 'critical',
+              description: 'Memory alarm has triggered; job submission throttled',
+            )
             break
           end
 
           if json['disk_free_alarm']
-            report(host: event_host,
-                   service: "rabbitmq.node.#{n}",
-                   state: 'critical',
-                   description: 'Disk free alarm has triggered; job submission throttled')
+            report(
+              host: event_host,
+              service: "rabbitmq.node.#{n}",
+              state: 'critical',
+              description: 'Disk free alarm has triggered; job submission throttled',
+            )
             break
           end
 
-          report(host: event_host,
-                 service: "rabbitmq.node.#{n}",
-                 state: 'ok',
-                 description: 'Node looks OK to me')
+          report(
+            host: event_host,
+            service: "rabbitmq.node.#{n}",
+            state: 'ok',
+            description: 'Node looks OK to me',
+          )
         end
       end
 

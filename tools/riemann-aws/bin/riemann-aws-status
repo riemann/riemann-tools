@@ -25,7 +25,7 @@ module Riemann
         creds = if opts.key?('secret_key') && opts.key?('access_key')
                   {
                     aws_secret_access_key: opts[:secret_key],
-                    aws_access_key_id: opts[:access_key]
+                    aws_access_key_id: opts[:access_key],
                   }
                 else
                   { use_iam_profile: true }
@@ -55,11 +55,13 @@ module Riemann
           host_status['eventsSet'].each do |event|
             before, _after = %w[notBefore notAfter].map { |k| Date.parse event[k].to_s if event[k] }
 
-            ev = { host: host,
-                   service: 'aws_instance_status',
-                   description: "#{event['code']}\n\nstart #{event['notBefore']}\nend #{event['notAfter']}\n\n#{event['description']}",
-                   state: 'ok',
-                   ttl: 300 }
+            ev = {
+              host: host,
+              service: 'aws_instance_status',
+              description: "#{event['code']}\n\nstart #{event['notBefore']}\nend #{event['notAfter']}\n\n#{event['description']}",
+              state: 'ok',
+              ttl: 300,
+            }
 
             ev2 = if (event['code'] == 'instance-retirement') &&
                      (Date.today >= before - opts[:retirement_critical])

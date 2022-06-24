@@ -18,7 +18,7 @@ module Riemann
 
       def initialize
         @limits = {
-          calls: { critical: opts[:calls_critical], warning: opts[:calls_warning] }
+          calls: { critical: opts[:calls_critical], warning: opts[:calls_warning] },
         }
       end
 
@@ -34,7 +34,7 @@ module Riemann
           service: service.to_s,
           state: state.to_s,
           metric: metric.to_f,
-          description: description
+          description: description,
         )
       end
 

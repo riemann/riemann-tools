@@ -34,10 +34,10 @@ module Riemann
            'writes time',
            'io reqs',
            'io time',
-           'io weighted'].map do |service|
+           'io weighted',].map do |service|
             "#{dev} #{service}"
           end.zip( # rubocop:disable Style/MultilineBlockChain
-            Regexp.last_match(2).split(/\s+/).map(&:to_i)
+            Regexp.last_match(2).split(/\s+/).map(&:to_i),
           ).each do |service, value|
             s[service] = value
           end
@@ -68,7 +68,7 @@ module Riemann
               report(
                 service: "diskstats #{service}",
                 metric: metric,
-                state: 'ok'
+                state: 'ok',
               )
             else
               delta = metric - @old_state[service]
@@ -76,15 +76,17 @@ module Riemann
               report(
                 service: "diskstats #{service}",
                 metric: (delta.to_f / opts[:interval]),
-                state: 'ok'
+                state: 'ok',
               )
             end
 
             next unless service =~ /io time$/
 
-            report(service: "diskstats #{service.gsub(/time/, 'util')}",
-                   metric: (delta.to_f / (opts[:interval] * 1000)),
-                   state: 'ok')
+            report(
+              service: "diskstats #{service.gsub(/time/, 'util')}",
+              metric: (delta.to_f / (opts[:interval] * 1000)),
+              state: 'ok',
+            )
           end
         end
 

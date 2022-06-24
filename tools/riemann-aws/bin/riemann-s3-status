@@ -30,11 +30,11 @@ module Riemann
 
         # The base query that all metrics would get
         {
-          'Namespace' => 'AWS/S3',
-          'StartTime' => start_time,
-          'EndTime' => end_time,
-          'Period' => 3600,
-          'MetricName' => 'NumberOfObjects'
+          'Namespace'  => 'AWS/S3',
+          'StartTime'  => start_time,
+          'EndTime'    => end_time,
+          'Period'     => 3600,
+          'MetricName' => 'NumberOfObjects',
         }
       end
 
@@ -48,12 +48,12 @@ module Riemann
                          Fog::AWS::CloudWatch.new({
                                                     aws_access_key_id: options[:aws_access],
                                                     aws_secret_access_key: options[:aws_secret],
-                                                    region: options[:aws_region]
+                                                    region: options[:aws_region],
                                                   })
                        else
                          Fog::AWS::CloudWatch.new({
                                                     use_iam_profile: true,
-                                                    region: options[:aws_region]
+                                                    region: options[:aws_region],
                                                   })
                        end
         end
@@ -64,7 +64,7 @@ module Riemann
             metric_base_options['Statistics'] = statistic
             metric_base_options['Dimensions'] = [
               { 'Name' => 'BucketName', 'Value' => bucket },
-              { 'Name' => 'StorageType', 'Value' => 'AllStorageTypes' }
+              { 'Name' => 'StorageType', 'Value' => 'AllStorageTypes' },
             ]
 
             result = connection.get_metric_statistics(metric_base_options)
@@ -92,7 +92,7 @@ module Riemann
           ttl: 300,
           description: "#{bucket} #{metric_type} #{stat_type} (#{unit})",
           tags: ['s3_metrics'],
-          metric: metric
+          metric: metric,
         }
       end
     end

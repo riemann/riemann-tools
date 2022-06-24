@@ -32,7 +32,7 @@ module Riemann
             service: "memcached #{m[1]}",
             metric: m[2].to_f,
             state: 'ok',
-            tags: ['memcached']
+            tags: ['memcached'],
           )
         end
         sock.close

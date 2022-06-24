@@ -35,11 +35,13 @@ module Riemann
       end
 
       def alert(hostname, service, state, metric, description)
-        opts = {  host: hostname,
-                  service: service.to_s,
-                  state: state.to_s,
-                  metric: metric,
-                  description: description }
+        opts = {
+          host: hostname,
+          service: service.to_s,
+          state: state.to_s,
+          metric: metric,
+          description: description,
+        }
 
         report(opts)
       end
@@ -86,8 +88,10 @@ module Riemann
           unless @last_services_read[service_name].nil?
             last_ok = @last_services_read[service_name]
             if last_ok != ok_count
-              alert('total', "#{@prefix}#{service_name}-count", ok_count >= last_ok ? :ok : :critical, ok_count,
-                    "Number of passing #{service_name} is: #{ok_count}/#{total_count}, Last time it was: #{last_ok}")
+              alert(
+                'total', "#{@prefix}#{service_name}-count", ok_count >= last_ok ? :ok : :critical, ok_count,
+                "Number of passing #{service_name} is: #{ok_count}/#{total_count}, Last time it was: #{last_ok}",
+              )
             end
           end
 
@@ -96,8 +100,10 @@ module Riemann
 
         # For every node
         services_by_nodes.each do |node, count|
-          alert(node, "#{@prefix}total-services", count >= @minimum_services_per_node ? :ok : :critical, count,
-                "#{count} services in the specified node")
+          alert(
+            node, "#{@prefix}total-services", count >= @minimum_services_per_node ? :ok : :critical, count,
+            "#{count} services in the specified node",
+          )
         end
       end
     end

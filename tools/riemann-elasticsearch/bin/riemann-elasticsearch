@@ -32,10 +32,12 @@ module Riemann
             req.options[:open_timeout] = options[:open_timeout]
           end
         rescue StandardError => e
-          report(host: uri.host,
-                 service: 'elasticsearch health',
-                 state: 'critical',
-                 description: "HTTP connection error: #{e.class} - #{e.message}")
+          report(
+            host: uri.host,
+            service: 'elasticsearch health',
+            state: 'critical',
+            description: "HTTP connection error: #{e.class} - #{e.message}",
+          )
         end
         response
       end
@@ -64,10 +66,12 @@ module Riemann
         if response.success?
           false
         else
-          report(host: uri.host,
-                 service: 'elasticsearch health',
-                 state: 'critical',
-                 description: response.nil? ? 'HTTP response is empty!' : "HTTP connection error: #{response.status} - #{response.body}")
+          report(
+            host: uri.host,
+            service: 'elasticsearch health',
+            state: 'critical',
+            description: response.nil? ? 'HTTP response is empty!' : "HTTP connection error: #{response.status} - #{response.body}",
+          )
         end
       end
 
@@ -81,12 +85,16 @@ module Riemann
         json = JSON.parse(response.body)
 
         json['indices'].each_pair do |k, v|
-          report(host: uri.host,
-                 service: "elasticsearch index/#{k}/primaries/size_in_bytes",
-                 metric: v['primaries']['store']['size_in_bytes'])
-          report(host: uri.host,
-                 service: "elasticsearch index/#{k}/total/size_in_bytes",
-                 metric: v['total']['store']['size_in_bytes'])
+          report(
+            host: uri.host,
+            service: "elasticsearch index/#{k}/primaries/size_in_bytes",
+            metric: v['primaries']['store']['size_in_bytes'],
+          )
+          report(
+            host: uri.host,
+            service: "elasticsearch index/#{k}/total/size_in_bytes",
+            metric: v['total']['store']['size_in_bytes'],
+          )
         end
       end
 
@@ -104,12 +112,16 @@ module Riemann
           query = data['search']['query_time_in_millis'].to_f / data['search']['query_total']
           fetch = data['search']['fetch_time_in_millis'].to_f / data['search']['fetch_total']
 
-          report(host: uri.host,
-                 service: "elasticsearch search/#{es_search_index}/query",
-                 metric: query)
-          report(host: uri.host,
-                 service: "elasticsearch search/#{es_search_index}/fetch",
-                 metric: fetch)
+          report(
+            host: uri.host,
+            service: "elasticsearch search/#{es_search_index}/query",
+            metric: query,
+          )
+          report(
+            host: uri.host,
+            service: "elasticsearch search/#{es_search_index}/fetch",
+            metric: fetch,
+          )
         end
       end
 
@@ -118,10 +130,12 @@ module Riemann
           tick_indices
           tick_search
         rescue StandardError => e
-          report(host: options[:es_host],
-                 service: 'elasticsearch error',
-                 state: 'critical',
-                 description: "Elasticsearch cluster error: #{e.message}")
+          report(
+            host: options[:es_host],
+            service: 'elasticsearch error',
+            state: 'critical',
+            description: "Elasticsearch cluster error: #{e.message}",
+          )
         end
         uri = URI(health_url)
         response = safe_get(uri)
@@ -133,21 +147,25 @@ module Riemann
         cluster_name = json.delete('cluster_name')
         cluster_status = json.delete('status')
         state = {
-          'green' => 'ok',
+          'green'  => 'ok',
           'yellow' => 'warning',
-          'red' => 'critical'
+          'red'    => 'critical',
         }[cluster_status]
 
-        report(host: uri.host,
-               service: 'elasticsearch health',
-               state: state,
-               description: "Elasticsearch cluster: #{cluster_name} - #{cluster_status}")
+        report(
+          host: uri.host,
+          service: 'elasticsearch health',
+          state: state,
+          description: "Elasticsearch cluster: #{cluster_name} - #{cluster_status}",
+        )
 
         json.each_pair do |k, v|
-          report(host: uri.host,
-                 service: "elasticsearch #{k}",
-                 metric: v,
-                 description: "Elasticsearch cluster #{k}")
+          report(
+            host: uri.host,
+            service: "elasticsearch #{k}",
+            metric: v,
+            description: "Elasticsearch cluster #{k}",
+          )
         end
       end
     end

@@ -33,9 +33,19 @@ module Riemann
         # IdleWorkers: 94
         # Scoreboard: ___K_____K____________W_
 
-        @scoreboard_map = { '_' => 'waiting', 'S' => 'starting', 'R' => 'reading', 'W' => 'sending',
-                            'K' => 'keepalive', 'D' => 'dns', 'C' => 'closing', 'L' => 'logging', 'G' => 'graceful',
-                            'I' => 'idle', '.' => 'open' }
+        @scoreboard_map = {
+          '_' => 'waiting',
+          'S' => 'starting',
+          'R' => 'reading',
+          'W' => 'sending',
+          'K' => 'keepalive',
+          'D' => 'dns',
+          'C' => 'closing',
+          'L' => 'logging',
+          'G' => 'graceful',
+          'I' => 'idle',
+          '.' => 'open',
+        }
       end
 
       def get_scoreboard_metrics(response)
@@ -54,7 +64,7 @@ module Riemann
             service: "httpd #{k}",
             metric: v.to_f,
             state: 'ok',
-            tags: ['httpd']
+            tags: ['httpd'],
           )
         end
       end
@@ -68,14 +78,14 @@ module Riemann
             service: 'httpd health',
             state: 'critical',
             description: "Httpd connection error: #{e.class} - #{e.message}",
-            tags: ['httpd']
+            tags: ['httpd'],
           )
         else
           report(
             service: 'httpd health',
             state: 'ok',
             description: 'Httpd connection status ok',
-            tags: ['httpd']
+            tags: ['httpd'],
           )
         end
         response

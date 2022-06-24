@@ -78,14 +78,14 @@ module Riemann
             host: opts[:riak_host],
             service: 'riak ring',
             state: 'ok',
-            description: str
+            description: str,
           )
         else
           report(
             host: opts[:riak_host],
             service: 'riak ring',
             state: 'warning',
-            description: str
+            description: str,
           )
         end
       end
@@ -98,14 +98,14 @@ module Riemann
             service: 'riak keys',
             state: 'ok',
             metric: keys.to_i,
-            description: keys
+            description: keys,
           )
         else
           report(
             host: opts[:riak_host],
             service: 'riak keys',
             state: 'unknown',
-            description: keys
+            description: keys,
           )
         end
       end
@@ -121,7 +121,7 @@ module Riemann
             service: 'riak transfers',
             state: 'critical',
             metric: Regexp.last_match(1).to_i,
-            description: "waiting to handoff #{Regexp.last_match(1)} partitions"
+            description: "waiting to handoff #{Regexp.last_match(1)} partitions",
           )
         else
           report(
@@ -129,7 +129,7 @@ module Riemann
             service: 'riak transfers',
             state: 'ok',
             metric: 0,
-            description: 'No pending transfers'
+            description: 'No pending transfers',
           )
         end
       end
@@ -141,7 +141,7 @@ module Riemann
           service: 'riak disk',
           state: 'ok',
           metric: gb,
-          description: "#{gb} GB in #{opts[:data_dir]}"
+          description: "#{gb} GB in #{opts[:data_dir]}",
         )
       end
 
@@ -179,7 +179,7 @@ module Riemann
             host: opts[:riak_host],
             service: 'riak',
             state: 'critical',
-            description: "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}"
+            description: "error fetching #{opts[:riak_host]}:#{opts[:stats_port]} #{e.class}, #{e.message}",
           )
           raise
         end
@@ -191,7 +191,7 @@ module Riemann
             host: opts[:riak_host],
             service: 'riak',
             state: 'critical',
-            description: "stats returned HTTP #{res.code}:\n\n#{res.body}"
+            description: "stats returned HTTP #{res.code}:\n\n#{res.body}",
           )
           raise "Can't fetch stats via HTTP: #{res.core}:\n\n#{res.body}"
         end
@@ -216,7 +216,7 @@ module Riemann
             host: opts[:riak_host],
             service: 'riak',
             state: 'critical',
-            description: 'No mechanism for fetching Riak stats: neither HTTP nor riak-admin available.'
+            description: 'No mechanism for fetching Riak stats: neither HTTP nor riak-admin available.',
           )
           raise 'No mechanism for fetching Riak stats: neither HTTP nor riak-admin available.'
         end
@@ -234,7 +234,7 @@ module Riemann
 
       def fsm_types
         [{ 'get' => 'time' }, { 'put' => 'time' },
-         { 'get' => 'set_objsize' }]
+         { 'get' => 'set_objsize' },]
       end
 
       def fsm_percentiles
@@ -246,9 +246,11 @@ module Riemann
         begin
           stats = self.stats
         rescue StandardError => e
-          event = { state: 'critical',
-                    description: e.message,
-                    host: opts[:riak_host] }
+          event = {
+            state: 'critical',
+            description: e.message,
+            host: opts[:riak_host],
+          }
           # Report errors
           report(event.merge(service: 'riak'))
           core_services.each do |s|
@@ -268,7 +270,7 @@ module Riemann
         report(
           host: opts[:riak_host],
           service: 'riak',
-          state: 'ok'
+          state: 'ok',
         )
 
         # Gets/puts/rr
@@ -278,7 +280,7 @@ module Riemann
             service: "riak #{s}",
             state: 'ok',
             metric: stats[s].to_i / 60.0,
-            description: "#{stats[s].to_i / 60.0}/sec"
+            description: "#{stats[s].to_i / 60.0}/sec",
           )
         end
 
@@ -299,7 +301,7 @@ module Riemann
                 service: "riak #{type} #{prop} #{percentile}",
                 state: state,
                 metric: val,
-                description: "#{val} ms"
+                description: "#{val} ms",
               )
             end
           end

@@ -18,7 +18,7 @@ module Riemann
         report(
           service: 'KVM Running VMs',
           metric: kvm_instances.to_i,
-          state: 'info'
+          state: 'info',
         )
       end
     end

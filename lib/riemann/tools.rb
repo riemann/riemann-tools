@@ -81,7 +81,7 @@ module Riemann
         key_file: options[:tls_key],
         cert_file: options[:tls_cert],
         ca_file: options[:tls_ca_cert],
-        ssl_verify: options[:tls_verify]
+        ssl_verify: options[:tls_verify],
       )
       if options[:tcp] || options[:tls]
         r.tcp

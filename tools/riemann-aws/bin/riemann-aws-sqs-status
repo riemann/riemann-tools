@@ -21,7 +21,7 @@ module Riemann
         creds = if opts.key?('access_key') && opts.key?('secret_key')
                   {
                     aws_access_key_id: opts[:access_key],
-                    aws_secret_access_key: opts[:secret_key]
+                    aws_secret_access_key: opts[:secret_key],
                   }
                 else
                   { use_iam_profile: true }
@@ -38,7 +38,7 @@ module Riemann
           msg = {
             metric: response[:body]['Attributes'][attr],
             service: "#{opts[:queue]} #{attr}",
-            state: 'ok'
+            state: 'ok',
           }
           report msg
         end

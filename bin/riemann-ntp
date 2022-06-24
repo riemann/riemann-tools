@@ -36,7 +36,7 @@ module Riemann
           metric: metric.to_f,
           state: 'ok',
           description: "ntp peer #{@ntp_host} #{type}",
-          tags: ['ntp']
+          tags: ['ntp'],
         )
       end
     end

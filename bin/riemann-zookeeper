@@ -34,7 +34,7 @@ module Riemann
             service: "zookeeper #{m[1]}",
             metric: m[2].to_f,
             state: 'ok',
-            tags: ['zookeeper']
+            tags: ['zookeeper'],
           )
         end
         sock.close
