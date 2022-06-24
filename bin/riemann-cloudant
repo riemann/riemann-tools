@@ -19,7 +19,7 @@ module Riemann
 
       def tick
         json.each do |node|
-          return if node['svname'] == 'BACKEND' # this is just a sum of all nodes.
+          break if node['svname'] == 'BACKEND' # this is just a sum of all nodes.
 
           ns = "cloudant #{node['pxname']}"
           cluster_name = node['tracked'].split('.')[0] # ie: meritage.cloudant.com

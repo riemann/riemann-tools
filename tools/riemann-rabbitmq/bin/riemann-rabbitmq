@@ -190,7 +190,7 @@ module Riemann
           uri = URI(node_url(n))
           response = safe_get(uri, event_host)
 
-          return if response.nil?
+          break if response.nil?
 
           if response.status != 200
             if response.status == 404
@@ -204,7 +204,7 @@ module Riemann
                      state: 'critical',
                      description: "HTTP error: #{response.status} - #{response.body}")
             end
-            return
+            break
           end
 
           json = JSON.parse(response.body)
@@ -214,7 +214,7 @@ module Riemann
                    service: "rabbitmq.node.#{n}",
                    state: 'critical',
                    description: 'Memory alarm has triggered; job submission throttled')
-            return
+            break
           end
 
           if json['disk_free_alarm']
@@ -222,7 +222,7 @@ module Riemann
                    service: "rabbitmq.node.#{n}",
                    state: 'critical',
                    description: 'Disk free alarm has triggered; job submission throttled')
-            return
+            break
           end
 
           report(host: event_host,
