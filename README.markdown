@@ -1,5 +1,4 @@
-Riemann Tools
-=============
+# Riemann Tools
 
 Tiny programs to submit events to Riemann.
 
@@ -9,18 +8,14 @@ randomly distributed metrics for load testing.
 
 [![Gem Version](https://badge.fury.io/rb/riemann-tools.svg)](https://badge.fury.io/rb/riemann-tools) [![CI](https://github.com/riemann/riemann-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/riemann/riemann-tools/actions/workflows/ci.yml)
 
-
-
-Get started
-===========
+## Get started
 
 ``` bash
 gem install riemann-tools
 riemann-health --host my.riemann.server
 ```
 
-Riemann-tools programs
-======================
+## Riemann-tools programs
 
 This repository contains a number of different programs. Some of them
 ship with the `riemann-tools` gem, including:
@@ -49,17 +44,14 @@ ship with the `riemann-tools` gem, including:
 Also contained in the repository are a number of stand-alone monitoring
 tools, which are shipped as separate gems.
 
-Riemann stand-alone tools
-=========================
+## Riemann stand-alone tools
 
 Use these tools by installing their individual gems, usually named for
-the specific tool, for example:
+the specific tool, for example, to install the AWS tools:
 
 ```bash
 gem install riemann-aws
 ```
-
-To install the AWS tools.
 
 * riemann-aws - Monitor various AWS services.
 * riemann-elasticsearch - Monitor Elasticsearch.
@@ -74,20 +66,12 @@ To install the AWS tools.
 There are also a number of additional, stand-alone tools, contained in
 the [Riemann GitHub account](https://github.com/riemann/).
 
-Docker Images
-=============
+## Docker Images
 
 You can find Docker images for the tools [here](https://hub.docker.com/u/riemannio/dashboard/).
 
-Build status
-============
-
-[![Build Status](https://travis-ci.com/riemann/riemann-tools.svg?branch=master)](https://travis-ci.com/riemann/riemann-tools)
-
-License
-=======
+## License
 
 The MIT License
 
-Copyright (c) 2011-2016 Kyle Kingsbury
-
+Copyright (c) 2011-2022 Kyle Kingsbury
