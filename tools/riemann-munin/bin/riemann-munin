@@ -19,8 +19,8 @@ module Riemann
 
       def tick
         services = opts[:services] || @munin.list
-        services.each do |service|
-          @munin.fetch(service).each do |service, parts|
+        services.each do |service_name|
+          @munin.fetch(service_name).each do |service, parts|
             parts.each do |part, metric|
               report(
                 service: "#{service} #{part}",
