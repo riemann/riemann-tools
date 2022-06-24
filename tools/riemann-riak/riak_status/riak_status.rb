@@ -45,7 +45,7 @@ class RiakStatus
   end
 
   def check_ring
-    str = `#{__dir__}/ringready.erl riak@#{`hostname`}`.chomp
+    str = %x(#{__dir__}/ringready.erl riak@#{`hostname`}).chomp
     if str =~ /^TRUE/
       alert 'ring', :ok, nil, str
     else
@@ -54,7 +54,7 @@ class RiakStatus
   end
 
   def check_keys
-    keys = `#{__dir__}/key_count.erl riak@#{`hostname`}`.chomp
+    keys = %x(#{__dir__}/key_count.erl riak@#{`hostname`}).chomp
     if keys =~ /^\d+$/
       alert 'keys', :ok, keys.to_i, keys
     else
