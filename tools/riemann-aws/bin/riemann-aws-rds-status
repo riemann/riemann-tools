@@ -40,13 +40,13 @@ module Riemann
            NetworkTransmitThroughput ReadThroughput CPUUtilization].each do |metric|
           result = @cloudwatch.get_metric_statistics({ 'Namespace' => 'AWS/RDS', 'MetricName' => metric.to_s,
                                                        'Statistics' => 'Average', 'Dimensions' => [{ 'Name' => 'DBInstanceIdentifier', 'Value' => opts[:dbinstance_identifier].to_s }], 'StartTime' => (time - 120).to_time.iso8601, 'EndTime' => time.to_time.iso8601, 'Period' => 60 })
-          metricsResult = result.data[:body]['GetMetricStatisticsResult']
-          next unless metricsResult['Datapoints'].length.positive?
+          metrics_result = result.data[:body]['GetMetricStatisticsResult']
+          next unless metrics_result['Datapoints'].length.positive?
 
-          datapoint = metricsResult['Datapoints'][0]
+          datapoint = metrics_result['Datapoints'][0]
           ev = { metric: datapoint['Average'],
                  service: "#{opts[:dbinstance_identifier]}.#{metric} (#{datapoint['Unit']})",
-                 description: JSON.dump(metricsResult),
+                 description: JSON.dump(metrics_result),
                  state: 'ok',
                  ttl: 300 }
 
