@@ -8,15 +8,23 @@ class Riemann::Tools::Net
 
   def initialize
     @old_state = nil
-    @interfaces = opts[:interfaces].map(&:dup) if opts[:interfaces]
-    @ignore_interfaces = opts[:ignore_interfaces].map(&:dup)
+    @interfaces = if opts[:interfaces]
+                    opts[:interfaces].reject(&:empty?).map(&:dup)
+                  else
+                    []
+                  end
+    @ignore_interfaces = opts[:ignore_interfaces].reject(&:empty?).map(&:dup)
   end
 
   def state
     f = File.read('/proc/net/dev')
-    state = f.split("\n").inject({}) do |s, line|
+    state = {}
+    f.split("\n").each do |line|
       if line =~ /\A\s*([[:alnum:]-]+?):\s*([\s\d]+)\s*/
         iface = $1
+
+        next unless @interfaces.empty? || @interfaces.any? { |pattern| iface.match?(pattern) }
+        next if @ignore_interfaces.any? { |pattern| iface.match?(pattern) }
 
         ['rx bytes',
         'rx packets',
@@ -38,22 +46,9 @@ class Riemann::Tools::Net
         end.zip(
           $2.split(/\s+/).map { |str| str.to_i }
         ).each do |service, value|
-          s[service] = value
+          state[service] = value
         end
       end
-      
-      s
-    end
-
-    # Filter interfaces
-    if is = @interfaces
-      state = state.select do |service, value|
-        is.include? service.split(' ').first
-      end
-    end
-
-    state = state.reject do |service, value|
-      @ignore_interfaces.include? service.split(' ').first
     end
 
     state
