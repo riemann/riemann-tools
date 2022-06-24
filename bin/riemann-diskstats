@@ -1,95 +1,96 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
-#
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
 require 'rubygems'
 require 'riemann/tools'
 
-class Riemann::Tools::Diskstats
-  include Riemann::Tools
+module Riemann
+  module Tools
+    class Diskstats
+      include Riemann::Tools
 
-  opt :devices, "Devices to monitor", :type => :strings, :default => nil
-  opt :ignore_devices, "Devices to ignore", :type => :strings, :default =>nil
+      opt :devices, 'Devices to monitor', type: :strings, default: nil
+      opt :ignore_devices, 'Devices to ignore', type: :strings, default: nil
 
-  def initialize
-    @old_state = nil
-  end
-
-  def state
-    f = File.read('/proc/diskstats')
-    state = f.split("\n").reject { |d| d =~ /(ram|loop)/ }.inject({}) do |s, line|
-      if line =~ /^(?:\s+\d+){2}\s+([\w\d\-]+) (.*)$/
-        dev = $1
-
-        ['reads reqs',
-        'reads merged',
-        'reads sector',
-        'reads time',
-        'writes reqs',
-        'writes merged',
-        'writes sector',
-        'writes time',
-        'io reqs',
-        'io time',
-        'io weighted'
-        ].map do |service|
-          "#{dev} #{service}"
-        end.zip(
-          $2.split(/\s+/).map { |str| str.to_i }
-        ).each do |service, value|
-          s[service] = value
-        end
+      def initialize
+        @old_state = nil
       end
 
-      s
-    end
+      def state
+        f = File.read('/proc/diskstats')
+        state = f.split("\n").reject { |d| d =~ /(ram|loop)/ }.each_with_object({}) do |line, s|
+          next unless line =~ /^(?:\s+\d+){2}\s+([\w\d\-]+) (.*)$/
 
-    # Filter interfaces
-    if is = opts[:devices]
-      state = state.select do |service, value|
-        is.include? service.split(' ').first
-      end
-    end
+          dev = Regexp.last_match(1)
 
-    if ign = opts[:ignore_devices]
-      state = state.reject do |service, value|
-        ign.include? service.split(' ').first
-      end
-    end
-
-    state
-  end
-
-  def tick
-    state = self.state
-
-    if @old_state
-      state.each do |service, metric|
-
-        if service =~ /io reqs$/
-          report(
-            :service => "diskstats " + service,
-            :metric => metric,
-            :state => "ok"
-          )
-        else
-          delta = metric - @old_state[service]
-
-          report(
-            :service => "diskstats " + service,
-            :metric => (delta.to_f / opts[:interval]),
-            :state => "ok"
-          )
+          ['reads reqs',
+           'reads merged',
+           'reads sector',
+           'reads time',
+           'writes reqs',
+           'writes merged',
+           'writes sector',
+           'writes time',
+           'io reqs',
+           'io time',
+           'io weighted'].map do |service|
+            "#{dev} #{service}"
+          end.zip(
+            Regexp.last_match(2).split(/\s+/).map(&:to_i)
+          ).each do |service, value|
+            s[service] = value
+          end
         end
 
-        if service =~ /io time$/
-          report(:service => "diskstats " + service.gsub(/time/, 'util'),
-                 :metric => (delta.to_f / (opts[:interval]*1000)),
-                 :state => "ok")
+        # Filter interfaces
+        if is = opts[:devices]
+          state = state.select do |service, _value|
+            is.include? service.split(' ').first
+          end
         end
+
+        if ign = opts[:ignore_devices]
+          state = state.reject do |service, _value|
+            ign.include? service.split(' ').first
+          end
+        end
+
+        state
+      end
+
+      def tick
+        state = self.state
+
+        if @old_state
+          state.each do |service, metric|
+            if service =~ /io reqs$/
+              report(
+                service: "diskstats #{service}",
+                metric: metric,
+                state: 'ok'
+              )
+            else
+              delta = metric - @old_state[service]
+
+              report(
+                service: "diskstats #{service}",
+                metric: (delta.to_f / opts[:interval]),
+                state: 'ok'
+              )
+            end
+
+            next unless service =~ /io time$/
+
+            report(service: "diskstats #{service.gsub(/time/, 'util')}",
+                   metric: (delta.to_f / (opts[:interval] * 1000)),
+                   state: 'ok')
+          end
+        end
+
+        @old_state = state
       end
     end
-
-    @old_state = state
   end
 end
 

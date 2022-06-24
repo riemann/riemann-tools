@@ -1,53 +1,59 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
 
 # Reports varnish stats to Riemann.
 
 require 'open3'
-require File.expand_path('../../lib/riemann/tools', __FILE__)
+require File.expand_path('../lib/riemann/tools', __dir__)
 
-class Riemann::Tools::Varnish
-  include Riemann::Tools
+module Riemann
+  module Tools
+    class Varnish
+      include Riemann::Tools
 
-  opt :varnish_host, "Varnish hostname", :default => `hostname`.chomp
+      opt :varnish_host, 'Varnish hostname', default: `hostname`.chomp
 
-  def initialize
-    cmd = 'varnishstat -V'
-    Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-      @ver = /varnishstat \(varnish-(\d+)/.match(stderr.read)[1].to_i
-    end
+      def initialize
+        cmd = 'varnishstat -V'
+        Open3.popen3(cmd) do |_stdin, _stdout, stderr, _wait_thr|
+          @ver = /varnishstat \(varnish-(\d+)/.match(stderr.read)[1].to_i
+        end
 
-    if @ver >= 4
-      @vstats = [ "MAIN.sess_conn",
-                "MAIN.sess_drop ",
-                "MAIN.client_req",
-                "MAIN.cache_hit",
-                "MAIN.cache_miss" ]
-    else
-      @vstats = [ "client_conn",
-                "client_drop",
-                "client_req",
-                "cache_hit",
-                "cache_miss" ]
-    end
-  end
+        @vstats = if @ver >= 4
+                    ['MAIN.sess_conn',
+                     'MAIN.sess_drop ',
+                     'MAIN.client_req',
+                     'MAIN.cache_hit',
+                     'MAIN.cache_miss']
+                  else
+                    %w[client_conn
+                       client_drop
+                       client_req
+                       cache_hit
+                       cache_miss]
+                  end
+      end
 
-  def tick
-    if @ver >= 4
-      stats = `varnishstat -1 -f #{@vstats.join(" -f ")}`
-    else
-      stats = `varnishstat -1 -f #{@vstats.join(",")}`
-    end
-    stats.each_line do |stat|
-      m = stat.split()
-      report(
-             :host => opts[:varnish_host].dup,
-             :service => "varnish #{m[0]}",
-             :metric => m[1].to_f,
-             :state => "ok",
-             :description => "#{m[3..-1].join(' ')}",
-             :tags => ["varnish"]
-            )
+      def tick
+        stats = if @ver >= 4
+                  `varnishstat -1 -f #{@vstats.join(' -f ')}`
+                else
+                  `varnishstat -1 -f #{@vstats.join(',')}`
+                end
+        stats.each_line do |stat|
+          m = stat.split
+          report(
+            host: opts[:varnish_host].dup,
+            service: "varnish #{m[0]}",
+            metric: m[1].to_f,
+            state: 'ok',
+            description: m[3..].join(' ').to_s,
+            tags: ['varnish']
+          )
+        end
+      end
     end
   end
 end

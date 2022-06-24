@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'riemann/tools/version'
 
 require 'bundler/gem_tasks'
@@ -13,9 +15,9 @@ end
 
 desc 'Recursively build all gems'
 task :rbuild do
-  Dir.glob("tools/**") do |dir|
+  Dir.glob('tools/**') do |dir|
     Dir.chdir(dir)
     sh 'rake gem'
-    Dir.chdir("../..")
+    Dir.chdir('../..')
   end
 end

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
 
 # Reports current CPU, disk, load average, and memory use to riemann.
 

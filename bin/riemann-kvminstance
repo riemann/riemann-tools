@@ -1,22 +1,27 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
+# frozen_string_literal: true
 
-require File.expand_path('../../lib/riemann/tools', __FILE__)
+Process.setproctitle($PROGRAM_NAME)
 
-class Riemann::Tools::KVM
-  include Riemann::Tools
+require File.expand_path('../lib/riemann/tools', __dir__)
 
-  def tick
+module Riemann
+  module Tools
+    class KVM
+      include Riemann::Tools
 
-  #determine how many instances I have according to libvirt
-  kvm_instances = %x[LANG=C virsh list | grep -c running]
+      def tick
+        # determine how many instances I have according to libvirt
+        kvm_instances = `LANG=C virsh list | grep -c running`
 
-  #submit them to riemann
-  report(
-     :service => "KVM Running VMs",
-     :metric => kvm_instances.to_i,
-     :state => "info"
-       )
+        # submit them to riemann
+        report(
+          service: 'KVM Running VMs',
+          metric: kvm_instances.to_i,
+          state: 'info'
+        )
+      end
+    end
   end
 end
 
