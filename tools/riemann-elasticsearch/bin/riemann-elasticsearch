@@ -132,14 +132,11 @@ module Riemann
         json = JSON.parse(response.body)
         cluster_name = json.delete('cluster_name')
         cluster_status = json.delete('status')
-        state = case cluster_status
-                when 'green'
-                  'ok'
-                when 'yellow'
-                  'warning'
-                when 'red'
-                  'critical'
-                end
+        state = {
+          'green' => 'ok',
+          'yellow' => 'warning',
+          'red' => 'critical'
+        }[cluster_status]
 
         report(host: uri.host,
                service: 'elasticsearch health',
