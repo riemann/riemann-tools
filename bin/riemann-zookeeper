@@ -22,7 +22,6 @@ module Riemann
         sock.print('mntr')
         sock.flush
 
-        data = {}
         loop do
           stats = sock.gets
 

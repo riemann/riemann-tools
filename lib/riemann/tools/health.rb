@@ -257,10 +257,9 @@ module Riemann
           # This is for OSX Mavericks which
           # uses a different format for top
           # Example: PhysMem: 4662M used (1328M wired), 2782M unused.
-          elsif mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) used \(([0-9]+)([BKMGT]) wired\), ([0-9]+)([BKMGT]) unused/i)
-            used  = mdat[1].to_i * (1024**'BKMGT'.index(mdat[2]))
-            wired = mdat[3].to_i * (1024**'BKMGT'.index(mdat[4]))
-            unused = mdat[5].to_i * (1024**'BKMGT'.index(mdat[6]))
+          elsif mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) used \([0-9]+[BKMGT] wired\), ([0-9]+)([BKMGT]) unused/i)
+            used = mdat[1].to_i * (1024**'BKMGT'.index(mdat[2]))
+            unused = mdat[3].to_i * (1024**'BKMGT'.index(mdat[4]))
             @topdata[:memory] = used.to_f / (used + unused)
           end
         end

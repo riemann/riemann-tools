@@ -49,7 +49,7 @@ module Riemann
 
         hosts.each do |host, status|
           status['eventsSet'].each do |event|
-            before, after = %w[notBefore notAfter].map { |k| Date.parse event[k].to_s if event[k] }
+            before, _after = %w[notBefore notAfter].map { |k| Date.parse event[k].to_s if event[k] }
 
             ev = { host: host,
                    service: 'aws_instance_status',

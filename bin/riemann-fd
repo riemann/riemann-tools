@@ -66,7 +66,7 @@ module Riemann
 
         opts[:processes]&.each do |process|
           used = Integer(`lsof -p #{process} | wc -l`)
-          name, pid = `ps axo comm,pid | grep -w #{process}`.split
+          name, _pid = `ps axo comm,pid | grep -w #{process}`.split
           if used > @limits[:process][:critical]
             alert "fd #{name} #{process}", :critical, used, "process #{name} #{process} is using #{used} fds"
           elsif used > @limits[:process][:warning]

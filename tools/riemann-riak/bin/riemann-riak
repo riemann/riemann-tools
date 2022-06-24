@@ -66,9 +66,9 @@ module Riemann
 
       def check_ring
         str = if @escript
-                str = `#{__dir__}/riemann-riak-ring #{opts[:node_name]}`.chomp
+                `#{__dir__}/riemann-riak-ring #{opts[:node_name]}`.chomp
               elsif @riakadmin
-                str = `riak-admin ringready`
+                `riak-admin ringready`
               end
 
         return if str.nil?

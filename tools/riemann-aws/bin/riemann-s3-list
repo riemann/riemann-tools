@@ -68,7 +68,7 @@ module Riemann
       private
 
       def event(bucket, label, metric, description, severity)
-        event = {
+        {
           host: "bucket_#{bucket}",
           service: "s3.#{label}",
           ttl: 300,

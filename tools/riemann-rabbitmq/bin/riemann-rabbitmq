@@ -78,8 +78,6 @@ module Riemann
 
         return if response.nil?
 
-        json = JSON.parse(response.body)
-
         if response.status != 200
           report(host: event_host,
                  service: 'rabbitmq.queue',

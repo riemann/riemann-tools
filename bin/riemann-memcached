@@ -22,7 +22,6 @@ module Riemann
         sock.flush
         stats = sock.gets
 
-        data = {}
         loop do
           stats = sock.gets
           break if stats.strip == 'END'

@@ -152,7 +152,7 @@ module Riemann
       private
 
       def event(lb, az, metric_type, stat_type, metric, unit = nil)
-        event = {
+        {
           host: lb,
           service: "elb.#{az}.#{metric_type}.#{stat_type}",
           ttl: 60,
