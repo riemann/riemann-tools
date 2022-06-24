@@ -81,17 +81,16 @@ module Riemann
       end
 
       def report_pct(container, service, fraction, report = '', name = nil)
-        if fraction
+        return unless fraction
 
-          name = service if name.nil?
+        name = service if name.nil?
 
-          if fraction > @limits[service][:critical]
-            alert container, name, :critical, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
-          elsif fraction > @limits[service][:warning]
-            alert container, name, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
-          else
-            alert container, name, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
-          end
+        if fraction > @limits[service][:critical]
+          alert container, name, :critical, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        elsif fraction > @limits[service][:warning]
+          alert container, name, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        else
+          alert container, name, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
         end
       end
 
@@ -146,23 +145,23 @@ module Riemann
               running ? 1 : 0,
               json_state)
 
-        if running
-          start_time = DateTime.rfc3339(state['StartedAt']).to_time.utc.to_i
-          now = DateTime.now.to_time.utc.to_i
-          uptime = now - start_time
+        return unless running
 
-          unless @last_uptime_reads[id].nil?
-            last = @last_uptime_reads[id]
-            restarted = start_time != last
-            alert(name, 'uptime',
-                  restarted ? 'critical' : 'ok',
-                  uptime,
-                  "last 'StartedAt' measure was #{last} (#{Time.at(last).utc}), " \
-                  "now it's #{start_time} (#{Time.at(start_time).utc})")
-          end
+        start_time = DateTime.rfc3339(state['StartedAt']).to_time.utc.to_i
+        now = DateTime.now.to_time.utc.to_i
+        uptime = now - start_time
 
-          @last_uptime_reads[id] = start_time
+        unless @last_uptime_reads[id].nil?
+          last = @last_uptime_reads[id]
+          restarted = start_time != last
+          alert(name, 'uptime',
+                restarted ? 'critical' : 'ok',
+                uptime,
+                "last 'StartedAt' measure was #{last} (#{Time.at(last).utc}), " \
+                "now it's #{start_time} (#{Time.at(start_time).utc})")
         end
+
+        @last_uptime_reads[id] = start_time
       end
 
       def tick

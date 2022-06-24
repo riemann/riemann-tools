@@ -82,18 +82,18 @@ module Riemann
       end
 
       def tick
-        unless (response = get_connection).nil?
-          response.each_line do |line|
-            metrics = {}
+        return if (response = get_connection).nil?
 
-            if line =~ /Scoreboard/
-              metrics = get_scoreboard_metrics(line.strip)
-            else
-              key, value = line.strip.split(':')
-              metrics[key.gsub(/\s/, '')] = value
-            end
-            report_metrics(metrics)
+        response.each_line do |line|
+          metrics = {}
+
+          if line =~ /Scoreboard/
+            metrics = get_scoreboard_metrics(line.strip)
+          else
+            key, value = line.strip.split(':')
+            metrics[key.gsub(/\s/, '')] = value
           end
+          report_metrics(metrics)
         end
       end
     end

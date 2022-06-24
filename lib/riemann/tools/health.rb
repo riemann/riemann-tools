@@ -88,14 +88,14 @@ module Riemann
       end
 
       def report_pct(service, fraction, report)
-        if fraction
-          if fraction > @limits[service][:critical]
-            alert service, :critical, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
-          elsif fraction > @limits[service][:warning]
-            alert service, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
-          else
-            alert service, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
-          end
+        return unless fraction
+
+        if fraction > @limits[service][:critical]
+          alert service, :critical, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        elsif fraction > @limits[service][:warning]
+          alert service, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        else
+          alert service, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
         end
       end
 
