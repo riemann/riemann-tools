@@ -11,10 +11,10 @@ module Riemann
           new.run
         end
 
-        def opt(*a)
-          a.unshift :opt
+        def opt(*args)
+          args.unshift :opt
           @opts ||= []
-          @opts << a
+          @opts << args
         end
 
         def options

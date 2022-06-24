@@ -38,8 +38,8 @@ module Riemann
         "#{base_url}/overview"
       end
 
-      def node_url(n)
-        "#{base_url}/nodes/#{n}"
+      def node_url(node)
+        "#{base_url}/nodes/#{node}"
       end
 
       def queues_url

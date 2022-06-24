@@ -1,0 +1,6 @@
+---
+Naming/MethodParameterName:
+  AllowedNames:
+    - az # availability zone
+    - id
+    - lb # load balancer
