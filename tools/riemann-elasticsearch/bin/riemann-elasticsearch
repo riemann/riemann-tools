@@ -117,7 +117,7 @@ module Riemann
         begin
           tick_indices
           tick_search
-        rescue Exception => e
+        rescue StandardError => e
           report(host: options[:es_host],
                  service: 'elasticsearch error',
                  state: 'critical',
