@@ -60,7 +60,7 @@ module Riemann
         make_es_url("#{es_search_index}/_stats/search")
       end
 
-      def is_bad?(response, uri)
+      def bad?(response, uri)
         if response.success?
           false
         else
@@ -75,7 +75,7 @@ module Riemann
         uri = URI(indices_url)
         response = safe_get(uri)
 
-        return if is_bad?(response, uri)
+        return if bad?(response, uri)
 
         # Assuming that a 200 will give json
         json = JSON.parse(response.body)
@@ -94,7 +94,7 @@ module Riemann
         uri = URI(search_url)
         response = safe_get(uri)
 
-        return if is_bad?(response, uri)
+        return if bad?(response, uri)
 
         es_search_index = options[:es_search_index]
         # Assuming that a 200 will give json
@@ -126,7 +126,7 @@ module Riemann
         uri = URI(health_url)
         response = safe_get(uri)
 
-        return if is_bad?(response, uri)
+        return if bad?(response, uri)
 
         # Assuming that a 200 will give json
         json = JSON.parse(response.body)
