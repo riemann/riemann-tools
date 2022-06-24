@@ -1,6 +1,24 @@
 ---
+Layout/LineLength:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/ParameterLists:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
 Naming/MethodParameterName:
   AllowedNames:
     - az # availability zone
     - id
     - lb # load balancer
+Style/Documentation:
+  Enabled: false

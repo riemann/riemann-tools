@@ -48,7 +48,7 @@ module Riemann
            'tx carrier',
            'tx compressed'].map do |service|
             "#{iface} #{service}"
-          end.zip(
+          end.zip( # rubocop:disable Style/MultilineBlockChain
             Regexp.last_match(2).split(/\s+/).map(&:to_i)
           ).each do |service, value|
             state[service] = value

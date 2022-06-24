@@ -36,7 +36,7 @@ module Riemann
            'io time',
            'io weighted'].map do |service|
             "#{dev} #{service}"
-          end.zip(
+          end.zip( # rubocop:disable Style/MultilineBlockChain
             Regexp.last_match(2).split(/\s+/).map(&:to_i)
           ).each do |service, value|
             s[service] = value
