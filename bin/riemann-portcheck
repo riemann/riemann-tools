@@ -1,42 +1,51 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
 
 # Checks for open tcp ports.
 # (c) Max Voit 2017
 
-require File.expand_path('../../lib/riemann/tools', __FILE__)
+require File.expand_path('../lib/riemann/tools', __dir__)
 
-class Riemann::Tools::Portcheck
-  include Riemann::Tools
-  require 'socket'
+module Riemann
+  module Tools
+    class Portcheck
+      include Riemann::Tools
+      require 'socket'
 
-  opt :hostname, "Host, defaults to localhost", :default => `hostname`.chomp
-  opt :ports, "List of ports to check, e.g. '-r 80 443'", :type => :ints
+      opt :hostname, 'Host, defaults to localhost', default: `hostname`.chomp
+      opt :ports, "List of ports to check, e.g. '-r 80 443'", type: :ints
 
-  def initialize
-    @hostname = opts.fetch(:hostname)
-    @ports = opts.fetch(:ports)
-  end
+      def initialize
+        @hostname = opts.fetch(:hostname)
+        @ports = opts.fetch(:ports)
+      end
 
-  def tick
-    for thisport in @ports
-	  # try opening tcp connection with 5s timeout;
-      # if this fails, the port is considered closed
-      portopen = Socket.tcp(@hostname, thisport, connect_timeout: 5) { true } rescue false
-        if portopen
-          state = "ok"
-        else
-          state = "critical"
+      def tick
+        @ports.each do |thisport|
+          # try opening tcp connection with 5s timeout;
+          # if this fails, the port is considered closed
+          portopen = begin
+            Socket.tcp(@hostname, thisport, connect_timeout: 5) { true }
+          rescue StandardError
+            false
+          end
+          state = if portopen
+                    'ok'
+                  else
+                    'critical'
+                  end
+          report(
+            host: @hostname.to_s,
+            service: "port #{thisport}",
+            state: state.to_s,
+            tags: ['portcheck'],
+          )
         end
-      report(
-        :host    => "#{@hostname}",
-        :service => "port #{thisport}",
-        :state   => "#{state}",
-        :tags    => ["portcheck"]
-      )
+      end
     end
   end
-
 end
 
 Riemann::Tools::Portcheck.run

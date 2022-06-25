@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rubygems'
 require 'rubygems/package_task'
 require 'rdoc/task'
@@ -9,20 +11,19 @@ ENV['COPYFILE_DISABLE'] = 'true'
 
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'riemann-elasticsearch'
+  s.rubyforge_project = 'riemann-munin'
 
-  s.name = 'riemann-elasticsearch'
-  s.version = '0.2.4'
-  s.author = 'Gavin Sandie'
-  s.email = 'beach@vicecity.co.uk'
+  s.name = 'riemann-munin'
+  s.version = '0.1.2'
+  s.author = 'Kyle Kingsbury'
+  s.email = 'aphyr@aphyr.com'
   s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'Submits elasticsearch stats to riemann.'
+  s.summary = 'Submits munin stats to riemann.'
   s.license = 'MIT'
 
   s.add_dependency 'riemann-tools', '>= 0.2.13'
-  s.add_dependency 'faraday', '>= 0.8.5'
-  s.add_dependency 'json'
+  s.add_dependency 'munin-ruby', '>= 0.2.1'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
   s.executables |= Dir.entries('bin/')

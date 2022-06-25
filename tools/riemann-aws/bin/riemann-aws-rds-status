@@ -1,52 +1,66 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools'
 
 $0 = __FILE__ # Let's not expose our AWS keys in the process list
 
-class Riemann::Tools::AWS
-  include Riemann::Tools
-  require 'fog'
-  require 'date'
-  require 'time'
-  require 'json'
+module Riemann
+  module Tools
+    class AWS
+      include Riemann::Tools
+      require 'fog'
+      require 'date'
+      require 'time'
+      require 'json'
 
-  opt :access_key, "AWS access key", :type => String
-  opt :secret_key, "Secret access key", :type => String
-  opt :region, "AWS region", :type => String, :default => 'eu-west-1'
-  opt :dbinstance_identifier, "DBInstanceIdentifier", :type => String
-  def initialize
-    abort "FATAL: specify a DB instance name, see --help for usage" unless opts[:dbinstance_identifier]
-    if opts[:access_key] and opts[:secret_key]
-      creds = {
-        :aws_access_key_id => opts[:access_key],
-        :aws_secret_access_key => opts[:secret_key]
-      }
-    else
-      creds = { :use_iam_profile => true }
-    end
-    creds['region'] = opts[:region]
-    @cloudwatch = Fog::AWS::CloudWatch.new(creds)
-  end
-
-  def tick
-    time = Time.new
-    ['DatabaseConnections', 'FreeableMemory', 'FreeStorageSpace', 'NetworkReceiveThroughput', 'NetworkTransmitThroughput', 'ReadThroughput', 'CPUUtilization'].each do |metric|
-      result = @cloudwatch.get_metric_statistics({"Namespace" => 'AWS/RDS', "MetricName" => "#{metric}", "Statistics" => 'Average', "Dimensions" => [{"Name" => "DBInstanceIdentifier", "Value" => "#{opts[:dbinstance_identifier]}"}], "StartTime" => (time-120).to_time.iso8601, "EndTime" => time.to_time.iso8601, "Period" => 60})
-      metricsResult = result.data[:body]['GetMetricStatisticsResult']
-      if (metricsResult['Datapoints'].length>0)
-        datapoint = metricsResult['Datapoints'][0]
-        ev = {:metric => datapoint['Average'],
-              :service => "#{opts[:dbinstance_identifier]}.#{metric} (#{datapoint['Unit']})",
-              :description => JSON.dump(metricsResult),
-              :state => "ok",
-              :ttl => 300}
-
-
-        report ev
+      opt :access_key, 'AWS access key', type: String
+      opt :secret_key, 'Secret access key', type: String
+      opt :region, 'AWS region', type: String, default: 'eu-west-1'
+      opt :dbinstance_identifier, 'DBInstanceIdentifier', type: String
+      def initialize
+        abort 'FATAL: specify a DB instance name, see --help for usage' unless opts[:dbinstance_identifier]
+        creds = if opts[:access_key] && opts[:secret_key]
+                  {
+                    aws_access_key_id: opts[:access_key],
+                    aws_secret_access_key: opts[:secret_key],
+                  }
+                else
+                  { use_iam_profile: true }
+                end
+        creds['region'] = opts[:region]
+        @cloudwatch = Fog::AWS::CloudWatch.new(creds)
       end
 
+      def tick
+        time = Time.new
+        %w[DatabaseConnections FreeableMemory FreeStorageSpace NetworkReceiveThroughput
+           NetworkTransmitThroughput ReadThroughput CPUUtilization].each do |metric|
+          result = @cloudwatch.get_metric_statistics(
+            'Namespace'  => 'AWS/RDS',
+            'MetricName' => metric.to_s,
+            'Statistics' => 'Average',
+            'Dimensions' => [{ 'Name' => 'DBInstanceIdentifier', 'Value' => opts[:dbinstance_identifier].to_s }],
+            'StartTime'  => (time - 120).to_time.iso8601,
+            'EndTime'    => time.to_time.iso8601, 'Period' => 60,
+          )
+          metrics_result = result.data[:body]['GetMetricStatisticsResult']
+          next unless metrics_result['Datapoints'].length.positive?
+
+          datapoint = metrics_result['Datapoints'][0]
+          ev = {
+            metric: datapoint['Average'],
+            service: "#{opts[:dbinstance_identifier]}.#{metric} (#{datapoint['Unit']})",
+            description: JSON.dump(metrics_result),
+            state: 'ok',
+            ttl: 300,
+          }
+
+          report ev
+        end
+      end
     end
   end
 end

@@ -10,11 +10,24 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+      - name: Run rubocop
+        run: bundle exec rubocop
   test:
+    needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
         ruby-version:
+          - 2.6
           - 2.7
           - 3.0
           - 3.1

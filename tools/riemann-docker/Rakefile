@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rubygems'
 require 'rubygems/package_task'
 require 'rdoc/task'
@@ -9,20 +11,19 @@ ENV['COPYFILE_DISABLE'] = 'true'
 
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'riemann-marathon'
+  s.rubyforge_project = 'riemann-docker'
 
-  s.name = 'riemann-marathon'
+  s.name = 'riemann-docker'
   s.version = '0.1.3'
-  s.author = 'Giulio Eulisse'
-  s.email = 'giulio.eulisse@cern.ch'
+  s.author = 'Shani Elharrar'
+  s.email = ''
   s.homepage = 'https://github.com/riemann/riemann-tools'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'Submits Marathon stats to riemann.'
+  s.summary = 'Submits Docker container stats to riemann.'
   s.license = 'MIT'
 
   s.add_dependency 'riemann-tools', '>= 0.2.13'
-  s.add_dependency 'faraday', '>= 0.8.5'
-  s.add_dependency 'json'
+  s.add_dependency 'docker-api', '>= 1.22.0'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
   s.executables |= Dir.entries('bin/')

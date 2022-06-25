@@ -1,42 +1,48 @@
 #!/usr/bin/env ruby
-Process.setproctitle($0)
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools'
 
 $0 = __FILE__ # Let's not expose our AWS keys in the process list
 
-class Riemann::Tools::AWS
-  include Riemann::Tools
-  require 'fog'
+module Riemann
+  module Tools
+    class AWS
+      include Riemann::Tools
+      require 'fog'
 
-  opt :access_key, "AWS access key", :type => String
-  opt :secret_key, "Secret access key", :type => String
-  opt :region, "AWS region", :type => String, :default => 'us-east-1'
-  opt :queue, "SQS Queue name", :type => String
-  def initialize
-    if opts.has_key?('access_key') and opts.has_key?('secret_key')
-      creds = {
-        :aws_access_key_id => opts[:access_key],
-        :aws_secret_access_key => opts[:secret_key]
-      }
-    else
-      creds = { :use_iam_profile => true }
-    end
-    creds['region'] = opts[:region]
-    @sqs = Fog::AWS::SQS.new(creds)
-    response = @sqs.list_queues({'QueueNamePrefix' => opts[:queue]})
-    @queue_url = response[:body]['QueueUrls'].first
-  end
+      opt :access_key, 'AWS access key', type: String
+      opt :secret_key, 'Secret access key', type: String
+      opt :region, 'AWS region', type: String, default: 'us-east-1'
+      opt :queue, 'SQS Queue name', type: String
+      def initialize
+        creds = if opts.key?('access_key') && opts.key?('secret_key')
+                  {
+                    aws_access_key_id: opts[:access_key],
+                    aws_secret_access_key: opts[:secret_key],
+                  }
+                else
+                  { use_iam_profile: true }
+                end
+        creds['region'] = opts[:region]
+        @sqs = Fog::AWS::SQS.new(creds)
+        response = @sqs.list_queues({ 'QueueNamePrefix' => opts[:queue] })
+        @queue_url = response[:body]['QueueUrls'].first
+      end
 
-  def tick
-    response = @sqs.get_queue_attributes(@queue_url, 'All')
-    ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible'].each do |attr|
-      msg = {
-        metric: response[:body]['Attributes'][attr],
-        service: "#{opts[:queue]} #{attr}",
-        state: 'ok'
-      }
-      report msg
+      def tick
+        response = @sqs.get_queue_attributes(@queue_url, 'All')
+        %w[ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible].each do |attr|
+          msg = {
+            metric: response[:body]['Attributes'][attr],
+            service: "#{opts[:queue]} #{attr}",
+            state: 'ok',
+          }
+          report msg
+        end
+      end
     end
   end
 end
