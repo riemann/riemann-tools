@@ -23,7 +23,7 @@ gemspec = Gem::Specification.new do |s|
   s.license = 'MIT'
 
   s.add_runtime_dependency 'riemann-tools', '~> 1.0', '>= 1.0.0'
-  s.add_dependency 'munin-ruby', '>= 0.2.5'
+  s.add_runtime_dependency 'munin-ruby', '~> 0.2', '>= 0.2.5'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
   s.executables |= Dir.entries('bin/')
