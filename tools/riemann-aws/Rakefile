@@ -22,15 +22,14 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits AWS stats to riemann.'
   s.license = 'MIT'
 
-  s.add_dependency 'riemann-tools', '>= 1.0.0'
-  s.add_dependency 'fog', '>= 1.4.0'
-  s.add_dependency 'json'
+  s.add_runtime_dependency 'riemann-tools', '~> 1.0', '>= 1.0.0'
+  s.add_runtime_dependency 'fog-aws', '~> 3.14', '>= 3.14.0'
+  s.add_runtime_dependency 'json'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
   s.executables |= Dir.entries('bin/')
-  s.has_rdoc = false
 
-  s.required_ruby_version = '>= 1.8.7'
+  s.required_ruby_version = Gem::Requirement.new('>= 2.6.0')
 end
 
 Gem::PackageTask.new gemspec do |p|

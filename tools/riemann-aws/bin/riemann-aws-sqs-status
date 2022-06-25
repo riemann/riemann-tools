@@ -11,7 +11,7 @@ module Riemann
   module Tools
     class AWS
       include Riemann::Tools
-      require 'fog'
+      require 'fog/aws'
 
       opt :access_key, 'AWS access key', type: String
       opt :secret_key, 'Secret access key', type: String

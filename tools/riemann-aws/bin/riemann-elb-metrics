@@ -11,7 +11,7 @@ module Riemann
   module Tools
     class ELBMetrics
       include Riemann::Tools
-      require 'fog'
+      require 'fog/aws'
       require 'time'
 
       opt :fog_credentials_file, 'Fog credentials file', type: String

@@ -11,7 +11,7 @@ module Riemann
   module Tools
     class AWSBilling
       include Riemann::Tools
-      require 'fog'
+      require 'fog/aws'
 
       opt :fog_credentials_file, 'Fog credentials file', type: String
       opt :fog_credential, 'Fog credentials to use', type: String
