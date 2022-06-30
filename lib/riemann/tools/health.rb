@@ -320,7 +320,11 @@ module Riemann
           next if f[0] == 'Filesystem'
 
           # Calculate capacity
-          x = f[4].to_f / 100
+          used = f[2].to_i
+          available = f[3].to_i
+          total_without_reservation = used + available
+
+          x = used.to_f / total_without_reservation
 
           if x > @limits[:disk][:critical]
             alert "disk #{f[5]}", :critical, x, "#{f[4]} used"
