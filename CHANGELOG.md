@@ -1,8 +1,37 @@
 # Changelog
 
-## [1.0.0](https://github.com/riemann/riemann-tools/tree/1.0.0) (2022-06-21)
+## [1.1.0](https://github.com/riemann/riemann-tools/tree/1.1.0) (2022-07-01)
 
-[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.14...1.0.0)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.0.0...1.1.0)
+
+**Implemented enhancements:**
+
+- Report computed disk metric [\#213](https://github.com/riemann/riemann-tools/pull/213) ([smortex](https://github.com/smortex))
+- Add support for FreeBSD system fd monitoring [\#204](https://github.com/riemann/riemann-tools/pull/204) ([smortex](https://github.com/smortex))
+- Improve interface matching flexibility [\#203](https://github.com/riemann/riemann-tools/pull/203) ([smortex](https://github.com/smortex))
+- Improve disk usage reporting [\#200](https://github.com/riemann/riemann-tools/pull/200) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Revert tmpfs as an ignored filesystem by default [\#206](https://github.com/riemann/riemann-tools/pull/206) ([smortex](https://github.com/smortex))
+- Fix network interfaces reporting [\#202](https://github.com/riemann/riemann-tools/pull/202) ([smortex](https://github.com/smortex))
+- Fix setting custom load thresholds [\#201](https://github.com/riemann/riemann-tools/pull/201) ([smortex](https://github.com/smortex))
+
+**Closed issues:**
+
+- Disk usage resolution is coarse [\#212](https://github.com/riemann/riemann-tools/issues/212)
+- Load warning/critical doesn't work [\#182](https://github.com/riemann/riemann-tools/issues/182)
+
+**Merged pull requests:**
+
+- Modernized riemann-ntp and included warning for macOS [\#211](https://github.com/riemann/riemann-tools/pull/211) ([jamtur01](https://github.com/jamtur01))
+- Create dependabot.yml [\#209](https://github.com/riemann/riemann-tools/pull/209) ([jamtur01](https://github.com/jamtur01))
+- Create codeql-analysis.yml [\#208](https://github.com/riemann/riemann-tools/pull/208) ([jamtur01](https://github.com/jamtur01))
+- Setup Rubocop [\#205](https://github.com/riemann/riemann-tools/pull/205) ([smortex](https://github.com/smortex))
+
+## [v1.0.0](https://github.com/riemann/riemann-tools/tree/v1.0.0) (2022-06-22)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.14...v1.0.0)
 
 **Implemented enhancements:**
 
