@@ -1,8 +1,16 @@
 # Changelog
 
-## [1.1.0](https://github.com/riemann/riemann-tools/tree/1.1.0) (2022-07-01)
+## [1.1.1](https://github.com/riemann/riemann-tools/tree/1.1.1) (2022-07-02)
 
-[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.0.0...1.1.0)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.1.0...1.1.1)
+
+**Fixed bugs:**
+
+- Ignore overlay filesystems by default [\#215](https://github.com/riemann/riemann-tools/pull/215) ([smortex](https://github.com/smortex))
+
+## [v1.1.0](https://github.com/riemann/riemann-tools/tree/v1.1.0) (2022-07-01)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.0.0...v1.1.0)
 
 **Implemented enhancements:**
 
