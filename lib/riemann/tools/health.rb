@@ -35,7 +35,6 @@ module Riemann
           @disk = method :disk
           @load = method :darwin_load
           @memory = method :darwin_memory
-          darwin_top
         when 'freebsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :freebsd_cpu
@@ -240,47 +239,50 @@ module Riemann
       end
 
       def darwin_top
+        return @cached_data[:darwin_top] if @cached_data[:darwin_top]
+
         raw = `top -l 1 | grep -i "^\\(cpu\\|physmem\\|load\\)"`.chomp
-        @topdata = { stamp: Time.now.to_i }
+        topdata = {}
         raw.each_line do |ln|
           if ln.match(/Load Avg: [0-9.]+, [0-9.]+, ([0-9.])+/i)
-            @topdata[:load] = Regexp.last_match(1).to_f
+            topdata[:load] = Regexp.last_match(1).to_f
           elsif ln.match(/CPU usage: [0-9.]+% user, [0-9.]+% sys, ([0-9.]+)% idle/i)
-            @topdata[:cpu] = 1 - (Regexp.last_match(1).to_f / 100)
+            topdata[:cpu] = 1 - (Regexp.last_match(1).to_f / 100)
           elsif (mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) wired, ([0-9]+)([BKMGT]) active, ([0-9]+)([BKMGT]) inactive, ([0-9]+)([BKMGT]) used, ([0-9]+)([BKMGT]) free/i))
             wired = mdat[1].to_i * (1024**'BKMGT'.index(mdat[2]))
             active = mdat[3].to_i * (1024**'BKMGT'.index(mdat[4]))
             inactive = mdat[5].to_i * (1024**'BKMGT'.index(mdat[6]))
             used = mdat[7].to_i * (1024**'BKMGT'.index(mdat[8]))
             free = mdat[9].to_i * (1024**'BKMGT'.index(mdat[10]))
-            @topdata[:memory] = (wired + active + used).to_f / (wired + active + used + inactive + free)
+            topdata[:memory] = (wired + active + used).to_f / (wired + active + used + inactive + free)
           # This is for OSX Mavericks which
           # uses a different format for top
           # Example: PhysMem: 4662M used (1328M wired), 2782M unused.
           elsif (mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) used \([0-9]+[BKMGT] wired\), ([0-9]+)([BKMGT]) unused/i))
             used = mdat[1].to_i * (1024**'BKMGT'.index(mdat[2]))
             unused = mdat[3].to_i * (1024**'BKMGT'.index(mdat[4]))
-            @topdata[:memory] = used.to_f / (used + unused)
+            topdata[:memory] = used.to_f / (used + unused)
           end
         end
+        @cached_data[:darwin_top] = topdata
       end
 
       def darwin_cpu
-        darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
-        unless @topdata[:cpu]
+        topdata = darwin_top
+        unless topdata[:cpu]
           alert 'cpu', :unknown, nil, 'unable to get CPU stats from top'
           return false
         end
-        report_pct :cpu,  @topdata[:cpu], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pcpu,pid,comm`)}"
+        report_pct :cpu, topdata[:cpu], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pcpu,pid,comm`)}"
       end
 
       def darwin_load
-        darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
-        unless @topdata[:load]
+        topdata = darwin_top
+        unless topdata[:load]
           alert 'load', :unknown, nil, 'unable to get load ave from top'
           return false
         end
-        metric = @topdata[:load] / @cores
+        metric = topdata[:load] / @cores
         if metric > @limits[:load][:critical]
           alert 'load', :critical, metric, "1-minute load average per core is #{metric}"
         elsif metric > @limits[:load][:warning]
@@ -291,12 +293,12 @@ module Riemann
       end
 
       def darwin_memory
-        darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
-        unless @topdata[:memory]
+        topdata = darwin_top
+        unless topdata[:memory]
           alert 'memory', :unknown, nil, 'unable to get memory data from top'
           return false
         end
-        report_pct :memory, @topdata[:memory], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
+        report_pct :memory, topdata[:memory], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
       end
 
       def df
@@ -337,10 +339,16 @@ module Riemann
       end
 
       def tick
+        invalidate_cache
+
         @cpu.call if @cpu_enabled
         @memory.call if @memory_enabled
         @disk.call if @disk_enabled
         @load.call if @load_enabled
+      end
+
+      def invalidate_cache
+        @cached_data = {}
       end
     end
   end
