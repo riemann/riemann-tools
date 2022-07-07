@@ -2,6 +2,7 @@
 
 require 'riemann/tools'
 require 'riemann/tools/utils'
+require 'riemann/tools/uptime_parser.tab'
 
 module Riemann
   module Tools
@@ -204,9 +205,16 @@ module Riemann
         @old_cpu = [u2, s2, t2, i2]
       end
 
+      def uptime_parser
+        @uptime_parser ||= UptimeParser.new
+      end
+
+      def uptime
+        @cached_data[:uptime] ||= uptime_parser.parse(`uptime`)
+      end
+
       def bsd_load
-        m = `uptime`.split(':')[-1].chomp.gsub(/\s+/, '').split(',')
-        load = m[0].to_f / @cores
+        load = uptime[:load_averages][1] / @cores
         if load > @limits[:load][:critical]
           alert 'load', :critical, load, "1-minute load average/core is #{load}"
         elsif load > @limits[:load][:warning]
