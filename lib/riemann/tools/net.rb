@@ -42,7 +42,7 @@ module Riemann
            'tx bytes',
            'tx packets',
            'tx errs',
-           'tx drops',
+           'tx drop',
            'tx fifo',
            'tx colls',
            'tx carrier',
