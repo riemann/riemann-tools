@@ -20,6 +20,8 @@ module Riemann
       opt :load_critical, 'Load critical threshold (load average / core)', default: 8.0
       opt :memory_warning, 'Memory warning threshold (fraction of RAM)', default: 0.85
       opt :memory_critical, 'Memory critical threshold (fraction of RAM)', default: 0.95
+      opt :uptime_warning, 'Uptime warning threshold', default: 86_400
+      opt :uptime_critical, 'Uptime critical threshold', default: 3600
       opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk]
 
       def initialize
@@ -28,6 +30,7 @@ module Riemann
           disk: { critical: opts[:disk_critical], warning: opts[:disk_warning] },
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
           memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
+          uptime: { critical: opts[:uptime_critical], warning: opts[:uptime_warning] },
         }
         case (@ostype = `uname -s`.chomp.downcase)
         when 'darwin'
@@ -36,24 +39,28 @@ module Riemann
           @disk = method :disk
           @load = method :darwin_load
           @memory = method :darwin_memory
+          @uptime = method :bsd_uptime
         when 'freebsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :freebsd_cpu
           @disk = method :disk
           @load = method :bsd_load
           @memory = method :freebsd_memory
+          @uptime = method :bsd_uptime
         when 'openbsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :openbsd_cpu
           @disk = method :disk
           @load = method :bsd_load
           @memory = method :openbsd_memory
+          @uptime = method :bsd_uptime
         when 'sunos'
           @cores = `mpstat -a 2>/dev/null`.split[33].to_i
           @cpu = method :sunos_cpu
           @disk = method :disk
           @load = method :bsd_load
           @memory = method :sunos_memory
+          @uptime = method :bsd_uptime
         else
           @cores = `nproc`.to_i
           puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == 'linux'
@@ -61,6 +68,7 @@ module Riemann
           @disk = method :disk
           @load = method :linux_load
           @memory = method :linux_memory
+          @uptime = method :linux_uptime
           @supports_exclude_type = `df --help 2>&1 | grep -e "--exclude-type"` != ''
         end
 
@@ -74,6 +82,8 @@ module Riemann
             @cpu_enabled = true
           when 'memory'
             @memory_enabled = true
+          when 'uptime'
+            @uptime_enabled = true
           end
         end
       end
@@ -96,6 +106,18 @@ module Riemann
           alert service, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
         else
           alert service, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        end
+      end
+
+      def report_uptime(uptime)
+        description = uptime_to_human(uptime)
+
+        if uptime < @limits[:uptime][:critical]
+          alert 'uptime', :critical, uptime, description
+        elsif uptime < @limits[:uptime][:warning]
+          alert 'uptime', :warning, uptime, description
+        else
+          alert 'uptime', :ok, uptime, description
         end
       end
 
@@ -346,6 +368,31 @@ module Riemann
         end
       end
 
+      def bsd_uptime
+        value = uptime[:uptime]
+
+        report_uptime(value)
+      end
+
+      def linux_uptime
+        value = File.read('/proc/uptime').split(/\s+/)[0].to_f
+
+        report_uptime(value)
+      end
+
+      def uptime_to_human(value)
+        seconds = value.to_i
+        days = seconds / 86_400
+        seconds %= 86_400
+        hrs = seconds / 3600
+        seconds %= 3600
+        mins = seconds / 60
+        [
+          ("#{days} day#{'s' if days > 1}" unless days.zero?),
+          format('%<hrs>2d:%<mins>02d', hrs: hrs, mins: mins),
+        ].compact.join(' ')
+      end
+
       def tick
         invalidate_cache
 
@@ -353,6 +400,7 @@ module Riemann
         @memory.call if @memory_enabled
         @disk.call if @disk_enabled
         @load.call if @load_enabled
+        @uptime.call if @uptime_enabled
       end
 
       def invalidate_cache
