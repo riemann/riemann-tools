@@ -12,7 +12,7 @@ ENV['COPYFILE_DISABLE'] = 'true'
 # Gemspec
 gemspec = Gem::Specification.new do |s|
   s.name = 'riemann-rabbitmq'
-  s.version = '0.1.4'
+  s.version = '0.1.5'
   s.author = 'Gavin Sandie'
   s.email = 'beach@vicecity.co.uk'
   s.homepage = 'https://github.com/riemann/riemann-tools'
