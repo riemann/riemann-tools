@@ -11,8 +11,6 @@ ENV['COPYFILE_DISABLE'] = 'true'
 
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'riemann-chronos'
-
   s.name = 'riemann-chronos'
   s.version = '0.1.2'
   s.author = 'Peter Ericson'

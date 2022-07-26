@@ -11,8 +11,6 @@ ENV['COPYFILE_DISABLE'] = 'true'
 
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'riemann-elasticsearch'
-
   s.name = 'riemann-elasticsearch'
   s.version = '0.2.5'
   s.author = 'Gavin Sandie'

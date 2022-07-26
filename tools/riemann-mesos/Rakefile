@@ -11,8 +11,6 @@ ENV['COPYFILE_DISABLE'] = 'true'
 
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'riemann-mesos'
-
   s.name = 'riemann-mesos'
   s.version = '0.1.3'
   s.author = 'Giulio Eulisse'

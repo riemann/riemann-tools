@@ -11,8 +11,6 @@ ENV['COPYFILE_DISABLE'] = 'true'
 
 # Gemspec
 gemspec = Gem::Specification.new do |s|
-  s.rubyforge_project = 'riemann-docker'
-
   s.name = 'riemann-docker'
   s.version = '0.1.4'
   s.author = 'Shani Elharrar'
