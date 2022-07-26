@@ -20,7 +20,7 @@ gemspec = Gem::Specification.new do |s|
   s.summary = 'Submits Docker container stats to riemann.'
   s.license = 'MIT'
 
-  s.add_runtime_dependency 'riemann-tools', '~> 1.0', '>= 1.0.0'
+  s.add_runtime_dependency 'riemann-tools', '~> 1.0', '>= 1.1.1'
   s.add_runtime_dependency 'docker-api', '~> 1.22', '>= 1.22.0'
 
   s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
