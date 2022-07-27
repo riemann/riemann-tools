@@ -30,17 +30,17 @@ module Riemann
           @compute = Fog::AWS::Compute.new
         else
           @compute = if options[:aws_access] && options[:aws_secret]
-                         Fog::AWS::Compute.new({
-                                                    aws_access_key_id: options[:aws_access],
-                                                    aws_secret_access_key: options[:aws_secret],
-                                                    region: options[:aws_region],
-                                                  })
-                       else
-                         Fog::AWS::Compute.new({
-                                                    use_iam_profile: true,
-                                                    region: options[:aws_region],
-                                                  })
-                       end
+                       Fog::AWS::Compute.new({
+                                               aws_access_key_id: options[:aws_access],
+                                               aws_secret_access_key: options[:aws_secret],
+                                               region: options[:aws_region],
+                                             })
+                     else
+                       Fog::AWS::Compute.new({
+                                               use_iam_profile: true,
+                                               region: options[:aws_region],
+                                             })
+                     end
         end
       end
 
