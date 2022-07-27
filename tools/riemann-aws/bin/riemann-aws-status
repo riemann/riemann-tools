@@ -36,20 +36,7 @@ module Riemann
       end
 
       def tick
-        # XXX: needs work:
-        #   * instance_status and status seems unused
-        #   * where is inject comming from
-        # It looks line the only needed line for the 2 next paragraph is the one that assigns hosts.
-        instance_status = @compute.describe_instance_status.body['instanceStatusSet']
-        status = instance_status.each_with_object({}) do |i, acc|
-          acc[i.delete('instanceId')] = i
-        end
-
         hosts = @compute.servers.select { |s| s.state == 'running' }
-        inject([status, {}]) do |(astatus, acc), host|
-          acc[host.private_dns_name] = astatus.delete(host.id)
-          [astatus, acc]
-        end[1]
 
         hosts.each do |host, host_status|
           host_status['eventsSet'].each do |event|
