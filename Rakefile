@@ -21,3 +21,12 @@ task :rbuild do
     Dir.chdir('../..')
   end
 end
+
+task build: :gen_parser
+
+desc 'Generate the uptime parser'
+task gen_parser: 'lib/riemann/tools/uptime_parser.tab.rb'
+
+file 'lib/riemann/tools/uptime_parser.tab.rb' => 'lib/riemann/tools/uptime_parser.y' do
+  sh 'racc -S lib/riemann/tools/uptime_parser.y'
+end

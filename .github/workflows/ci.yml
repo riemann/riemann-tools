@@ -38,5 +38,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
+      - name: Build the parser
+        run: bundle exec rake gen_parser
       - name: Run the test suite
         run: bundle exec rspec

@@ -2,6 +2,7 @@
 
 require 'riemann/tools'
 require 'riemann/tools/utils'
+require 'riemann/tools/uptime_parser.tab'
 
 module Riemann
   module Tools
@@ -19,6 +20,8 @@ module Riemann
       opt :load_critical, 'Load critical threshold (load average / core)', default: 8.0
       opt :memory_warning, 'Memory warning threshold (fraction of RAM)', default: 0.85
       opt :memory_critical, 'Memory critical threshold (fraction of RAM)', default: 0.95
+      opt :uptime_warning, 'Uptime warning threshold', default: 86_400
+      opt :uptime_critical, 'Uptime critical threshold', default: 3600
       opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk]
 
       def initialize
@@ -27,6 +30,7 @@ module Riemann
           disk: { critical: opts[:disk_critical], warning: opts[:disk_warning] },
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
           memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
+          uptime: { critical: opts[:uptime_critical], warning: opts[:uptime_warning] },
         }
         case (@ostype = `uname -s`.chomp.downcase)
         when 'darwin'
@@ -35,25 +39,28 @@ module Riemann
           @disk = method :disk
           @load = method :darwin_load
           @memory = method :darwin_memory
-          darwin_top
+          @uptime = method :bsd_uptime
         when 'freebsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :freebsd_cpu
           @disk = method :disk
           @load = method :bsd_load
           @memory = method :freebsd_memory
+          @uptime = method :bsd_uptime
         when 'openbsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :openbsd_cpu
           @disk = method :disk
           @load = method :bsd_load
           @memory = method :openbsd_memory
+          @uptime = method :bsd_uptime
         when 'sunos'
           @cores = `mpstat -a 2>/dev/null`.split[33].to_i
           @cpu = method :sunos_cpu
           @disk = method :disk
           @load = method :bsd_load
           @memory = method :sunos_memory
+          @uptime = method :bsd_uptime
         else
           @cores = `nproc`.to_i
           puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == 'linux'
@@ -61,6 +68,7 @@ module Riemann
           @disk = method :disk
           @load = method :linux_load
           @memory = method :linux_memory
+          @uptime = method :linux_uptime
           @supports_exclude_type = `df --help 2>&1 | grep -e "--exclude-type"` != ''
         end
 
@@ -74,6 +82,8 @@ module Riemann
             @cpu_enabled = true
           when 'memory'
             @memory_enabled = true
+          when 'uptime'
+            @uptime_enabled = true
           end
         end
       end
@@ -96,6 +106,18 @@ module Riemann
           alert service, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
         else
           alert service, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        end
+      end
+
+      def report_uptime(uptime)
+        description = uptime_to_human(uptime)
+
+        if uptime < @limits[:uptime][:critical]
+          alert 'uptime', :critical, uptime, description
+        elsif uptime < @limits[:uptime][:warning]
+          alert 'uptime', :warning, uptime, description
+        else
+          alert 'uptime', :ok, uptime, description
         end
       end
 
@@ -205,9 +227,16 @@ module Riemann
         @old_cpu = [u2, s2, t2, i2]
       end
 
+      def uptime_parser
+        @uptime_parser ||= UptimeParser.new
+      end
+
+      def uptime
+        @cached_data[:uptime] ||= uptime_parser.parse(`uptime`)
+      end
+
       def bsd_load
-        m = `uptime`.split(':')[-1].chomp.gsub(/\s+/, '').split(',')
-        load = m[0].to_f / @cores
+        load = uptime[:load_averages][1] / @cores
         if load > @limits[:load][:critical]
           alert 'load', :critical, load, "1-minute load average/core is #{load}"
         elsif load > @limits[:load][:warning]
@@ -240,47 +269,50 @@ module Riemann
       end
 
       def darwin_top
+        return @cached_data[:darwin_top] if @cached_data[:darwin_top]
+
         raw = `top -l 1 | grep -i "^\\(cpu\\|physmem\\|load\\)"`.chomp
-        @topdata = { stamp: Time.now.to_i }
+        topdata = {}
         raw.each_line do |ln|
           if ln.match(/Load Avg: [0-9.]+, [0-9.]+, ([0-9.])+/i)
-            @topdata[:load] = Regexp.last_match(1).to_f
+            topdata[:load] = Regexp.last_match(1).to_f
           elsif ln.match(/CPU usage: [0-9.]+% user, [0-9.]+% sys, ([0-9.]+)% idle/i)
-            @topdata[:cpu] = 1 - (Regexp.last_match(1).to_f / 100)
+            topdata[:cpu] = 1 - (Regexp.last_match(1).to_f / 100)
           elsif (mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) wired, ([0-9]+)([BKMGT]) active, ([0-9]+)([BKMGT]) inactive, ([0-9]+)([BKMGT]) used, ([0-9]+)([BKMGT]) free/i))
             wired = mdat[1].to_i * (1024**'BKMGT'.index(mdat[2]))
             active = mdat[3].to_i * (1024**'BKMGT'.index(mdat[4]))
             inactive = mdat[5].to_i * (1024**'BKMGT'.index(mdat[6]))
             used = mdat[7].to_i * (1024**'BKMGT'.index(mdat[8]))
             free = mdat[9].to_i * (1024**'BKMGT'.index(mdat[10]))
-            @topdata[:memory] = (wired + active + used).to_f / (wired + active + used + inactive + free)
+            topdata[:memory] = (wired + active + used).to_f / (wired + active + used + inactive + free)
           # This is for OSX Mavericks which
           # uses a different format for top
           # Example: PhysMem: 4662M used (1328M wired), 2782M unused.
           elsif (mdat = ln.match(/PhysMem: ([0-9]+)([BKMGT]) used \([0-9]+[BKMGT] wired\), ([0-9]+)([BKMGT]) unused/i))
             used = mdat[1].to_i * (1024**'BKMGT'.index(mdat[2]))
             unused = mdat[3].to_i * (1024**'BKMGT'.index(mdat[4]))
-            @topdata[:memory] = used.to_f / (used + unused)
+            topdata[:memory] = used.to_f / (used + unused)
           end
         end
+        @cached_data[:darwin_top] = topdata
       end
 
       def darwin_cpu
-        darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
-        unless @topdata[:cpu]
+        topdata = darwin_top
+        unless topdata[:cpu]
           alert 'cpu', :unknown, nil, 'unable to get CPU stats from top'
           return false
         end
-        report_pct :cpu,  @topdata[:cpu], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pcpu,pid,comm`)}"
+        report_pct :cpu, topdata[:cpu], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pcpu,pid,comm`)}"
       end
 
       def darwin_load
-        darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
-        unless @topdata[:load]
+        topdata = darwin_top
+        unless topdata[:load]
           alert 'load', :unknown, nil, 'unable to get load ave from top'
           return false
         end
-        metric = @topdata[:load] / @cores
+        metric = topdata[:load] / @cores
         if metric > @limits[:load][:critical]
           alert 'load', :critical, metric, "1-minute load average per core is #{metric}"
         elsif metric > @limits[:load][:warning]
@@ -291,12 +323,12 @@ module Riemann
       end
 
       def darwin_memory
-        darwin_top unless (Time.now.to_i - @topdata[:stamp]) < opts[:interval]
-        unless @topdata[:memory]
+        topdata = darwin_top
+        unless topdata[:memory]
           alert 'memory', :unknown, nil, 'unable to get memory data from top'
           return false
         end
-        report_pct :memory, @topdata[:memory], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
+        report_pct :memory, topdata[:memory], "usage\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
       end
 
       def df
@@ -336,11 +368,43 @@ module Riemann
         end
       end
 
+      def bsd_uptime
+        value = uptime[:uptime]
+
+        report_uptime(value)
+      end
+
+      def linux_uptime
+        value = File.read('/proc/uptime').split(/\s+/)[0].to_f
+
+        report_uptime(value)
+      end
+
+      def uptime_to_human(value)
+        seconds = value.to_i
+        days = seconds / 86_400
+        seconds %= 86_400
+        hrs = seconds / 3600
+        seconds %= 3600
+        mins = seconds / 60
+        [
+          ("#{days} day#{'s' if days > 1}" unless days.zero?),
+          format('%<hrs>2d:%<mins>02d', hrs: hrs, mins: mins),
+        ].compact.join(' ')
+      end
+
       def tick
+        invalidate_cache
+
         @cpu.call if @cpu_enabled
         @memory.call if @memory_enabled
         @disk.call if @disk_enabled
         @load.call if @load_enabled
+        @uptime.call if @uptime_enabled
+      end
+
+      def invalidate_cache
+        @cached_data = {}
       end
     end
   end
