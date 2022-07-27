@@ -16,10 +16,10 @@ module Riemann
 
       opt :fog_credentials_file, 'Fog credentials file', type: String
       opt :fog_credential, 'Fog credentials to use', type: String
-      opt :aws_access, 'AWS Access Key', type: String
-      opt :aws_secret, 'AWS Secret Key', type: String
-      opt :aws_region, 'AWS Region', type: String, default: 'eu-west-1'
-      opt :aws_azs, 'List of AZs to aggregate against', type: :strings, default: ['all_az']
+      opt :access_key, 'AWS Access Key', type: String
+      opt :secret_key, 'AWS Secret Key', type: String
+      opt :region, 'AWS Region', type: String, default: 'eu-west-1'
+      opt :azs, 'List of AZs to aggregate against', type: :strings, default: ['all_az']
       opt :elbs, 'List of ELBs to pull metrics from', type: :strings, required: true
 
       def standard_metrics
@@ -89,16 +89,16 @@ module Riemann
           Fog.credential = options[:fog_credential].to_sym
           connection = Fog::AWS::CloudWatch.new
         else
-          connection = if options[:aws_access] && options[:aws_secret]
+          connection = if options[:access_key] && options[:secret_key]
                          Fog::AWS::CloudWatch.new({
-                                                    aws_access_key_id: options[:aws_access],
-                                                    aws_secret_access_key: options[:aws_secret],
-                                                    region: options[:aws_region],
+                                                    aws_access_key_id: options[:access_key],
+                                                    aws_secret_access_key: options[:secret_key],
+                                                    region: options[:region],
                                                   })
                        else
                          Fog::AWS::CloudWatch.new({
                                                     use_iam_profile: true,
-                                                    region: options[:aws_region],
+                                                    region: options[:region],
                                                   })
                        end
         end
@@ -107,7 +107,7 @@ module Riemann
           metric_options = standard_metrics
           metric_base_options = base_metrics
 
-          options[:aws_azs].each do |az|
+          options[:azs].each do |az|
             metric_options.keys.sort.each do |metric_type|
               merged_options = metric_base_options.merge(metric_options[metric_type])
               merged_options['MetricName'] = metric_type
