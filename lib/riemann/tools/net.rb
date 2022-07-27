@@ -2,6 +2,7 @@
 
 require 'riemann/tools'
 
+# Gathers network interface statistics and submits them to Riemann.
 module Riemann
   module Tools
     class Net

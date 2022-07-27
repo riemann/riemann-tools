@@ -3,8 +3,6 @@
 
 Process.setproctitle($PROGRAM_NAME)
 
-# Reports current CPU, disk, load average, and memory use to riemann.
-
 require 'riemann/tools/health'
 
 Riemann::Tools::Health.run

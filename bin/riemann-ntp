@@ -3,8 +3,6 @@
 
 Process.setproctitle($PROGRAM_NAME)
 
-# Reports NTP stats to Riemann.
-
 require 'riemann/tools/ntp'
 
 Riemann::Tools::Ntp.run

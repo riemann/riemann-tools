@@ -3,8 +3,6 @@
 
 Process.setproctitle($PROGRAM_NAME)
 
-# Gathers network interface statistics and submits them to Riemann.
-
 require 'riemann/tools/net'
 
 Riemann::Tools::Net.run

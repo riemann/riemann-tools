@@ -4,6 +4,7 @@ require 'riemann/tools'
 require 'riemann/tools/utils'
 require 'riemann/tools/uptime_parser.tab'
 
+# Reports current CPU, disk, load average, and memory use to riemann.
 module Riemann
   module Tools
     class Health

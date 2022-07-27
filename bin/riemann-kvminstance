@@ -3,26 +3,6 @@
 
 Process.setproctitle($PROGRAM_NAME)
 
-require File.expand_path('../lib/riemann/tools', __dir__)
-
-module Riemann
-  module Tools
-    class KVM
-      include Riemann::Tools
-
-      def tick
-        # determine how many instances I have according to libvirt
-        kvm_instances = `LANG=C virsh list | grep -c running`
-
-        # submit them to riemann
-        report(
-          service: 'KVM Running VMs',
-          metric: kvm_instances.to_i,
-          state: 'info',
-        )
-      end
-    end
-  end
-end
+require 'riemann/tools/kvm'
 
 Riemann::Tools::KVM.run
