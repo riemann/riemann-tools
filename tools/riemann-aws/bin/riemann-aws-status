@@ -11,28 +11,37 @@ module Riemann
   module Tools
     class AWS
       include Riemann::Tools
-      require 'fog'
+      require 'fog/aws'
       require 'date'
 
-      opt :access_key, 'AWS access key', type: String
-      opt :secret_key, 'Secret access key', type: String
+      opt :fog_credentials_file, 'Fog credentials file', type: String
+      opt :fog_credential, 'Fog credentials to use', type: String
+      opt :aws_access, 'AWS access key', type: String
+      opt :aws_secret, 'Secret access key', type: String
       opt :region, 'AWS region', type: String, default: 'eu-west-1'
 
       opt :retirement_critical, 'Number of days before retirement. Defaults to 2', default: 2
       opt :event_warning, 'Number of days before event. Defaults to nil (i.e. when the event appears)', default: nil
 
       def initialize
-        creds = if opts.key?('secret_key') && opts.key?('access_key')
-                  {
-                    aws_secret_access_key: opts[:secret_key],
-                    aws_access_key_id: opts[:access_key],
-                  }
-                else
-                  { use_iam_profile: true }
-                end
-        creds['region'] = opts[:region]
-        creds['provider'] = 'AWS'
-        @compute = Fog::Compute.new(creds)
+        if options[:fog_credentials_file]
+          Fog.credentials_path = options[:fog_credentials_file]
+          Fog.credential = options[:fog_credential].to_sym
+          @compute = Fog::AWS::Compute.new
+        else
+          @compute = if options[:aws_access] && options[:aws_secret]
+                         Fog::AWS::Compute.new({
+                                                    aws_access_key_id: options[:aws_access],
+                                                    aws_secret_access_key: options[:aws_secret],
+                                                    region: options[:aws_region],
+                                                  })
+                       else
+                         Fog::AWS::Compute.new({
+                                                    use_iam_profile: true,
+                                                    region: options[:aws_region],
+                                                  })
+                       end
+        end
       end
 
       def tick
