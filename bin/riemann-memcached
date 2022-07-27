@@ -3,42 +3,6 @@
 
 Process.setproctitle($PROGRAM_NAME)
 
-# Gathers memcached STATS and submits them to Riemann.
-
-require File.expand_path('../lib/riemann/tools', __dir__)
-
-module Riemann
-  module Tools
-    class Memcached
-      include Riemann::Tools
-      require 'socket'
-
-      opt :memcached_host, 'Memcached hostname', default: 'localhost'
-      opt :memcached_port, 'Memcached port', default: 11_211
-
-      def tick
-        sock = TCPSocket.new(opts[:memcached_host], opts[:memcached_port])
-        sock.print("stats\r\n")
-        sock.flush
-        stats = sock.gets
-
-        loop do
-          stats = sock.gets
-          break if stats.strip == 'END'
-
-          m = stats.match(/STAT (\w+) (\S+)/)
-          report(
-            host: opts[:memcached_host].dup,
-            service: "memcached #{m[1]}",
-            metric: m[2].to_f,
-            state: 'ok',
-            tags: ['memcached'],
-          )
-        end
-        sock.close
-      end
-    end
-  end
-end
+require 'riemann/tools/memcached'
 
 Riemann::Tools::Memcached.run

@@ -2,6 +2,7 @@
 
 require 'riemann/tools'
 
+# Reports NTP stats to Riemann.
 module Riemann
   module Tools
     class Ntp
