@@ -47,4 +47,37 @@ RSpec.describe Riemann::Tools::Health do
       expect(subject).to have_received(:alert).with('disk /usr/home/romain/Medias', :ok, 0.39906518922242257, '40% used')
     end
   end
+
+  context '#bsd_swap' do
+    before do
+      allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
+        Device          512-blocks     Used    Avail Capacity
+        /dev/da0p2         4194304  2695808  1498496    64%
+        /dev/ggate0           2048        0     2048     0%
+        Total              4196352  2695808  1500544    64%
+      OUTPUT
+    end
+
+    it 'reports correct values' do
+      allow(subject).to receive(:report_pct).with(:swap, 0.6424170326988775, 'used')
+      subject.bsd_swap
+      expect(subject).to have_received(:report_pct).with(:swap, 0.6424170326988775, 'used')
+    end
+  end
+
+  context '#linux_swap' do
+    before do
+      allow(File).to receive(:read).with('/proc/swaps').and_return(<<~OUTPUT)
+        Filename				Type		Size		Used		Priority
+        /dev/sdb4                               partition	4193276		2848268		-2
+        /dev/sda4                               partition	4193276		0		-3
+      OUTPUT
+    end
+
+    it 'reports correct values' do
+      allow(subject).to receive(:report_pct).with(:swap, 0.339623244451355, 'used')
+      subject.linux_swap
+      expect(subject).to have_received(:report_pct).with(:swap, 0.339623244451355, 'used')
+    end
+  end
 end

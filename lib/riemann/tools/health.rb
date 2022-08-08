@@ -23,7 +23,9 @@ module Riemann
       opt :memory_critical, 'Memory critical threshold (fraction of RAM)', default: 0.95
       opt :uptime_warning, 'Uptime warning threshold', default: 86_400
       opt :uptime_critical, 'Uptime critical threshold', default: 3600
-      opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk]
+      opt :swap_warning, 'Swap warning threshold', default: 0.4
+      opt :swap_critical, 'Swap critical threshold', default: 0.5
+      opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk swap]
 
       def initialize
         @limits = {
@@ -32,6 +34,7 @@ module Riemann
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
           memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
           uptime: { critical: opts[:uptime_critical], warning: opts[:uptime_warning] },
+          swap: { critical: opts[:swap_critical], warning: opts[:swap_warning] },
         }
         case (@ostype = `uname -s`.chomp.downcase)
         when 'darwin'
@@ -41,6 +44,7 @@ module Riemann
           @load = method :darwin_load
           @memory = method :darwin_memory
           @uptime = method :bsd_uptime
+          @swap = method :bsd_swap
         when 'freebsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :freebsd_cpu
@@ -48,6 +52,7 @@ module Riemann
           @load = method :bsd_load
           @memory = method :freebsd_memory
           @uptime = method :bsd_uptime
+          @swap = method :bsd_swap
         when 'openbsd'
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :openbsd_cpu
@@ -55,6 +60,7 @@ module Riemann
           @load = method :bsd_load
           @memory = method :openbsd_memory
           @uptime = method :bsd_uptime
+          @swap = method :bsd_swap
         when 'sunos'
           @cores = `mpstat -a 2>/dev/null`.split[33].to_i
           @cpu = method :sunos_cpu
@@ -62,6 +68,7 @@ module Riemann
           @load = method :bsd_load
           @memory = method :sunos_memory
           @uptime = method :bsd_uptime
+          @swap = method :bsd_swap
         else
           @cores = `nproc`.to_i
           puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == 'linux'
@@ -70,6 +77,7 @@ module Riemann
           @load = method :linux_load
           @memory = method :linux_memory
           @uptime = method :linux_uptime
+          @swap = method :linux_swap
           @supports_exclude_type = `df --help 2>&1 | grep -e "--exclude-type"` != ''
         end
 
@@ -85,6 +93,8 @@ module Riemann
             @memory_enabled = true
           when 'uptime'
             @uptime_enabled = true
+          when 'swap'
+            @swap_enabled = true
           end
         end
       end
@@ -381,6 +391,32 @@ module Riemann
         report_uptime(value)
       end
 
+      def bsd_swap
+        _device, blocks, used, _avail, _capacity = `swapinfo`.lines.last.split(/\s+/)
+
+        value = Float(used) / Integer(blocks)
+
+        report_pct :swap, value, 'used'
+      end
+
+      def linux_swap
+        total_size = 0.0
+        total_used = 0.0
+
+        File.read('/proc/swaps').lines.each_with_index do |line, n|
+          next if n.zero?
+
+          _filename, _type, size, used, _priority = line.split(/\s+/)
+
+          total_size += size.to_f
+          total_used += used.to_f
+        end
+
+        value = total_used / total_size
+
+        report_pct :swap, value, 'used'
+      end
+
       def uptime_to_human(value)
         seconds = value.to_i
         days = seconds / 86_400
@@ -402,6 +438,7 @@ module Riemann
         @disk.call if @disk_enabled
         @load.call if @load_enabled
         @uptime.call if @uptime_enabled
+        @swap.call if @swap_enabled
       end
 
       def invalidate_cache
