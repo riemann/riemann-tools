@@ -49,35 +49,66 @@ RSpec.describe Riemann::Tools::Health do
   end
 
   context '#bsd_swap' do
-    before do
-      allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
-        Device          512-blocks     Used    Avail Capacity
-        /dev/da0p2         4194304  2695808  1498496    64%
-        /dev/ggate0           2048        0     2048     0%
-        Total              4196352  2695808  1500544    64%
-      OUTPUT
+    context 'with swap devices' do
+      before do
+        allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
+          Device          512-blocks     Used    Avail Capacity
+          /dev/da0p2         4194304  2695808  1498496    64%
+          /dev/ggate0           2048        0     2048     0%
+          Total              4196352  2695808  1500544    64%
+        OUTPUT
+      end
+
+      it 'reports correct values' do
+        allow(subject).to receive(:report_pct).with(:swap, 0.6424170326988775, 'used')
+        subject.bsd_swap
+        expect(subject).to have_received(:report_pct).with(:swap, 0.6424170326988775, 'used')
+      end
     end
 
-    it 'reports correct values' do
-      allow(subject).to receive(:report_pct).with(:swap, 0.6424170326988775, 'used')
-      subject.bsd_swap
-      expect(subject).to have_received(:report_pct).with(:swap, 0.6424170326988775, 'used')
+    context 'without swap devices' do
+      before do
+        allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
+          Device          512-blocks     Used    Avail Capacity
+        OUTPUT
+      end
+
+      it 'reports no value' do
+        allow(subject).to receive(:report_pct)
+        subject.bsd_swap
+        expect(subject).not_to have_received(:report_pct)
+      end
     end
   end
 
   context '#linux_swap' do
-    before do
-      allow(File).to receive(:read).with('/proc/swaps').and_return(<<~OUTPUT)
-        Filename				Type		Size		Used		Priority
-        /dev/sdb4                               partition	4193276		2848268		-2
-        /dev/sda4                               partition	4193276		0		-3
-      OUTPUT
-    end
+    context 'with swap devices' do
+      before do
+        allow(File).to receive(:read).with('/proc/swaps').and_return(<<~OUTPUT)
+          Filename				Type		Size		Used		Priority
+          /dev/sdb4                               partition	4193276		2848268		-2
+          /dev/sda4                               partition	4193276		0		-3
+        OUTPUT
+      end
 
-    it 'reports correct values' do
-      allow(subject).to receive(:report_pct).with(:swap, 0.339623244451355, 'used')
-      subject.linux_swap
-      expect(subject).to have_received(:report_pct).with(:swap, 0.339623244451355, 'used')
+      it 'reports correct values' do
+        allow(subject).to receive(:report_pct).with(:swap, 0.339623244451355, 'used')
+        subject.linux_swap
+        expect(subject).to have_received(:report_pct).with(:swap, 0.339623244451355, 'used')
+      end
+    end
+    context 'without swap devices' do
+      before do
+        allow(File).to receive(:read).with('/proc/swaps').and_return(<<~OUTPUT)
+          Filename				Type		Size		Used		Priority
+        OUTPUT
+      end
+
+      it 'reports no value' do
+        allow(subject).to receive(:report_pct)
+        subject.linux_swap
+        expect(subject).not_to have_received(:report_pct)
+      end
     end
   end
 end

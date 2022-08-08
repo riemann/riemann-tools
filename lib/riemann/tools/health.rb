@@ -397,6 +397,8 @@ module Riemann
         value = Float(used) / Integer(blocks)
 
         report_pct :swap, value, 'used'
+      rescue ArgumentError
+        # Ignore
       end
 
       def linux_swap
@@ -411,6 +413,8 @@ module Riemann
           total_size += size.to_f
           total_used += used.to_f
         end
+
+        return if total_size.zero?
 
         value = total_used / total_size
 
