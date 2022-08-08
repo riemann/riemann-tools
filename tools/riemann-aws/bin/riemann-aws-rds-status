@@ -11,7 +11,7 @@ module Riemann
   module Tools
     class AWS
       include Riemann::Tools
-      require 'fog'
+      require 'fog/aws'
       require 'date'
       require 'time'
       require 'json'

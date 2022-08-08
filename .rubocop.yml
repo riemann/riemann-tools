@@ -3,6 +3,8 @@ AllCops:
   Exclude:
     - lib/riemann/tools/uptime_parser.tab.rb
     - vendor/bundle/**/*
+Gemspec/RequiredRubyVersion:
+  Enabled: false
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
 Layout/LineLength:
@@ -28,6 +30,8 @@ Naming/MethodParameterName:
     - lb # load balancer
 Style/Documentation:
   Enabled: false
+Style/HashSyntax:
+  EnforcedShorthandSyntax: never
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: consistent_comma
 Style/TrailingCommaInArrayLiteral:

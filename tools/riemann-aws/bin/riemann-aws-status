@@ -11,9 +11,11 @@ module Riemann
   module Tools
     class AWS
       include Riemann::Tools
-      require 'fog'
+      require 'fog/aws'
       require 'date'
 
+      opt :fog_credentials_file, 'Fog credentials file', type: String
+      opt :fog_credential, 'Fog credentials to use', type: String
       opt :access_key, 'AWS access key', type: String
       opt :secret_key, 'Secret access key', type: String
       opt :region, 'AWS region', type: String, default: 'eu-west-1'
@@ -22,34 +24,28 @@ module Riemann
       opt :event_warning, 'Number of days before event. Defaults to nil (i.e. when the event appears)', default: nil
 
       def initialize
-        creds = if opts.key?('secret_key') && opts.key?('access_key')
-                  {
-                    aws_secret_access_key: opts[:secret_key],
-                    aws_access_key_id: opts[:access_key],
-                  }
-                else
-                  { use_iam_profile: true }
-                end
-        creds['region'] = opts[:region]
-        creds['provider'] = 'AWS'
-        @compute = Fog::Compute.new(creds)
+        if options[:fog_credentials_file]
+          Fog.credentials_path = options[:fog_credentials_file]
+          Fog.credential = options[:fog_credential].to_sym
+          @compute = Fog::AWS::Compute.new
+        else
+          @compute = if options[:access_key] && options[:secret_key]
+                       Fog::AWS::Compute.new({
+                                               access_key_key_id: options[:access_key],
+                                               secret_key_access_key: options[:secret_key],
+                                               region: options[:region],
+                                             })
+                     else
+                       Fog::AWS::Compute.new({
+                                               use_iam_profile: true,
+                                               region: options[:region],
+                                             })
+                     end
+        end
       end
 
       def tick
-        # XXX: needs work:
-        #   * instance_status and status seems unused
-        #   * where is inject comming from
-        # It looks line the only needed line for the 2 next paragraph is the one that assigns hosts.
-        instance_status = @compute.describe_instance_status.body['instanceStatusSet']
-        status = instance_status.each_with_object({}) do |i, acc|
-          acc[i.delete('instanceId')] = i
-        end
-
         hosts = @compute.servers.select { |s| s.state == 'running' }
-        inject([status, {}]) do |(astatus, acc), host|
-          acc[host.private_dns_name] = astatus.delete(host.id)
-          [astatus, acc]
-        end[1]
 
         hosts.each do |host, host_status|
           host_status['eventsSet'].each do |event|

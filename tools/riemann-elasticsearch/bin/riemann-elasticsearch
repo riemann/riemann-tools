@@ -16,7 +16,7 @@ module Riemann
       opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
       opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
       opt :path_prefix,
-          'Elasticsearch path prefix for proxied installations e.g. "els" for target http://localhost/els/_cluster/health', default: '/'
+          'Elasticsearch path prefix for proxied installations e.g. "els" for target http://localhost/els/_cluster/health', default: '/'.dup
       opt :es_host, 'Elasticsearch host', default: 'localhost'
       opt :es_port, 'Elasticsearch port', type: :int, default: 9200
       opt :es_search_index, 'Elasticsearch index to fetch search statistics for', default: '_all'
