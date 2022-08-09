@@ -17,7 +17,7 @@ module Riemann
       opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
       opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
       opt :path_prefix,
-          'Chronos path prefix for proxied installations e.g. "chronos" for target http://localhost/chronos/metrics', default: '/'
+          'Chronos path prefix for proxied installations e.g. "chronos" for target http://localhost/chronos/metrics', default: '/'.dup
       opt :chronos_host, 'Chronos host', default: 'localhost'
       opt :chronos_port, 'Chronos port', type: :int, default: 4400
 

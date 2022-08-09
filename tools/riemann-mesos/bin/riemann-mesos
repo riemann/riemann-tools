@@ -17,7 +17,7 @@ module Riemann
       opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
       opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
       opt :path_prefix,
-          'Mesos path prefix for proxied installations e.g. "mesos" for target http://localhost/mesos/metrics/snapshot', default: '/'
+          'Mesos path prefix for proxied installations e.g. "mesos" for target http://localhost/mesos/metrics/snapshot', default: '/'.dup
       opt :mesos_host, 'Mesos host', default: 'localhost'
       opt :mesos_port, 'Mesos port', type: :int, default: 5050
 

@@ -17,7 +17,7 @@ module Riemann
       opt :read_timeout, 'Faraday read timeout', type: :int, default: 2
       opt :open_timeout, 'Faraday open timeout', type: :int, default: 1
       opt :path_prefix,
-          'Marathon path prefix for proxied installations e.g. "marathon" for target http://localhost/marathon/metrics', default: '/'
+          'Marathon path prefix for proxied installations e.g. "marathon" for target http://localhost/marathon/metrics', default: '/'.dup
       opt :marathon_host, 'Marathon host', default: 'localhost'
       opt :marathon_port, 'Marathon port', type: :int, default: 8080
 
