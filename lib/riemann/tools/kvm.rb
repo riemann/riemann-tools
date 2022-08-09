@@ -4,7 +4,7 @@ require 'riemann/tools'
 
 module Riemann
   module Tools
-    class KVM
+    class Kvm
       include Riemann::Tools
 
       def tick

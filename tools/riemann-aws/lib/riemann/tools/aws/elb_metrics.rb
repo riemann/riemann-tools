@@ -5,7 +5,7 @@ require 'riemann/tools'
 module Riemann
   module Tools
     module Aws
-      class ELBMetrics
+      class ElbMetrics
         include Riemann::Tools
         require 'fog/aws'
         require 'time'

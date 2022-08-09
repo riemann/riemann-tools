@@ -4,8 +4,8 @@ require 'riemann/tools'
 
 module Riemann
   module Tools
-    module AWS
-      class RDSStatus
+    module Aws
+      class RdsStatus
         include Riemann::Tools
         require 'fog/aws'
         require 'date'

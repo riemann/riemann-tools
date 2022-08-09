@@ -5,4 +5,4 @@ Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools/aws/status'
 
-Riemann::Tools::AWSStatus.run
+Riemann::Tools::Aws::Status.run

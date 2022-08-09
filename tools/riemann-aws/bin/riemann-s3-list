@@ -5,4 +5,4 @@ Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools/aws/s3_list'
 
-Riemann::Tools::S3List.run
+Riemann::Tools::Aws::S3List.run

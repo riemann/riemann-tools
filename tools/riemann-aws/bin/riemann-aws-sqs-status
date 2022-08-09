@@ -5,4 +5,4 @@ Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools/aws/sqs_status'
 
-Riemann::Tools::AWS::SQSStatus.run
+Riemann::Tools::Aws::SqsStatus.run

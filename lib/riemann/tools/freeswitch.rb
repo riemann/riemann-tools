@@ -5,7 +5,7 @@ require 'riemann/tools'
 
 module Riemann
   module Tools
-    class FreeSWITCH
+    class Freeswitch
       include Riemann::Tools
 
       opt :calls_warning, 'Calls warning threshold', default: 100

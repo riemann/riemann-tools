@@ -5,4 +5,4 @@ Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools/aws/billing'
 
-Riemann::Tools::AWS::Billing.run
+Riemann::Tools::Aws::Billing.run

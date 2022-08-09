@@ -5,4 +5,4 @@ Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools/freeswitch'
 
-Riemann::Tools::FreeSWITCH.run
+Riemann::Tools::Freeswitch.run
