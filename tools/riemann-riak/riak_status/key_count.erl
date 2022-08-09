@@ -1,5 +1,4 @@
 #!/usr/bin/env escript
-Process.setproctitle($0)
 %%! -name riakstatuscheck -setcookie riak -hidden
 
 main([]) -> main(["riak@127.0.0.1"]);
