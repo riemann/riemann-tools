@@ -3,7 +3,7 @@
 module Riemann
   module Tools
     require 'optimist'
-    require 'riemann/client'
+    require 'riemann/tools/riemann_client_wrapper'
 
     def self.included(base)
       base.instance_eval do
@@ -72,26 +72,8 @@ module Riemann
       riemann << event
     end
 
-    def new_riemann_client
-      r = Riemann::Client.new(
-        host: options[:host],
-        port: options[:port],
-        timeout: options[:timeout],
-        ssl: options[:tls],
-        key_file: options[:tls_key],
-        cert_file: options[:tls_cert],
-        ca_file: options[:tls_ca_cert],
-        ssl_verify: options[:tls_verify],
-      )
-      if options[:tcp] || options[:tls]
-        r.tcp
-      else
-        r
-      end
-    end
-
     def riemann
-      @riemann ||= new_riemann_client
+      @riemann ||= RiemannClientWrapper.instance.configure(options)
     end
     alias r riemann
 

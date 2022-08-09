@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
+
+def camelize(subject)
+  subject.gsub(%r{(^|[/_])[a-z]}) { |x| x.sub('/', '::').sub('_', '').upcase }
+end
+
+def underscore(subject)
+  subject.split(/(?=[A-Z])/).map(&:downcase).join('_').gsub('::_', '/')
+end
+
+def constantize(subject)
+  Object.const_get(subject)
+end
+
+def read_flags(argv)
+  res = []
+
+  while (arg = argv.shift)
+    break if arg == '--'
+
+    res << arg
+  end
+
+  res
+end
+
+if ARGV.empty?
+  warn <<~USAGE
+    usage: riemann-wrapper [common options] -- tool1 [tool1 options] [-- tool2 [tool2 options] ...]
+
+    Run multiple Riemann tools in a single process.  A single connection to
+    riemann is maintained and shared for all tools, the connection flags should
+    only be passed as common options.
+
+    Examples:
+      1. Run the fd, health and ntp tools with default options:
+
+         riemann-wrapper -- fd -- health -- ntp
+
+      2. Run the fd, health and ntp tools against a remote riemann server using
+         TCP and tagging each event with the name of the tool that produced it:
+
+         riemann-wrapper --host riemann.example.com --tcp -- \\
+                         fd     --tag=fd     -- \\
+                         health --tag=health -- \\
+                         ntp    --tag=ntp
+  USAGE
+  exit 1
+end
+
+argv = ARGV.dup
+
+common_argv = read_flags(argv)
+
+threads = []
+
+while argv.any?
+  tool = argv.shift
+  tool_argv = read_flags(argv)
+
+  require "riemann/tools/#{tool}"
+  tool_class = constantize(camelize("riemann/tools/#{tool}"))
+
+  ARGV.replace(common_argv + tool_argv)
+  instance = tool_class.new
+  # Force evaluation of options.  This rely on ARGV and needs to be done before
+  # we launch multiple threads which compete to read information from there.
+  instance.options
+  threads << Thread.new { instance.run }
+end
+
+threads.each(&:join)
