@@ -68,7 +68,7 @@ module Riemann
       def connection
         response = nil
         begin
-          response = Net::HTTP.get(@uri)
+          response = ::Net::HTTP.get(@uri)
         rescue StandardError => e
           report(
             service: 'httpd health',

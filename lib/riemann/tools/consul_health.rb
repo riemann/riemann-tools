@@ -43,7 +43,7 @@ module Riemann
       end
 
       def get(url)
-        Net::HTTP.get_response(url).body
+        ::Net::HTTP.get_response(url).body
       end
 
       def tick

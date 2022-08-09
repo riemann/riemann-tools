@@ -43,10 +43,10 @@ module Riemann
       end
 
       def json
-        http = Net::HTTP.new('cloudant.com', 443)
+        http = ::Net::HTTP.new('cloudant.com', 443)
         http.use_ssl = true
         http.start do |h|
-          get = Net::HTTP::Get.new('/api/load_balancer')
+          get = ::Net::HTTP::Get.new('/api/load_balancer')
           get.basic_auth opts[:cloudant_username], opts[:cloudant_password]
           h.request get
         end
