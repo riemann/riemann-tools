@@ -23,7 +23,7 @@ gemspec = Gem::Specification.new do |s|
   s.add_runtime_dependency 'riemann-tools', '~> 1.0', '>= 1.1.1'
   s.add_runtime_dependency 'docker-api', '~> 1.22', '>= 1.22.0'
 
-  s.files = FileList['bin/*', 'LICENSE', 'README.md'].to_a
+  s.files = FileList['bin/*', 'lib/**/*.rb', 'LICENSE', 'README.md'].to_a
   s.executables |= Dir.entries('bin/')
 
   s.required_ruby_version = Gem::Requirement.new('>= 2.6.0')
