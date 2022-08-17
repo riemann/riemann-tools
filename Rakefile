@@ -8,7 +8,7 @@ GitHubChangelogGenerator::RakeTask.new :changelog do |config|
   config.user = 'riemann'
   config.project = 'riemann-tools'
   config.exclude_labels = ['skip-changelog']
-  config.future_release = Riemann::Tools::VERSION
+  config.future_release = "v#{Riemann::Tools::VERSION}"
 end
 
 desc 'Recursively build all gems'
