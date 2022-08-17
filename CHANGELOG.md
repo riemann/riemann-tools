@@ -1,8 +1,31 @@
 # Changelog
 
-## [1.1.1](https://github.com/riemann/riemann-tools/tree/1.1.1) (2022-07-02)
+## [v1.2.0](https://github.com/riemann/riemann-tools/tree/v1.2.0) (2022-08-17)
 
-[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.1.0...1.1.1)
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.1.1...v1.2.0)
+
+**Implemented enhancements:**
+
+- Add users monitoring to riemann-health [\#226](https://github.com/riemann/riemann-tools/pull/226) ([smortex](https://github.com/smortex))
+- Add a wrapper to run multiple tools in a single process [\#225](https://github.com/riemann/riemann-tools/pull/225) ([smortex](https://github.com/smortex))
+- Add swap monitoring to riemann-health [\#222](https://github.com/riemann/riemann-tools/pull/222) ([smortex](https://github.com/smortex))
+- Add uptime monitoring to riemann-health [\#218](https://github.com/riemann/riemann-tools/pull/218) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Ignore squashfs from disks usage reporting [\#228](https://github.com/riemann/riemann-tools/pull/228) ([smortex](https://github.com/smortex))
+- Fix service name mismatch for rx/tx drop in riemann-net [\#217](https://github.com/riemann/riemann-tools/pull/217) ([smortex](https://github.com/smortex))
+
+**Merged pull requests:**
+
+- Normalize class names [\#224](https://github.com/riemann/riemann-tools/pull/224) ([smortex](https://github.com/smortex))
+- Move all extra tool classes in dedicated files [\#223](https://github.com/riemann/riemann-tools/pull/223) ([smortex](https://github.com/smortex))
+- Removed travis [\#220](https://github.com/riemann/riemann-tools/pull/220) ([jamtur01](https://github.com/jamtur01))
+- Move all base tool classes in dedicated files [\#219](https://github.com/riemann/riemann-tools/pull/219) ([smortex](https://github.com/smortex))
+
+## [v1.1.1](https://github.com/riemann/riemann-tools/tree/v1.1.1) (2022-07-02)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.1.0...v1.1.1)
 
 **Fixed bugs:**
 
