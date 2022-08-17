@@ -42,10 +42,10 @@ module Riemann
       end
 
       def csv
-        http = Net::HTTP.new(@uri.host, @uri.port)
+        http = ::Net::HTTP.new(@uri.host, @uri.port)
         http.use_ssl = true if @uri.scheme == 'https'
         http.start do |h|
-          get = Net::HTTP::Get.new(@uri.request_uri)
+          get = ::Net::HTTP::Get.new(@uri.request_uri)
           unless @uri.userinfo.nil?
             userinfo = @uri.userinfo.split(':')
             get.basic_auth userinfo[0], userinfo[1]

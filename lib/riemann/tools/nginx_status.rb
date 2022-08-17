@@ -53,7 +53,7 @@ module Riemann
       def tick
         response = nil
         begin
-          response = Net::HTTP.get(@uri)
+          response = ::Net::HTTP.get(@uri)
         rescue StandardError => e
           report(
             service: 'nginx health',

@@ -4,8 +4,8 @@ require 'riemann/tools'
 
 module Riemann
   module Tools
-    module AWS
-      class SQSStatus
+    module Aws
+      class SqsStatus
         include Riemann::Tools
         require 'fog/aws'
 

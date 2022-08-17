@@ -5,4 +5,4 @@ Process.setproctitle($PROGRAM_NAME)
 
 require 'riemann/tools/aws/elb_metrics'
 
-Riemann::Tools::AWS::ELBMetrics.run
+Riemann::Tools::Aws::ElbMetrics.run

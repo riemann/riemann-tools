@@ -34,7 +34,7 @@ module Riemann
         begin
           uri = URI.parse(opts[:riak_host])
           uri.host = opts[:riak_host] if uri.host.nil?
-          http = Net::HTTP.new(uri.host, opts[:stats_port])
+          http = ::Net::HTTP.new(uri.host, opts[:stats_port])
           http.use_ssl = uri.scheme == 'https'
           http.verify_mode = OpenSSL::SSL::VERIFY_NONE if http.use_ssl?
           http.start do |h|
@@ -164,7 +164,7 @@ module Riemann
         begin
           uri = URI.parse(opts[:riak_host])
           uri.host = opts[:riak_host] if uri.host.nil?
-          http = Net::HTTP.new(uri.host, opts[:stats_port])
+          http = ::Net::HTTP.new(uri.host, opts[:stats_port])
           http.use_ssl = uri.scheme == 'https'
           http.verify_mode = OpenSSL::SSL::VERIFY_NONE if http.use_ssl?
           res = http.start do |h|

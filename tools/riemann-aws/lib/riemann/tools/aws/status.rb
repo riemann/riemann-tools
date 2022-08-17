@@ -4,7 +4,7 @@ require 'riemann/tools'
 
 module Riemann
   module Tools
-    module AWS
+    module Aws
       class Status
         include Riemann::Tools
         require 'fog/aws'
