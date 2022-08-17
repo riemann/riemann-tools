@@ -23,6 +23,8 @@ module Riemann
       opt :memory_critical, 'Memory critical threshold (fraction of RAM)', default: 0.95
       opt :uptime_warning, 'Uptime warning threshold', default: 86_400
       opt :uptime_critical, 'Uptime critical threshold', default: 3600
+      opt :users_warning, 'Users warning threshold', default: 1
+      opt :users_critical, 'Users critical threshold', default: 1
       opt :swap_warning, 'Swap warning threshold', default: 0.4
       opt :swap_critical, 'Swap critical threshold', default: 0.5
       opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk swap]
@@ -34,6 +36,7 @@ module Riemann
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
           memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
           uptime: { critical: opts[:uptime_critical], warning: opts[:uptime_warning] },
+          users: { critical: opts[:users_critical], warning: opts[:users_warning] },
           swap: { critical: opts[:swap_critical], warning: opts[:swap_warning] },
         }
         case (@ostype = `uname -s`.chomp.downcase)
@@ -80,6 +83,7 @@ module Riemann
           @swap = method :linux_swap
           @supports_exclude_type = `df --help 2>&1 | grep -e "--exclude-type"` != ''
         end
+        @users = method :users
 
         opts[:checks].each do |check|
           case check
@@ -93,6 +97,8 @@ module Riemann
             @memory_enabled = true
           when 'uptime'
             @uptime_enabled = true
+          when 'users'
+            @users_enabled = true
           when 'swap'
             @swap_enabled = true
           end
@@ -117,6 +123,18 @@ module Riemann
           alert service, :warning, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
         else
           alert service, :ok, fraction, "#{format('%.2f', fraction * 100)}% #{report}"
+        end
+      end
+
+      def report_int(service, value, report)
+        return unless value
+
+        if value >= @limits[service][:critical]
+          alert service, :critical, value, "#{value} #{report}"
+        elsif value >= @limits[service][:warning]
+          alert service, :warning, value, "#{value} #{report}"
+        else
+          alert service, :ok, value, "#{value} #{report}"
         end
       end
 
@@ -391,6 +409,12 @@ module Riemann
         report_uptime(value)
       end
 
+      def users
+        value = uptime[:users]
+
+        report_int(:users, value, "user#{'s' if value != 1}")
+      end
+
       def bsd_swap
         _device, blocks, used, _avail, _capacity = `swapinfo`.lines.last.split(/\s+/)
 
@@ -442,6 +466,7 @@ module Riemann
         @disk.call if @disk_enabled
         @load.call if @load_enabled
         @uptime.call if @uptime_enabled
+        @users.call if @users_enabled
         @swap.call if @swap_enabled
       end
 
