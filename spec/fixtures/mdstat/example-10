@@ -1,0 +1,6 @@
+Personalities : [linear] [raid0] [raid1] [raid5] [raid4] [raid6]
+md0 : active raid6 sdf1[0] sde1[1] sdd1[2] sdc1[3] sdb1[4] sda1[5] hdb1[6]
+      1225557760 blocks level 6, 256k chunk, algorithm 2 [7/7] [UUUUUUU]
+      bitmap: 0/234 pages [0KB], 512KB chunk
+
+unused devices: <none>

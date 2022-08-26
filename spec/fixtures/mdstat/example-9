@@ -1,0 +1,6 @@
+Personalities : [raid1] [raid6] [raid5] [raid4]
+md127 : active raid5 sdh1[6] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
+      1464725760 blocks level 5, 64k chunk, algorithm 2 [6/5] [UUUUU_]
+      [==>..................]  recovery = 12.6% (37043392/292945152) finish=127.5min speed=33440K/sec
+
+unused devices: <none>

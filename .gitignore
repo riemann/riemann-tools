@@ -5,4 +5,4 @@ pkg/
 .DS_Store
 .*.swp
 *.log
-lib/riemann/tools/uptime_parser.tab.rb
+lib/riemann/tools/*_parser.tab.rb
