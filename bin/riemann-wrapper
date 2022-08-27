@@ -69,7 +69,7 @@ while argv.any?
   # Force evaluation of options.  This rely on ARGV and needs to be done before
   # we launch multiple threads which compete to read information from there.
   instance.options
-  threads << Thread.new { instance.run }
+  threads << Thread.new(instance, &:run)
 end
 
 threads.each(&:join)
