@@ -1,5 +1,27 @@
 # Changelog
 
+## [v1.3.0](https://github.com/riemann/riemann-tools/tree/v1.3.0) (2022-08-29)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.2.0...v1.3.0)
+
+**Implemented enhancements:**
+
+- Add support for configuration file to riemann-wrapper [\#235](https://github.com/riemann/riemann-tools/pull/235) ([smortex](https://github.com/smortex))
+- Add `riemann-md` to monitor Linux RAID/md health [\#232](https://github.com/riemann/riemann-tools/pull/232) ([smortex](https://github.com/smortex))
+- Add `riemann-zpool` to monitor zpool health [\#231](https://github.com/riemann/riemann-tools/pull/231) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix race condition in riemann-wrapper [\#233](https://github.com/riemann/riemann-tools/pull/233) ([smortex](https://github.com/smortex))
+
+**Closed issues:**
+
+- There is some kind of race condition in riemann-wrapper [\#230](https://github.com/riemann/riemann-tools/issues/230)
+
+**Merged pull requests:**
+
+- Stop riemann-wrapper if a tool raise an error [\#234](https://github.com/riemann/riemann-tools/pull/234) ([smortex](https://github.com/smortex))
+
 ## [v1.2.0](https://github.com/riemann/riemann-tools/tree/v1.2.0) (2022-08-17)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.1.1...v1.2.0)
