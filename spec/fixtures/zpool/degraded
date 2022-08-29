@@ -1,0 +1,20 @@
+  pool: tank
+ state: DEGRADED
+status: One or more devices could not be used because the label is missing or
+	invalid.  Sufficient replicas exist for the pool to continue
+	functioning in a degraded state.
+action: Replace the device using 'zpool replace'.
+   see: https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-4J
+  scan: scrub repaired 0B in 08:54:08 with 0 errors on Sat Apr  9 21:18:09 2022
+config:
+
+	NAME                     STATE     READ WRITE CKSUM
+	tank                     DEGRADED     0     0     0
+	  mirror-0               DEGRADED     0     0     0
+	    sda                  ONLINE       0     0     0
+	    7902075986954684628  FAULTED      0     0     0  was /dev/sdb1
+	  mirror-1               DEGRADED     0     0     0
+	    6341670446404061421  FAULTED      0     0     0  was /dev/sdc1
+	    sdd                  ONLINE       0     0     0
+
+errors: No known data errors

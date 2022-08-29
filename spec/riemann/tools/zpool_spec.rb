@@ -4,12 +4,14 @@ require 'riemann/tools/zpool'
 
 RSpec.describe Riemann::Tools::Zpool do
   context('#tick') do
+    before do
+      process_status = double
+      allow(process_status).to receive(:success?).and_return(true)
+      allow(Open3).to receive(:capture2e).with('zpool status -x').and_return([File.read(zpool_output), process_status])
+    end
+
     context 'when pools are healthy' do
-      before do
-        process_status = double
-        allow(process_status).to receive(:success?).and_return(true)
-        allow(Open3).to receive(:capture2e).with('zpool status -x').and_return(["all pools are healthy\n", process_status])
-      end
+      let(:zpool_output) { 'spec/fixtures/zpool/healthy' }
 
       it 'reports ok state' do
         allow(subject).to receive(:report)
@@ -18,17 +20,13 @@ RSpec.describe Riemann::Tools::Zpool do
       end
     end
 
-    context 'when pools are unhealthy' do
-      before do
-        process_status = double
-        allow(process_status).to receive(:success?).and_return(false)
-        allow(Open3).to receive(:capture2e).with('zpool status -x').and_return(['details', process_status])
-      end
+    context 'when pools are degraded' do
+      let(:zpool_output) { 'spec/fixtures/zpool/degraded' }
 
       it 'reports critical state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'zpool health', message: 'details', state: 'critical')
+        expect(subject).to have_received(:report).with(service: 'zpool health', message: /DEGRADED/, state: 'critical')
       end
     end
   end
