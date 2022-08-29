@@ -27,9 +27,10 @@ def read_flags(argv)
   res
 end
 
-if ARGV.empty?
+def usage
   warn <<~USAGE
     usage: riemann-wrapper [common options] -- tool1 [tool1 options] [-- tool2 [tool2 options] ...]
+           riemann-wrapper /path/to/configuration/file.yml
 
     Run multiple Riemann tools in a single process.  A single connection to
     riemann is maintained and shared for all tools, the connection flags should
@@ -47,8 +48,42 @@ if ARGV.empty?
                          fd     --tag=fd     -- \\
                          health --tag=health -- \\
                          ntp    --tag=ntp
+
+      3. Same as above example, but using a configuration file (more verbose but
+         easier to handle when running riemann-wrapper manually of managing it
+         with a Configuration Management system):
+
+         cat > config.yml << EOT
+         ---
+         options: --host riemann.example.com --tcp
+         tools:
+         - name: fd
+           options: --tag=fd
+         - name: health
+           options: --tag=health
+         - name: ntp
+           options: --tag=ntp
+         EOT
+         riemann-wrapper config.yml
   USAGE
   exit 1
+end
+
+usage if ARGV.empty?
+
+if ARGV.size == 1
+  unless File.readable?(ARGV[0])
+    warn "Cannot open file for reading: #{ARGV[0]}"
+    usage
+  end
+
+  require 'yaml'
+  config = YAML.safe_load(File.read(ARGV[0]))
+
+  commandline = config['options']
+  config['tools'].each { |tool| commandline << " -- #{tool['name']} #{tool['options']}" }
+
+  ARGV.replace(commandline.split)
 end
 
 argv = ARGV.dup
