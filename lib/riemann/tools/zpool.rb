@@ -20,13 +20,13 @@ module Riemann
 
         report(
           service: 'zpool health',
-          message: output,
+          description: output,
           state: state,
         )
       rescue Errno::ENOENT => e
         report(
           service: 'zpool health',
-          message: e.message,
+          description: e.message,
           state: 'critical',
         )
       end

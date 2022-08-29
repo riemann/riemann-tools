@@ -20,13 +20,13 @@ module Riemann
 
         report(
           service: 'mdstat',
-          message: status,
+          description: status,
           state: state,
         )
       rescue Errno::ENOENT => e
         report(
           service: 'mdstat',
-          message: e.message,
+          description: e.message,
           state: 'critical',
         )
       end

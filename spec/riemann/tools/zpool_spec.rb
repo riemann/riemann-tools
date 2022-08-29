@@ -16,7 +16,7 @@ RSpec.describe Riemann::Tools::Zpool do
       it 'reports ok state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'zpool health', message: "all pools are healthy\n", state: 'ok')
+        expect(subject).to have_received(:report).with(service: 'zpool health', description: "all pools are healthy\n", state: 'ok')
       end
     end
 
@@ -26,7 +26,7 @@ RSpec.describe Riemann::Tools::Zpool do
       it 'reports critical state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'zpool health', message: /DEGRADED/, state: 'critical')
+        expect(subject).to have_received(:report).with(service: 'zpool health', description: /DEGRADED/, state: 'critical')
       end
     end
   end
