@@ -92,6 +92,9 @@ common_argv = read_flags(argv)
 
 threads = []
 
+# Terminate the whole process is some thread fail
+Thread.abort_on_exception = true
+
 while argv.any?
   tool = argv.shift
   tool_argv = read_flags(argv)
