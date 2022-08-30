@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.4.0](https://github.com/riemann/riemann-tools/tree/v1.4.0) (2022-08-30)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.3.0...v1.4.0)
+
+**Implemented enhancements:**
+
+- Improve zpool state reporting [\#239](https://github.com/riemann/riemann-tools/pull/239) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix zpool/md informational messages reporting [\#238](https://github.com/riemann/riemann-tools/pull/238) ([smortex](https://github.com/smortex))
+- Fix detection of degraded zpool [\#237](https://github.com/riemann/riemann-tools/pull/237) ([smortex](https://github.com/smortex))
+
 ## [v1.3.0](https://github.com/riemann/riemann-tools/tree/v1.3.0) (2022-08-29)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.2.0...v1.3.0)
