@@ -12,7 +12,7 @@ RSpec.describe Riemann::Tools::Md do
       it 'reports ok state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'mdstat', message: //, state: 'ok')
+        expect(subject).to have_received(:report).with(service: 'mdstat', description: //, state: 'ok')
       end
     end
 
@@ -24,7 +24,7 @@ RSpec.describe Riemann::Tools::Md do
       it 'reports critical state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'mdstat', message: //, state: 'critical')
+        expect(subject).to have_received(:report).with(service: 'mdstat', description: //, state: 'critical')
       end
     end
   end
