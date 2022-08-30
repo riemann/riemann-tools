@@ -20,13 +20,43 @@ RSpec.describe Riemann::Tools::Zpool do
       end
     end
 
+    context 'when pools are resilvering' do
+      let(:zpool_output) { 'spec/fixtures/zpool/resilvering' }
+
+      it 'reports warning state' do
+        allow(subject).to receive(:report)
+        subject.tick
+        expect(subject).to have_received(:report).with(service: 'zpool health', description: /state: ONLINE/, state: 'warning')
+      end
+    end
+
     context 'when pools are degraded' do
       let(:zpool_output) { 'spec/fixtures/zpool/degraded' }
 
       it 'reports critical state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'zpool health', description: /DEGRADED/, state: 'critical')
+        expect(subject).to have_received(:report).with(service: 'zpool health', description: /state: DEGRADED/, state: 'critical')
+      end
+    end
+
+    context 'when pools have checksum errors' do
+      let(:zpool_output) { 'spec/fixtures/zpool/cksum' }
+
+      it 'reports critical state' do
+        allow(subject).to receive(:report)
+        subject.tick
+        expect(subject).to have_received(:report).with(service: 'zpool health', description: /state: ONLINE/, state: 'warning')
+      end
+    end
+
+    context 'when pools are faulted' do
+      let(:zpool_output) { 'spec/fixtures/zpool/faulted' }
+
+      it 'reports critical state' do
+        allow(subject).to receive(:report)
+        subject.tick
+        expect(subject).to have_received(:report).with(service: 'zpool health', description: /state: FAULTED/, state: 'critical')
       end
     end
   end

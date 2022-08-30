@@ -12,8 +12,13 @@ module Riemann
       def tick
         output, status = Open3.capture2e('zpool status -x')
 
-        state = if status.success? && output == "all pools are healthy\n"
-                  'ok'
+        state = if status.success?
+                  case output
+                  when "all pools are healthy\n" then 'ok'
+                  when /state: (DEGRADED|FAULTED)/ then 'critical'
+                  else
+                    'warning'
+                  end
                 else
                   'critical'
                 end
