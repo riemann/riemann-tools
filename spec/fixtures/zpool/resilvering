@@ -1,0 +1,20 @@
+  pool: tank
+ state: ONLINE
+status: One or more devices is currently being resilvered.  The pool will
+	continue to function, possibly in a degraded state.
+action: Wait for the resilver to complete.
+  scan: resilver in progress since Tue Aug 30 07:14:26 2022
+	1.63T scanned at 40.8G/s, 845G issued at 20.6G/s, 9.15T total
+	1.13G resilvered, 9.02% done, 00:06:53 to go
+config:
+
+	NAME                      STATE     READ WRITE CKSUM
+	tank                      ONLINE       0     0     0
+	  mirror-0                ONLINE       0     0     0
+	    zfs-9166d2864464be5d  ONLINE       0     0     0
+	    zfs-d8c2768651c3c537  ONLINE       0     0     0  (resilvering)
+	  mirror-1                ONLINE       0     0     0
+	    zfs-ce04bfb7c4e33191  ONLINE       0     0     0
+	    zfs-c9ef43242abf7da9  ONLINE       0     0     0
+
+errors: No known data errors

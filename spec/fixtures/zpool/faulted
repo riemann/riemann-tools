@@ -1,0 +1,16 @@
+  pool: pool
+ state: FAULTED
+status: One or more of the intent logs could not be read.
+        Waiting for adminstrator intervention to fix the faulted pool.
+action: Either restore the affected device(s) and run 'zpool online',
+        or ignore the intent log records by running 'zpool clear'.
+ scrub: none requested
+config:
+
+        NAME          STATE     READ WRITE CKSUM
+        pool          FAULTED      0     0     0 bad intent log
+          mirror-0    ONLINE       0     0     0
+            c0t1d0    ONLINE       0     0     0
+            c0t4d0    ONLINE       0     0     0
+        logs          FAULTED      0     0     0 bad intent log
+          c0t5d0      UNAVAIL      0     0     0 cannot open
