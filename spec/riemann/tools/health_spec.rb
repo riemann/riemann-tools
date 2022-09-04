@@ -144,7 +144,7 @@ RSpec.describe Riemann::Tools::Health do
         expect(subject).to have_received(:report).with(service: 'uptime', description: <<~DESCRIPTION.chomp, state: 'critical')
           Error parsing uptime: unexpected data on line 1:
           10:27:42 up 20:05,  1 user,  load average: 0.79, 0.50, 0.44 [IO: 0.15, 0.12, 0.08 CPU: 0.64, 0.38, 0.35]
-                                                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                                      ^
         DESCRIPTION
       end
     end

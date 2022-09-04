@@ -47,7 +47,7 @@ module Riemann
         end
 
         def unexpected_token
-          raise(Racc::ParseError, "unexpected data on line #{@lineno}:\n#{@line}\n#{' ' * @pos}^#{'~' * (@line.length - @pos - 1)}")
+          raise(Racc::ParseError, "unexpected data on line #{@lineno}:\n#{@line}\n#{' ' * @pos}^")
         end
       end
 

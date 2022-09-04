@@ -80,7 +80,7 @@ RSpec.describe Riemann::Tools::Md do
         expect(subject).to have_received(:report).with(service: 'mdstat', description: <<~DESCRIPTION.chomp, state: 'critical')
           Error parsing mdstat: unexpected data on line 2:
           md2 : active raid1+ sda3[0] sdb3[2]
-                            ^~~~~~~~~~~~~~~~~
+                            ^
         DESCRIPTION
       end
     end
