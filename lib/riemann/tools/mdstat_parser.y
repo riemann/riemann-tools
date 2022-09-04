@@ -85,12 +85,12 @@ require 'riemann/tools/utils'
       when s.scan(/speed/)           then s.push_token(:SPEED)
       when s.scan(/super/)           then s.push_token(:SUPER)
       when s.scan(/unused devices/)  then s.push_token(:UNUSED_DEVICES)
-      when s.scan(/K\/sec/)          then s.push_token(:SPEED_UNIT, s.matched.to_i)
-      when s.scan(/KB/)              then s.push_token(:BYTE_UNIT, s.matched.to_i)
-      when s.scan(/k/)               then s.push_token(:UNIT, s.matched.to_i)
-      when s.scan(/\d+\.\d+/)        then s.push_token(:FLOAT, s.matched.to_i)
+      when s.scan(/K\/sec/)          then s.push_token(:SPEED_UNIT)
+      when s.scan(/KB/)              then s.push_token(:BYTE_UNIT)
+      when s.scan(/k/)               then s.push_token(:UNIT)
+      when s.scan(/\d+\.\d+/)        then s.push_token(:FLOAT, s.matched.to_f)
       when s.scan(/\d+/)             then s.push_token(:INTEGER, s.matched.to_i)
-      when s.scan(/F\b/)             then s.push_token(:FAILED, s.matched.to_i)
+      when s.scan(/F\b/)             then s.push_token(:FAILED)
       when s.scan(/\w+/)             then s.push_token(:IDENTIFIER)
       else
         s.unexpected_token
