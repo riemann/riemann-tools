@@ -111,4 +111,42 @@ RSpec.describe Riemann::Tools::Health do
       end
     end
   end
+
+  context '#bsd_uptime' do
+    context 'when given unexpected data' do
+      before do
+        allow(subject).to receive(:`).with('uptime').and_return(<<~DOCUMENT)
+          10:27:42 up 20:05,  load averages: 0.79, 0.50, 0.44
+        DOCUMENT
+      end
+
+      it 'reports critical state' do
+        allow(subject).to receive(:report)
+        subject.bsd_uptime
+        expect(subject).to have_received(:report).with(service: 'uptime', description: <<~DESCRIPTION.chomp, state: 'critical')
+          Error parsing uptime: parse error on value "load averages:" (LOAD_AVERAGES) on line 1:
+          10:27:42 up 20:05,  load averages: 0.79, 0.50, 0.44
+                              ^~~~~~~~~~~~~~
+        DESCRIPTION
+      end
+    end
+
+    context 'when given malformed data' do
+      before do
+        allow(subject).to receive(:`).with('uptime').and_return(<<~DOCUMENT)
+          10:27:42 up 20:05,  1 user,  load average: 0.79, 0.50, 0.44 [IO: 0.15, 0.12, 0.08 CPU: 0.64, 0.38, 0.35]
+        DOCUMENT
+      end
+
+      it 'reports critical state' do
+        allow(subject).to receive(:report)
+        subject.bsd_uptime
+        expect(subject).to have_received(:report).with(service: 'uptime', description: <<~DESCRIPTION.chomp, state: 'critical')
+          Error parsing uptime: unexpected data on line 1:
+          10:27:42 up 20:05,  1 user,  load average: 0.79, 0.50, 0.44 [IO: 0.15, 0.12, 0.08 CPU: 0.64, 0.38, 0.35]
+                                                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        DESCRIPTION
+      end
+    end
+  end
 end

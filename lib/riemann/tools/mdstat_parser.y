@@ -11,7 +11,7 @@ rule
   devices: devices device { result = val[0].merge(val[1]) }
          |                { result = {} }
 
-  device: IDENTIFIER ':' IDENTIFIER PERSONALITY list_of_devices INTEGER BLOCKS super level '[' INTEGER '/' INTEGER ']' '[' IDENTIFIER ']' progress bitmap { result = { val[0] => val[15] } }
+  device: IDENTIFIER ':' IDENTIFIER PERSONALITY list_of_devices INTEGER BLOCKS super level '[' INTEGER '/' INTEGER ']' '[' IDENTIFIER ']' progress bitmap { result = { val[0][:value] => val[15][:value] } }
 
   list_of_devices: list_of_devices device
                  | device
@@ -43,62 +43,69 @@ end
 
 require 'strscan'
 
+require 'riemann/tools/utils'
+
 ---- inner
 
   def parse(text)
-    s = StringScanner.new(text)
-    @tokens = []
+    s = Utils::StringTokenizer.new(text)
 
     until s.eos? do
       case
-      when s.scan(/\n/)              then # ignore
-      when s.scan(/\s+/)             then # ignore
+      when s.scan(/\n/)              then s.push_token(nil)
+      when s.scan(/\s+/)             then s.push_token(nil)
 
-      when s.scan(/\[=*>.*\]/)       then @tokens << [:PROGRESS, s.matched]
-      when s.scan(/%/)               then @tokens << ['%', s.matched]
-      when s.scan(/,/)               then @tokens << [',', s.matched]
-      when s.scan(/:/)               then @tokens << [':', s.matched]
-      when s.scan(/</)               then @tokens << ['<', s.matched]
-      when s.scan(/=/)               then @tokens << ['=', s.matched]
-      when s.scan(/>/)               then @tokens << ['>', s.matched]
-      when s.scan(/\(/)              then @tokens << ['(', s.matched]
-      when s.scan(/\)/)              then @tokens << [')', s.matched]
-      when s.scan(/\./)              then @tokens << ['.', s.matched]
-      when s.scan(/\//)              then @tokens << ['/', s.matched]
-      when s.scan(/\[/)              then @tokens << ['[', s.matched]
-      when s.scan(/]/)               then @tokens << [']', s.matched]
-      when s.scan(/algorithm/)       then @tokens << [:ALGORITHM, s.matched]
-      when s.scan(/bitmap/)          then @tokens << [:BITMAP, s.matched]
-      when s.scan(/blocks/)          then @tokens << [:BLOCKS, s.matched]
-      when s.scan(/check/)           then @tokens << [:CHECK, s.matched]
-      when s.scan(/chunk/)           then @tokens << [:CHUNK, s.matched]
-      when s.scan(/finish/)          then @tokens << [:FINISH, s.matched]
-      when s.scan(/level/)           then @tokens << [:LEVEL, s.matched]
-      when s.scan(/min/)             then @tokens << [:MIN, s.matched]
-      when s.scan(/pages/)           then @tokens << [:PAGES, s.matched]
-      when s.scan(/(raid([014-6]|10)|linear|multipath|faulty)\b/) then @tokens << [:PERSONALITY, s.matched]
-      when s.scan(/Personalities/)   then @tokens << [:PERSONALITIES, s.matched]
-      when s.scan(/recovery/)        then @tokens << [:RECOVERY, s.matched]
-      when s.scan(/reshape/)         then @tokens << [:RESHAPE, s.matched]
-      when s.scan(/resync/)          then @tokens << [:RESYNC, s.matched]
-      when s.scan(/speed/)           then @tokens << [:SPEED, s.matched]
-      when s.scan(/super/)           then @tokens << [:SUPER, s.matched]
-      when s.scan(/unused devices/)  then @tokens << [:UNUSED_DEVICES, s.matched]
-      when s.scan(/K\/sec/)          then @tokens << [:SPEED_UNIT, s.matched.to_i]
-      when s.scan(/KB/)              then @tokens << [:BYTE_UNIT, s.matched.to_i]
-      when s.scan(/k/)               then @tokens << [:UNIT, s.matched.to_i]
-      when s.scan(/\d+\.\d+/)        then @tokens << [:FLOAT, s.matched.to_i]
-      when s.scan(/\d+/)             then @tokens << [:INTEGER, s.matched.to_i]
-      when s.scan(/F\b/)             then @tokens << [:FAILED, s.matched.to_i]
-      when s.scan(/\w+/)             then @tokens << [:IDENTIFIER, s.matched]
+      when s.scan(/\[=*>.*\]/)       then s.push_token(:PROGRESS)
+      when s.scan(/%/)               then s.push_token('%')
+      when s.scan(/,/)               then s.push_token(',')
+      when s.scan(/:/)               then s.push_token(':')
+      when s.scan(/</)               then s.push_token('<')
+      when s.scan(/=/)               then s.push_token('=')
+      when s.scan(/>/)               then s.push_token('>')
+      when s.scan(/\(/)              then s.push_token('(')
+      when s.scan(/\)/)              then s.push_token(')')
+      when s.scan(/\./)              then s.push_token('.')
+      when s.scan(/\//)              then s.push_token('/')
+      when s.scan(/\[/)              then s.push_token('[')
+      when s.scan(/]/)               then s.push_token(']')
+      when s.scan(/algorithm/)       then s.push_token(:ALGORITHM)
+      when s.scan(/bitmap/)          then s.push_token(:BITMAP)
+      when s.scan(/blocks/)          then s.push_token(:BLOCKS)
+      when s.scan(/check/)           then s.push_token(:CHECK)
+      when s.scan(/chunk/)           then s.push_token(:CHUNK)
+      when s.scan(/finish/)          then s.push_token(:FINISH)
+      when s.scan(/level/)           then s.push_token(:LEVEL)
+      when s.scan(/min/)             then s.push_token(:MIN)
+      when s.scan(/pages/)           then s.push_token(:PAGES)
+      when s.scan(/(raid([014-6]|10)|linear|multipath|faulty)\b/) then s.push_token(:PERSONALITY)
+      when s.scan(/Personalities/)   then s.push_token(:PERSONALITIES)
+      when s.scan(/recovery/)        then s.push_token(:RECOVERY)
+      when s.scan(/reshape/)         then s.push_token(:RESHAPE)
+      when s.scan(/resync/)          then s.push_token(:RESYNC)
+      when s.scan(/speed/)           then s.push_token(:SPEED)
+      when s.scan(/super/)           then s.push_token(:SUPER)
+      when s.scan(/unused devices/)  then s.push_token(:UNUSED_DEVICES)
+      when s.scan(/K\/sec/)          then s.push_token(:SPEED_UNIT, s.matched.to_i)
+      when s.scan(/KB/)              then s.push_token(:BYTE_UNIT, s.matched.to_i)
+      when s.scan(/k/)               then s.push_token(:UNIT, s.matched.to_i)
+      when s.scan(/\d+\.\d+/)        then s.push_token(:FLOAT, s.matched.to_i)
+      when s.scan(/\d+/)             then s.push_token(:INTEGER, s.matched.to_i)
+      when s.scan(/F\b/)             then s.push_token(:FAILED, s.matched.to_i)
+      when s.scan(/\w+/)             then s.push_token(:IDENTIFIER)
       else
-        raise s.rest
+        s.unexpected_token
       end
     end
+
+    @tokens = s.tokens
 
     do_parse
   end
 
   def next_token
     @tokens.shift
+  end
+
+  def on_error(error_token_id, error_value, value_stack)
+    raise(Racc::ParseError, "parse error on value \"#{error_value[:value]}\" (#{token_to_str(error_token_id)}) on line #{error_value[:lineno]}:\n#{error_value[:line]}\n#{' ' * error_value[:pos]}^#{'~' * (error_value[:value].to_s.length - 1)}")
   end
