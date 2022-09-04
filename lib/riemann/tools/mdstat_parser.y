@@ -1,5 +1,5 @@
 class Riemann::Tools::MdstatParser
-token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHUNK FAILED FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PROGRESS RECOVERY SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
+token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK FAILED FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PROGRESS RECOVERY RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
 rule
   target: personalities devices unused_devices { result = val[1] }
 
@@ -11,7 +11,7 @@ rule
   devices: devices device { result = val[0].merge(val[1]) }
          |                { result = {} }
 
-  device: IDENTIFIER ':' IDENTIFIER PERSONALITY list_of_devices INTEGER BLOCKS super level '[' INTEGER '/' INTEGER ']' '[' IDENTIFIER ']' bitmap restore_progress { result = { val[0] => val[15] } }
+  device: IDENTIFIER ':' IDENTIFIER PERSONALITY list_of_devices INTEGER BLOCKS super level '[' INTEGER '/' INTEGER ']' '[' IDENTIFIER ']' progress bitmap { result = { val[0] => val[15] } }
 
   list_of_devices: list_of_devices device
                  | device
@@ -28,8 +28,13 @@ rule
   bitmap: BITMAP ':' INTEGER '/' INTEGER PAGES '[' INTEGER BYTE_UNIT ']' ',' INTEGER BYTE_UNIT CHUNK
         |
 
-  restore_progress: PROGRESS RECOVERY '=' FLOAT '%' '(' INTEGER '/' INTEGER ')' FINISH '=' FLOAT MIN SPEED '=' INTEGER SPEED_UNIT
-                  |
+  progress: PROGRESS progress_action '=' FLOAT '%' '(' INTEGER '/' INTEGER ')' FINISH '=' FLOAT MIN SPEED '=' INTEGER SPEED_UNIT
+          |
+
+  progress_action: CHECK
+                 | RECOVERY
+                 | RESHAPE
+                 | RESYNC
 
   unused_devices: UNUSED_DEVICES ':' '<' IDENTIFIER '>'
 end
@@ -65,6 +70,7 @@ require 'strscan'
       when s.scan(/algorithm/)       then @tokens << [:ALGORITHM, s.matched]
       when s.scan(/bitmap/)          then @tokens << [:BITMAP, s.matched]
       when s.scan(/blocks/)          then @tokens << [:BLOCKS, s.matched]
+      when s.scan(/check/)           then @tokens << [:CHECK, s.matched]
       when s.scan(/chunk/)           then @tokens << [:CHUNK, s.matched]
       when s.scan(/finish/)          then @tokens << [:FINISH, s.matched]
       when s.scan(/level/)           then @tokens << [:LEVEL, s.matched]
@@ -73,6 +79,8 @@ require 'strscan'
       when s.scan(/(raid([014-6]|10)|linear|multipath|faulty)\b/) then @tokens << [:PERSONALITY, s.matched]
       when s.scan(/Personalities/)   then @tokens << [:PERSONALITIES, s.matched]
       when s.scan(/recovery/)        then @tokens << [:RECOVERY, s.matched]
+      when s.scan(/reshape/)         then @tokens << [:RESHAPE, s.matched]
+      when s.scan(/resync/)          then @tokens << [:RESYNC, s.matched]
       when s.scan(/speed/)           then @tokens << [:SPEED, s.matched]
       when s.scan(/super/)           then @tokens << [:SUPER, s.matched]
       when s.scan(/unused devices/)  then @tokens << [:UNUSED_DEVICES, s.matched]

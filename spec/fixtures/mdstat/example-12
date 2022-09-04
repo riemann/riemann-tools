@@ -1,0 +1,10 @@
+Personalities : [raid1] [linear] [multipath] [raid0] [raid6] [raid5] [raid4] [raid10] 
+md3 : active raid1 sdb3[0] sda3[1]
+      463604672 blocks [2/2] [UU]
+      [===>.................]  check = 19.8% (91876096/463604672) finish=30.0min speed=206312K/sec
+      bitmap: 4/4 pages [16KB], 65536KB chunk
+
+md2 : active raid1 sdb2[0] sda2[1]
+      523200 blocks [2/2] [UU]
+      
+unused devices: <none>
