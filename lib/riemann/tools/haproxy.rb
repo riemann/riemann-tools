@@ -57,4 +57,3 @@ module Riemann
     end
   end
 end
-
