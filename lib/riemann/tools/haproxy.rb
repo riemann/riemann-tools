@@ -44,7 +44,7 @@ module Riemann
       def csv
         http = ::Net::HTTP.new(@uri.host, @uri.port)
         http.use_ssl = true if @uri.scheme == 'https'
-        http.start do |h|
+        res = http.start do |h|
           get = ::Net::HTTP::Get.new(@uri.request_uri)
           unless @uri.userinfo.nil?
             userinfo = @uri.userinfo.split(':')
@@ -52,7 +52,7 @@ module Riemann
           end
           h.request get
         end
-        CSV.parse(http.body.split('# ')[1], { headers: true })
+        CSV.parse(res.body.split('# ')[1], { headers: true })
       end
     end
   end
