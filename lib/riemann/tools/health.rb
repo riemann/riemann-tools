@@ -103,6 +103,8 @@ module Riemann
             @swap_enabled = true
           end
         end
+
+        invalidate_cache
       end
 
       def alert(service, state, metric, description)
@@ -139,6 +141,8 @@ module Riemann
       end
 
       def report_uptime(uptime)
+        return unless uptime
+
         description = uptime_to_human(uptime)
 
         if uptime < @limits[:uptime][:critical]
@@ -262,6 +266,13 @@ module Riemann
 
       def uptime
         @cached_data[:uptime] ||= uptime_parser.parse(`uptime`)
+      rescue Racc::ParseError => e
+        report(
+          service: 'uptime',
+          description: "Error parsing uptime: #{e.message}",
+          state: 'critical',
+        )
+        @cached_data[:uptime] = {}
       end
 
       def bsd_load

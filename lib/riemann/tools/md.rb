@@ -23,6 +23,12 @@ module Riemann
           description: status,
           state: state,
         )
+      rescue Racc::ParseError => e
+        report(
+          service: 'mdstat',
+          description: "Error parsing mdstat: #{e.message}",
+          state: 'critical',
+        )
       rescue Errno::ENOENT => e
         report(
           service: 'mdstat',
