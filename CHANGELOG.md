@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.5.0](https://github.com/riemann/riemann-tools/tree/v1.5.0) (2022-09-08)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.4.0...v1.5.0)
+
+**Implemented enhancements:**
+
+- Improve error reporting on parse error [\#242](https://github.com/riemann/riemann-tools/pull/242) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix `riemann-haproxy` HTTP response processing [\#243](https://github.com/riemann/riemann-tools/pull/243) ([ahoetker-deca](https://github.com/ahoetker-deca))
+- Fix `riemann-md` parsing of mdstat when device is being checked [\#241](https://github.com/riemann/riemann-tools/pull/241) ([smortex](https://github.com/smortex))
+
 ## [v1.4.0](https://github.com/riemann/riemann-tools/tree/v1.4.0) (2022-08-30)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.3.0...v1.4.0)
