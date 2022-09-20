@@ -1,5 +1,5 @@
 class Riemann::Tools::MdstatParser
-token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED FAILED FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
+token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED DISK_STATUS FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
 rule
   target: personalities devices unused_devices { result = val[1] }
 
@@ -16,7 +16,7 @@ rule
   list_of_devices: list_of_devices device
                  | device
 
-  device: IDENTIFIER '[' INTEGER ']' '(' FAILED ')'
+  device: IDENTIFIER '[' INTEGER ']' DISK_STATUS
         | IDENTIFIER '[' INTEGER ']'
 
   super: SUPER FLOAT
@@ -60,6 +60,8 @@ require 'riemann/tools/utils'
       when s.scan(/\n/)               then s.push_token(nil)
       when s.scan(/\s+/)              then s.push_token(nil)
 
+      when s.scan(/\([WJFSR]\)/)      then s.push_token(:DISK_STATUS)
+
       when s.scan(/\[=*>.*\]/)        then s.push_token(:PROGRESS)
       when s.scan(/%/)                then s.push_token('%')
       when s.scan(/,/)                then s.push_token(',')
@@ -75,7 +77,6 @@ require 'riemann/tools/utils'
       when s.scan(/]/)                then s.push_token(']')
 
       when s.scan(/DELAYED\b/)        then s.push_token(:DELAYED)
-      when s.scan(/F\b/)              then s.push_token(:FAILED)
       when s.scan(/KB\b/)             then s.push_token(:BYTE_UNIT)
       when s.scan(/K\/sec\b/)         then s.push_token(:SPEED_UNIT)
       when s.scan(/PENDING\b/)        then s.push_token(:PENDING)
