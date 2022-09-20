@@ -1,5 +1,5 @@
 class Riemann::Tools::MdstatParser
-token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK FAILED FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PROGRESS RECOVERY RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
+token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED FAILED FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
 rule
   target: personalities devices unused_devices { result = val[1] }
 
@@ -29,6 +29,11 @@ rule
         |
 
   progress: PROGRESS progress_action '=' FLOAT '%' '(' INTEGER '/' INTEGER ')' FINISH '=' FLOAT MIN SPEED '=' INTEGER SPEED_UNIT
+          | RECOVER '=' REMOTE
+          | RESHAPE '=' REMOTE
+          | RESYNC '=' REMOTE
+          | RESYNC '=' PENDING
+          | RESYNC '=' DELAYED
           |
 
   progress_action: CHECK
@@ -73,13 +78,17 @@ require 'riemann/tools/utils'
       when s.scan(/blocks/)          then s.push_token(:BLOCKS)
       when s.scan(/check/)           then s.push_token(:CHECK)
       when s.scan(/chunk/)           then s.push_token(:CHUNK)
+      when s.scan(/DELAYED/)         then s.push_token(:DELAYED)
       when s.scan(/finish/)          then s.push_token(:FINISH)
       when s.scan(/level/)           then s.push_token(:LEVEL)
       when s.scan(/min/)             then s.push_token(:MIN)
       when s.scan(/pages/)           then s.push_token(:PAGES)
       when s.scan(/(raid([014-6]|10)|linear|multipath|faulty)\b/) then s.push_token(:PERSONALITY)
+      when s.scan(/PENDING/)         then s.push_token(:PENDING)
       when s.scan(/Personalities/)   then s.push_token(:PERSONALITIES)
+      when s.scan(/recover\b/)       then s.push_token(:RECOVER)
       when s.scan(/recovery/)        then s.push_token(:RECOVERY)
+      when s.scan(/REMOTE/)          then s.push_token(:REMOTE)
       when s.scan(/reshape/)         then s.push_token(:RESHAPE)
       when s.scan(/resync/)          then s.push_token(:RESYNC)
       when s.scan(/speed/)           then s.push_token(:SPEED)

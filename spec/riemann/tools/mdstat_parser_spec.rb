@@ -17,6 +17,7 @@ RSpec.describe Riemann::Tools::MdstatParser do
     'example-10' => { 'md0' => 'UUUUUUU' },
     'example-11' => { 'md1' => '_UUUU_' },
     'example-12' => { 'md2' => 'UU', 'md3' => 'UU' },
+    'example-13' => { 'md2' => 'UU', 'md3' => 'UU', 'md1' => 'UU' },
   }.each do |config, expected_data|
     describe(config) do
       let(:text) { File.read("spec/fixtures/mdstat/#{config}") }
