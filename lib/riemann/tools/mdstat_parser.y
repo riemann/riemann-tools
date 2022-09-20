@@ -1,9 +1,9 @@
 class Riemann::Tools::MdstatParser
-token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED DISK_STATUS FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
+token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED DISK_STATUS FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN NONE PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
 rule
   target: personalities devices unused_devices { result = val[1] }
 
-  personalities: PERSONALITIES ':' list_of_personalities
+  personalities: PERSONALITIES list_of_personalities
 
   list_of_personalities: list_of_personalities '[' PERSONALITY ']'
                        |
@@ -41,7 +41,7 @@ rule
                  | RESHAPE
                  | RESYNC
 
-  unused_devices: UNUSED_DEVICES ':' '<' IDENTIFIER '>'
+  unused_devices: UNUSED_DEVICES NONE
 end
 
 ---- header
@@ -61,14 +61,13 @@ require 'riemann/tools/utils'
       when s.scan(/\s+/)              then s.push_token(nil)
 
       when s.scan(/\([WJFSR]\)/)      then s.push_token(:DISK_STATUS)
+      when s.scan(/<none>/)           then s.push_token(:NONE)
 
       when s.scan(/\[=*>.*\]/)        then s.push_token(:PROGRESS)
       when s.scan(/%/)                then s.push_token('%')
       when s.scan(/,/)                then s.push_token(',')
       when s.scan(/:/)                then s.push_token(':')
-      when s.scan(/</)                then s.push_token('<')
       when s.scan(/=/)                then s.push_token('=')
-      when s.scan(/>/)                then s.push_token('>')
       when s.scan(/\(/)               then s.push_token('(')
       when s.scan(/\)/)               then s.push_token(')')
       when s.scan(/\./)               then s.push_token('.')
@@ -80,7 +79,7 @@ require 'riemann/tools/utils'
       when s.scan(/KB\b/)             then s.push_token(:BYTE_UNIT)
       when s.scan(/K\/sec\b/)         then s.push_token(:SPEED_UNIT)
       when s.scan(/PENDING\b/)        then s.push_token(:PENDING)
-      when s.scan(/Personalities\b/)  then s.push_token(:PERSONALITIES)
+      when s.scan(/Personalities :/)  then s.push_token(:PERSONALITIES)
       when s.scan(/REMOTE\b/)         then s.push_token(:REMOTE)
       when s.scan(/algorithm\b/)      then s.push_token(:ALGORITHM)
       when s.scan(/bitmap\b/)         then s.push_token(:BITMAP)
@@ -99,7 +98,7 @@ require 'riemann/tools/utils'
       when s.scan(/resync\b/)         then s.push_token(:RESYNC)
       when s.scan(/speed\b/)          then s.push_token(:SPEED)
       when s.scan(/super\b/)          then s.push_token(:SUPER)
-      when s.scan(/unused devices\b/) then s.push_token(:UNUSED_DEVICES)
+      when s.scan(/unused devices:/)  then s.push_token(:UNUSED_DEVICES)
 
       when s.scan(/\d+\.\d+/)         then s.push_token(:FLOAT, s.matched.to_f)
       when s.scan(/\d+/)              then s.push_token(:INTEGER, s.matched.to_i)
