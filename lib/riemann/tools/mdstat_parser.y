@@ -42,6 +42,10 @@ rule
                  | RESYNC
 
   unused_devices: UNUSED_DEVICES NONE
+                | UNUSED_DEVICES identifiers
+
+  identifiers: identifiers IDENTIFIER
+             | IDENTIFIER
 end
 
 ---- header
