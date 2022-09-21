@@ -1,0 +1,16 @@
+Personalities : [raid1]
+md2 : active raid1 sda2[0] sdb2[1]
+225278912 blocks [2/2] [UU]
+[>....................] check = 3.1% (7080320/225278912) finish=23.4min speed=155272K/sec
+bitmap: 0/2 pages [0KB], 65536KB chunk
+
+md3 : active raid1 sda3[0] sdb3[1]
+242781120 blocks [2/2] [UU]
+resync=DELAYED
+bitmap: 2/2 pages [8KB], 65536KB chunk
+
+md1 : active raid1 sdb1[1] sda1[0]
+261056 blocks [2/2] [UU]
+resync=DELAYED
+
+unused devices: <none>

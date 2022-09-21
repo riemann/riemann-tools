@@ -1,9 +1,9 @@
 class Riemann::Tools::MdstatParser
-token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK FAILED FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN PAGES PERSONALITIES PERSONALITY PROGRESS RECOVERY RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
+token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED DISK_STATUS FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN NONE PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
 rule
   target: personalities devices unused_devices { result = val[1] }
 
-  personalities: PERSONALITIES ':' list_of_personalities
+  personalities: PERSONALITIES list_of_personalities
 
   list_of_personalities: list_of_personalities '[' PERSONALITY ']'
                        |
@@ -16,7 +16,7 @@ rule
   list_of_devices: list_of_devices device
                  | device
 
-  device: IDENTIFIER '[' INTEGER ']' '(' FAILED ')'
+  device: IDENTIFIER '[' INTEGER ']' DISK_STATUS
         | IDENTIFIER '[' INTEGER ']'
 
   super: SUPER FLOAT
@@ -29,6 +29,11 @@ rule
         |
 
   progress: PROGRESS progress_action '=' FLOAT '%' '(' INTEGER '/' INTEGER ')' FINISH '=' FLOAT MIN SPEED '=' INTEGER SPEED_UNIT
+          | RECOVER '=' REMOTE
+          | RESHAPE '=' REMOTE
+          | RESYNC '=' REMOTE
+          | RESYNC '=' PENDING
+          | RESYNC '=' DELAYED
           |
 
   progress_action: CHECK
@@ -36,7 +41,11 @@ rule
                  | RESHAPE
                  | RESYNC
 
-  unused_devices: UNUSED_DEVICES ':' '<' IDENTIFIER '>'
+  unused_devices: UNUSED_DEVICES NONE
+                | UNUSED_DEVICES identifiers
+
+  identifiers: identifiers IDENTIFIER
+             | IDENTIFIER
 end
 
 ---- header
@@ -52,46 +61,52 @@ require 'riemann/tools/utils'
 
     until s.eos? do
       case
-      when s.scan(/\n/)              then s.push_token(nil)
-      when s.scan(/\s+/)             then s.push_token(nil)
+      when s.scan(/\n/)               then s.push_token(nil)
+      when s.scan(/\s+/)              then s.push_token(nil)
 
-      when s.scan(/\[=*>.*\]/)       then s.push_token(:PROGRESS)
-      when s.scan(/%/)               then s.push_token('%')
-      when s.scan(/,/)               then s.push_token(',')
-      when s.scan(/:/)               then s.push_token(':')
-      when s.scan(/</)               then s.push_token('<')
-      when s.scan(/=/)               then s.push_token('=')
-      when s.scan(/>/)               then s.push_token('>')
-      when s.scan(/\(/)              then s.push_token('(')
-      when s.scan(/\)/)              then s.push_token(')')
-      when s.scan(/\./)              then s.push_token('.')
-      when s.scan(/\//)              then s.push_token('/')
-      when s.scan(/\[/)              then s.push_token('[')
-      when s.scan(/]/)               then s.push_token(']')
-      when s.scan(/algorithm/)       then s.push_token(:ALGORITHM)
-      when s.scan(/bitmap/)          then s.push_token(:BITMAP)
-      when s.scan(/blocks/)          then s.push_token(:BLOCKS)
-      when s.scan(/check/)           then s.push_token(:CHECK)
-      when s.scan(/chunk/)           then s.push_token(:CHUNK)
-      when s.scan(/finish/)          then s.push_token(:FINISH)
-      when s.scan(/level/)           then s.push_token(:LEVEL)
-      when s.scan(/min/)             then s.push_token(:MIN)
-      when s.scan(/pages/)           then s.push_token(:PAGES)
+      when s.scan(/\([WJFSR]\)/)      then s.push_token(:DISK_STATUS)
+      when s.scan(/<none>/)           then s.push_token(:NONE)
+
+      when s.scan(/\[=*>.*\]/)        then s.push_token(:PROGRESS)
+      when s.scan(/%/)                then s.push_token('%')
+      when s.scan(/,/)                then s.push_token(',')
+      when s.scan(/:/)                then s.push_token(':')
+      when s.scan(/=/)                then s.push_token('=')
+      when s.scan(/\(/)               then s.push_token('(')
+      when s.scan(/\)/)               then s.push_token(')')
+      when s.scan(/\./)               then s.push_token('.')
+      when s.scan(/\//)               then s.push_token('/')
+      when s.scan(/\[/)               then s.push_token('[')
+      when s.scan(/]/)                then s.push_token(']')
+
+      when s.scan(/DELAYED\b/)        then s.push_token(:DELAYED)
+      when s.scan(/KB\b/)             then s.push_token(:BYTE_UNIT)
+      when s.scan(/K\/sec\b/)         then s.push_token(:SPEED_UNIT)
+      when s.scan(/PENDING\b/)        then s.push_token(:PENDING)
+      when s.scan(/Personalities :/)  then s.push_token(:PERSONALITIES)
+      when s.scan(/REMOTE\b/)         then s.push_token(:REMOTE)
+      when s.scan(/algorithm\b/)      then s.push_token(:ALGORITHM)
+      when s.scan(/bitmap\b/)         then s.push_token(:BITMAP)
+      when s.scan(/blocks\b/)         then s.push_token(:BLOCKS)
+      when s.scan(/check\b/)          then s.push_token(:CHECK)
+      when s.scan(/chunk\b/)          then s.push_token(:CHUNK)
+      when s.scan(/finish\b/)         then s.push_token(:FINISH)
+      when s.scan(/k\b/)              then s.push_token(:UNIT)
+      when s.scan(/level\b/)          then s.push_token(:LEVEL)
+      when s.scan(/min\b/)            then s.push_token(:MIN)
+      when s.scan(/pages\b/)          then s.push_token(:PAGES)
       when s.scan(/(raid([014-6]|10)|linear|multipath|faulty)\b/) then s.push_token(:PERSONALITY)
-      when s.scan(/Personalities/)   then s.push_token(:PERSONALITIES)
-      when s.scan(/recovery/)        then s.push_token(:RECOVERY)
-      when s.scan(/reshape/)         then s.push_token(:RESHAPE)
-      when s.scan(/resync/)          then s.push_token(:RESYNC)
-      when s.scan(/speed/)           then s.push_token(:SPEED)
-      when s.scan(/super/)           then s.push_token(:SUPER)
-      when s.scan(/unused devices/)  then s.push_token(:UNUSED_DEVICES)
-      when s.scan(/K\/sec/)          then s.push_token(:SPEED_UNIT)
-      when s.scan(/KB/)              then s.push_token(:BYTE_UNIT)
-      when s.scan(/k/)               then s.push_token(:UNIT)
-      when s.scan(/\d+\.\d+/)        then s.push_token(:FLOAT, s.matched.to_f)
-      when s.scan(/\d+/)             then s.push_token(:INTEGER, s.matched.to_i)
-      when s.scan(/F\b/)             then s.push_token(:FAILED)
-      when s.scan(/\w+/)             then s.push_token(:IDENTIFIER)
+      when s.scan(/recover\b/)        then s.push_token(:RECOVER)
+      when s.scan(/recovery\b/)       then s.push_token(:RECOVERY)
+      when s.scan(/reshape\b/)        then s.push_token(:RESHAPE)
+      when s.scan(/resync\b/)         then s.push_token(:RESYNC)
+      when s.scan(/speed\b/)          then s.push_token(:SPEED)
+      when s.scan(/super\b/)          then s.push_token(:SUPER)
+      when s.scan(/unused devices:/)  then s.push_token(:UNUSED_DEVICES)
+
+      when s.scan(/\d+\.\d+/)         then s.push_token(:FLOAT, s.matched.to_f)
+      when s.scan(/\d+/)              then s.push_token(:INTEGER, s.matched.to_i)
+      when s.scan(/\w+/)              then s.push_token(:IDENTIFIER)
       else
         s.unexpected_token
       end
