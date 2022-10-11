@@ -387,9 +387,8 @@ module Riemann
       end
 
       def disk
-        df.split(/\n/).each do |r|
+        df.lines[1..].each do |r|
           f = r.split(/\s+/)
-          next if f[0] == 'Filesystem'
 
           # Calculate capacity
           used = f[2].to_i
