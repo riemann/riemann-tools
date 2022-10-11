@@ -21,6 +21,15 @@ module Riemann
         @ignore_interfaces = opts[:ignore_interfaces].reject(&:empty?).map(&:dup)
       end
 
+      def report_interface?(iface)
+        if !@interfaces.empty?
+          @interfaces.any? { |pattern| iface.match?(pattern) }
+        else
+          @ignore_interfaces.none? { |pattern| iface.match?(pattern) }
+        end
+      end
+
+
       def state
         f = File.read('/proc/net/dev')
         state = {}
@@ -29,8 +38,7 @@ module Riemann
 
           iface = Regexp.last_match(1)
 
-          next unless @interfaces.empty? || @interfaces.any? { |pattern| iface.match?(pattern) }
-          next if @ignore_interfaces.any? { |pattern| iface.match?(pattern) }
+          next unless report_interface?(iface)
 
           ['rx bytes',
            'rx packets',

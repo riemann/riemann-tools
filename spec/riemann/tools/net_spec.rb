@@ -3,6 +3,40 @@
 require 'riemann/tools/net'
 
 RSpec.describe Riemann::Tools::Net do
+  context('#report_interface?') do
+    it 'selects interfaces by name' do
+      subject.instance_variable_set(:@interfaces, %w[wlan0 wlan1])
+      subject.instance_variable_set(:@ignore_interfaces, %w[wlan1])
+
+      expect(subject.report_interface?('wlan0')).to be_truthy
+      expect(subject.report_interface?('wlan1')).to be_truthy
+    end
+
+    it 'selects interfaces by regular expression' do
+      subject.instance_variable_set(:@interfaces, %w[\Awlan\d+\z])
+      subject.instance_variable_set(:@ignore_interfaces, %w[wlan1])
+
+      expect(subject.report_interface?('wlan0')).to be_truthy
+      expect(subject.report_interface?('wlan1')).to be_truthy
+    end
+
+    it 'reject interfaces by name' do
+      subject.instance_variable_set(:@interfaces, [])
+      subject.instance_variable_set(:@ignore_interfaces, %w[wlan1])
+
+      expect(subject.report_interface?('wlan0')).to be_truthy
+      expect(subject.report_interface?('wlan1')).to be_falsey
+    end
+
+    it 'reject interfaces by regular expression' do
+      subject.instance_variable_set(:@interfaces, [])
+      subject.instance_variable_set(:@ignore_interfaces, %w[\Awlan\d+\z])
+
+      expect(subject.report_interface?('wlan0')).to be_falsey
+      expect(subject.report_interface?('wlan1')).to be_falsey
+    end
+  end
+
   context('#state') do
     let(:state) { subject.state }
     it 'finds all interfaces' do
@@ -65,41 +99,6 @@ RSpec.describe Riemann::Tools::Net do
                             'br-1c33f552db55 tx fifo'       => 0,
                             'br-1c33f552db55 tx packets'    => 0,
                           })
-    end
-
-    it 'select interfaces using regexp' do
-      subject.instance_variable_set('@interfaces', ['enp'])
-      subject.instance_variable_set('@ignore_interfaces', [])
-      allow(File).to receive(:read).with('/proc/net/dev').and_return(<<~CONTENT)
-        Inter-|   Receive                                                |  Transmit
-         face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
-            lo: 165480372  191253    0    0    0     0          0         0 165480372  191253    0    0    0     0       0          0
-        enp2s0: 1318001616 2106881    0    0    0     0          0         1 162233326 1866816    0    0    0     0       0          0
-        docker0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
-        br-1c33f552db55:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
-      CONTENT
-
-      expect(state).not_to include({ 'lo rx bytes' => 165_480_372 })
-      expect(state).to include({ 'enp2s0 rx bytes' => 1_318_001_616 })
-      expect(state).not_to include({ 'docker0 rx bytes' => 0 })
-      expect(state).not_to include({ 'br-1c33f552db55 rx bytes' => 0 })
-    end
-
-    it 'ignore interfaces using regexp' do
-      subject.instance_variable_set('@ignore_interfaces', ['br'])
-      allow(File).to receive(:read).with('/proc/net/dev').and_return(<<~CONTENT)
-        Inter-|   Receive                                                |  Transmit
-         face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
-            lo: 165480372  191253    0    0    0     0          0         0 165480372  191253    0    0    0     0       0          0
-        enp2s0: 1318001616 2106881    0    0    0     0          0         1 162233326 1866816    0    0    0     0       0          0
-        docker0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
-        br-1c33f552db55:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
-      CONTENT
-
-      expect(state).to include({ 'lo rx bytes' => 165_480_372 })
-      expect(state).to include({ 'enp2s0 rx bytes' => 1_318_001_616 })
-      expect(state).to include({ 'docker0 rx bytes' => 0 })
-      expect(state).not_to include({ 'br-1c33f552db55 rx bytes' => 0 })
     end
   end
 end
