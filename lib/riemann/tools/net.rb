@@ -9,7 +9,7 @@ module Riemann
       include Riemann::Tools
 
       opt :interfaces, 'Interfaces to monitor', type: :strings, default: nil
-      opt :ignore_interfaces, 'Interfaces to ignore', type: :strings, default: ['lo']
+      opt :ignore_interfaces, 'Interfaces to ignore', type: :strings, default: ['\Alo\d*\z']
 
       def initialize
         @old_state = nil
@@ -19,6 +19,15 @@ module Riemann
                         []
                       end
         @ignore_interfaces = opts[:ignore_interfaces].reject(&:empty?).map(&:dup)
+
+        ostype = `uname -s`.chomp.downcase
+        case ostype
+        when 'freebsd'
+          @state = method :freebsd_state
+        else
+          puts "WARNING: OS '#{ostype}' not explicitly supported. Falling back to Linux" unless ostype == 'linux'
+          @state = method :linux_state
+        end
       end
 
       def report_interface?(iface)
@@ -29,8 +38,35 @@ module Riemann
         end
       end
 
+      FREEBSD_MAPPING = {
+        'collisions'       => 'tx colls',
+        'dropped-packets'  => 'rx drop',
+        'received-bytes'   => 'rx bytes',
+        'received-packets' => 'rx packets',
+        'received-errors'  => 'rx errs',
+        'sent-bytes'       => 'tx bytes',
+        'sent-packets'     => 'tx packets',
+        'send-errors'      => 'tx errs',
+      }.freeze
 
-      def state
+      def freebsd_state
+        require 'json'
+
+        state = {}
+
+        all_stats = JSON.parse(`netstat -inb --libxo=json`)
+        all_stats.dig('statistics', 'interface').select { |s| s['mtu'] }.each do |interface_stats|
+          next unless report_interface?(interface_stats['name'])
+
+          FREEBSD_MAPPING.each do |key, service|
+            state["#{interface_stats['name']} #{service}"] = interface_stats[key]
+          end
+        end
+
+        state
+      end
+
+      def linux_state
         f = File.read('/proc/net/dev')
         state = {}
         f.split("\n").each do |line|
@@ -68,7 +104,7 @@ module Riemann
       end
 
       def tick
-        state = self.state
+        state = @state.call
 
         if @old_state
           # Report services from `@old_state` that don't exist in `state` as expired
