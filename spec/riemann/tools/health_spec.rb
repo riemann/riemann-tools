@@ -46,6 +46,24 @@ RSpec.describe Riemann::Tools::Health do
       expect(subject).to have_received(:alert).with('disk /var/log', :ok, 2.0545157787749945e-05, '0% used')
       expect(subject).to have_received(:alert).with('disk /usr/home/romain/Medias', :ok, 0.39906518922242257, '40% used')
     end
+
+    context 'with a foreign locale' do
+      before do
+        allow(subject).to receive(:df).and_return(<<~OUTPUT)
+          Sys. de fichiers blocs de 1024  Utilisé Disponible Capacité Monté sur
+          /dev/md1              20026172 11898676    7087168      63% /
+          /dev/md2              94569252 19758048   69984228      23% /home
+        OUTPUT
+      end
+
+      it 'reports all zfs filesystems' do
+        allow(subject).to receive(:alert).with('disk /', :ok, 0.6267130394624543, '63% used')
+        allow(subject).to receive(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used')
+        subject.disk
+        expect(subject).to have_received(:alert).with('disk /', :ok, 0.6267130394624543, '63% used')
+        expect(subject).to have_received(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used')
+      end
+    end
   end
 
   context '#bsd_swap' do
