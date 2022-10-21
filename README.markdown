@@ -40,6 +40,7 @@ ship with the `riemann-tools` gem, including:
 * riemann-kvminstance - Monitor KVM instances.
 * riemann-ntp - Monitor NTP.
 * riemann-portcheck - Monitor open TCP ports.
+* riemann-http-check - Monitor reachability of HTTP(S) resources.
 
 Also contained in the repository are a number of stand-alone monitoring
 tools, which are shipped as separate gems.
