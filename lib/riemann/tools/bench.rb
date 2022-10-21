@@ -2,7 +2,6 @@
 
 require 'rubygems'
 require 'riemann/client'
-require 'pp'
 
 # Connects to a server (first arg) and populates it with a constant stream of
 # events for testing.
