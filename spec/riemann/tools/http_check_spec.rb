@@ -52,7 +52,7 @@ class TestWebserver < Sinatra::Base
   end
 end
 
-RSpec.describe Riemann::Tools::HttpCheck do
+RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= Gem::Version.new(Riemann::Tools::HttpCheck::REQUIRED_RUBY_VERSION) do
   describe '#endpoint_name' do
     subject { described_class.new.endpoint_name(address, port) }
     let(:port) { 443 }

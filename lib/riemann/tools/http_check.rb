@@ -10,6 +10,8 @@ require 'riemann/tools'
 module Riemann
   module Tools
     class HttpCheck
+      REQUIRED_RUBY_VERSION = '2.7.0'
+
       include Riemann::Tools
 
       opt :uri, 'URI to fetch', short: :none, type: :strings, default: ['http://localhost']
