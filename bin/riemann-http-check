@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
+
+require 'riemann/tools/http_check'
+
+raise("Ruby #{Riemann::Tools::HttpCheck::REQUIRED_RUBY_VERSION} or better is required for using riemann-http-check") unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new(Riemann::Tools::HttpCheck::REQUIRED_RUBY_VERSION)
+
+Riemann::Tools::HttpCheck.run
