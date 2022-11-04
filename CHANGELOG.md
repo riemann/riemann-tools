@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.6.0](https://github.com/riemann/riemann-tools/tree/v1.6.0) (2022-11-04)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.5.0...v1.6.0)
+
+**Implemented enhancements:**
+
+- Add `riemann-http-check` to monitor HTTP\(S\) resources [\#248](https://github.com/riemann/riemann-tools/pull/248) ([smortex](https://github.com/smortex))
+- Add FreeBSD support to `riemann-net` [\#247](https://github.com/riemann/riemann-tools/pull/247) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix `riemann-health` detection of `df` header [\#246](https://github.com/riemann/riemann-tools/pull/246) ([smortex](https://github.com/smortex))
+- Fix/Improve `riemann-md` mdstat parser [\#245](https://github.com/riemann/riemann-tools/pull/245) ([smortex](https://github.com/smortex))
+
 ## [v1.5.0](https://github.com/riemann/riemann-tools/tree/v1.5.0) (2022-09-08)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.4.0...v1.5.0)
