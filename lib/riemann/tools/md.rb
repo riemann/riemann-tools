@@ -8,6 +8,9 @@ module Riemann
     class Md
       include Riemann::Tools
 
+      opt :devices, 'Devices to monitor', type: :strings, default: []
+      opt :ignore_devices, 'Devices to ignore', type: :strings, default: []
+
       def mdstat_parser
         @mdstat_parser ||= MdstatParser.new
       end
@@ -17,6 +20,8 @@ module Riemann
         res = mdstat_parser.parse(status)
 
         res.each do |device, member_status|
+          next unless report_device?(device)
+
           report(
             service: "mdstat #{device}",
             description: member_status,
@@ -35,6 +40,14 @@ module Riemann
           description: e.message,
           state: 'critical',
         )
+      end
+
+      def report_device?(device)
+        if !opts[:devices].empty?
+          opts[:devices].include?(device)
+        else
+          !opts[:ignore_devices].include?(device)
+        end
       end
     end
   end
