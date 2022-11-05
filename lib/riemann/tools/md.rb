@@ -16,13 +16,13 @@ module Riemann
         status = File.read('/proc/mdstat')
         res = mdstat_parser.parse(status)
 
-        state = res.values.all? { |value| value =~ /\AU+\z/ } ? 'ok' : 'critical'
-
-        report(
-          service: 'mdstat',
-          description: status,
-          state: state,
-        )
+        res.each do |device, member_status|
+          report(
+            service: "mdstat #{device}",
+            description: member_status,
+            state: member_status =~ /\AU+\z/ ? 'ok' : 'critical',
+          )
+        end
       rescue Racc::ParseError => e
         report(
           service: 'mdstat',
