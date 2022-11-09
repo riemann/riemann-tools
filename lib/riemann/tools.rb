@@ -101,5 +101,13 @@ module Riemann
     end
 
     def tick; end
+
+    def endpoint_name(address, port)
+      if address.ipv6?
+        "[#{address}]:#{port}"
+      else
+        "#{address}:#{port}"
+      end
+    end
   end
 end

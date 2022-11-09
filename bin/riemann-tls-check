@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Process.setproctitle($PROGRAM_NAME)
+
+require 'riemann/tools/tls_check'
+
+Riemann::Tools::TLSCheck.run
