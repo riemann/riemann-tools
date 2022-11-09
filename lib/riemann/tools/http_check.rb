@@ -348,14 +348,6 @@ module Riemann
         reported_uri.password = '**redacted**' if reported_uri.password
         reported_uri
       end
-
-      def endpoint_name(address, port)
-        if address.ipv6?
-          "[#{address}]:#{port}"
-        else
-          "#{address}:#{port}"
-        end
-      end
     end
   end
 end
