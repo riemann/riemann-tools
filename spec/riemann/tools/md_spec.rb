@@ -12,7 +12,40 @@ RSpec.describe Riemann::Tools::Md do
       it 'reports ok state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'mdstat', description: //, state: 'ok')
+        expect(subject).to have_received(:report).with(service: 'mdstat md0', description: 'UU', state: 'ok')
+        expect(subject).to have_received(:report).with(service: 'mdstat md1', description: 'UU', state: 'ok')
+        expect(subject).to have_received(:report).with(service: 'mdstat md2', description: 'UU', state: 'ok')
+        expect(subject).to have_received(:report).with(service: 'mdstat md3', description: 'UUUUUUUUUU', state: 'ok')
+      end
+
+      context 'when filtering devices' do
+        before do
+          subject.opts[:devices] = %w[md1 md2]
+        end
+
+        it 'reports filtered devices state' do
+          allow(subject).to receive(:report)
+          subject.tick
+          expect(subject).not_to have_received(:report).with(service: 'mdstat md0', description: 'UU', state: 'ok')
+          expect(subject).to have_received(:report).with(service: 'mdstat md1', description: 'UU', state: 'ok')
+          expect(subject).to have_received(:report).with(service: 'mdstat md2', description: 'UU', state: 'ok')
+          expect(subject).not_to have_received(:report).with(service: 'mdstat md3', description: 'UUUUUUUUUU', state: 'ok')
+        end
+      end
+
+      context 'when ignoring devices' do
+        before do
+          subject.opts[:ignore_devices] = %w[md0 md1 md2]
+        end
+
+        it 'reports non ignored devices state' do
+          allow(subject).to receive(:report)
+          subject.tick
+          expect(subject).not_to have_received(:report).with(service: 'mdstat md0', description: 'UU', state: 'ok')
+          expect(subject).not_to have_received(:report).with(service: 'mdstat md1', description: 'UU', state: 'ok')
+          expect(subject).not_to have_received(:report).with(service: 'mdstat md2', description: 'UU', state: 'ok')
+          expect(subject).to have_received(:report).with(service: 'mdstat md3', description: 'UUUUUUUUUU', state: 'ok')
+        end
       end
     end
 
@@ -24,7 +57,7 @@ RSpec.describe Riemann::Tools::Md do
       it 'reports critical state' do
         allow(subject).to receive(:report)
         subject.tick
-        expect(subject).to have_received(:report).with(service: 'mdstat', description: //, state: 'critical')
+        expect(subject).to have_received(:report).with(service: 'mdstat md127', description: 'UUUUU_', state: 'critical')
       end
     end
 

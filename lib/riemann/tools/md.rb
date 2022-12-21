@@ -8,6 +8,9 @@ module Riemann
     class Md
       include Riemann::Tools
 
+      opt :devices, 'Devices to monitor', type: :strings, default: []
+      opt :ignore_devices, 'Devices to ignore', type: :strings, default: []
+
       def mdstat_parser
         @mdstat_parser ||= MdstatParser.new
       end
@@ -16,13 +19,15 @@ module Riemann
         status = File.read('/proc/mdstat')
         res = mdstat_parser.parse(status)
 
-        state = res.values.all? { |value| value =~ /\AU+\z/ } ? 'ok' : 'critical'
+        res.each do |device, member_status|
+          next unless report_device?(device)
 
-        report(
-          service: 'mdstat',
-          description: status,
-          state: state,
-        )
+          report(
+            service: "mdstat #{device}",
+            description: member_status,
+            state: member_status =~ /\AU+\z/ ? 'ok' : 'critical',
+          )
+        end
       rescue Racc::ParseError => e
         report(
           service: 'mdstat',
@@ -35,6 +40,14 @@ module Riemann
           description: e.message,
           state: 'critical',
         )
+      end
+
+      def report_device?(device)
+        if !opts[:devices].empty?
+          opts[:devices].include?(device)
+        else
+          !opts[:ignore_devices].include?(device)
+        end
       end
     end
   end
