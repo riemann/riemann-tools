@@ -17,7 +17,7 @@ module Riemann
       def state
         f = File.read('/proc/diskstats')
         state = f.split("\n").reject { |d| d =~ /(ram|loop)/ }.each_with_object({}) do |line, s|
-          next unless line =~ /^(?:\s+\d+){2}\s+([\w\d\-]+) (.*)$/
+          next unless line =~ /^(?:\s+\d+){2}\s+([\w\d-]+) (.*)$/
 
           dev = Regexp.last_match(1)
 
