@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+ARGV.replace([])
+
 RSpec.configure do |config|
   # Limits the available syntax to the non-monkey patched syntax that is
   # recommended. For more details, see:
