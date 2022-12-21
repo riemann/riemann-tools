@@ -70,16 +70,14 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
     end
   end
 
-  describe '#test_uri' do
+  describe '#test_uri_addresses' do
     before do
       subject.options[:http_timeout] = http_timeout
       allow(subject).to receive(:report)
-      allow(subject).to receive(:with_each_address).with('example.com').and_yield('::1').and_yield('127.0.0.1')
-      allow(subject).to receive(:with_each_address).with('127.0.0.1').and_call_original
-      allow(subject).to receive(:with_each_address).with('[::1]').and_call_original
-      allow(subject).to receive(:with_each_address).with('invalid.example.com')
-      subject.test_uri(uri)
+      subject.test_uri_addresses(uri, addresses)
     end
+
+    let(:addresses) { ['::1', '127.0.0.1'] }
 
     let(:http_timeout) { 2.0 }
 
@@ -105,7 +103,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       let(:reported_uri) { uri }
 
       context 'with a fast uri' do
-        let(:uri) { "http://example.com:#{TEST_WEBSERVER_PORT}/" }
+        let(:uri) { URI("http://example.com:#{TEST_WEBSERVER_PORT}/") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/ [::1]:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/ [::1]:#{TEST_WEBSERVER_PORT} response code", metric: 200, state: 'ok', description: '200 OK' })) }
@@ -117,7 +115,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with a slow uri' do
-        let(:uri) { "http://example.com:#{TEST_WEBSERVER_PORT}/slow" }
+        let(:uri) { URI("http://example.com:#{TEST_WEBSERVER_PORT}/slow") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/slow [::1]:#{TEST_WEBSERVER_PORT} response latency", state: 'warning' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/slow 127.0.0.1:#{TEST_WEBSERVER_PORT} response latency", state: 'warning' })) }
@@ -125,7 +123,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with a very slow uri' do
-        let(:uri) { "http://example.com:#{TEST_WEBSERVER_PORT}/sloww" }
+        let(:uri) { URI("http://example.com:#{TEST_WEBSERVER_PORT}/sloww") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/sloww [::1]:#{TEST_WEBSERVER_PORT} response latency", state: 'critical' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/sloww 127.0.0.1:#{TEST_WEBSERVER_PORT} response latency", state: 'critical' })) }
@@ -133,7 +131,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with a too slow uri' do
-        let(:uri) { "http://example.com:#{TEST_WEBSERVER_PORT}/slowww" }
+        let(:uri) { URI("http://example.com:#{TEST_WEBSERVER_PORT}/slowww") }
         let(:http_timeout) { 0.1 }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/slowww [::1]:#{TEST_WEBSERVER_PORT} response latency", state: 'critical', description: 'timeout' })) }
@@ -142,7 +140,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with inconsistent responses' do
-        let(:uri) { "http://example.com:#{TEST_WEBSERVER_PORT}/rand" }
+        let(:uri) { URI("http://example.com:#{TEST_WEBSERVER_PORT}/rand") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/rand [::1]:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{TEST_WEBSERVER_PORT}/rand [::1]:#{TEST_WEBSERVER_PORT} response code", metric: 200, state: 'ok', description: '200 OK' })) }
@@ -154,7 +152,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with basic authentication and a good password' do
-        let(:uri) { "http://admin:secret@example.com:#{TEST_WEBSERVER_PORT}/protected" }
+        let(:uri) { URI("http://admin:secret@example.com:#{TEST_WEBSERVER_PORT}/protected") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://admin:**redacted**@example.com:#{TEST_WEBSERVER_PORT}/protected [::1]:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://admin:**redacted**@example.com:#{TEST_WEBSERVER_PORT}/protected [::1]:#{TEST_WEBSERVER_PORT} response code", metric: 200, state: 'ok', description: '200 OK' })) }
@@ -166,7 +164,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with basic authentication and a wrong password' do
-        let(:uri) { "http://admin:wrong-password@example.com:#{TEST_WEBSERVER_PORT}/protected" }
+        let(:uri) { URI("http://admin:wrong-password@example.com:#{TEST_WEBSERVER_PORT}/protected") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://admin:**redacted**@example.com:#{TEST_WEBSERVER_PORT}/protected [::1]:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://admin:**redacted**@example.com:#{TEST_WEBSERVER_PORT}/protected [::1]:#{TEST_WEBSERVER_PORT} response code", metric: 401, state: 'ok', description: '401 Unauthorized' })) }
@@ -178,7 +176,8 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with an IPv4 address' do
-        let(:uri) { "http://127.0.0.1:#{TEST_WEBSERVER_PORT}/" }
+        let(:uri) { URI("http://127.0.0.1:#{TEST_WEBSERVER_PORT}/") }
+        let(:addresses) { ['127.0.0.1'] }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://127.0.0.1:#{TEST_WEBSERVER_PORT}/ 127.0.0.1:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://127.0.0.1:#{TEST_WEBSERVER_PORT}/ 127.0.0.1:#{TEST_WEBSERVER_PORT} response code", metric: 200, state: 'ok', description: '200 OK' })) }
@@ -187,7 +186,8 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with an IPv6 address' do
-        let(:uri) { "http://[::1]:#{TEST_WEBSERVER_PORT}/" }
+        let(:uri) { URI("http://[::1]:#{TEST_WEBSERVER_PORT}/") }
+        let(:addresses) { ['::1'] }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://[::1]:#{TEST_WEBSERVER_PORT}/ [::1]:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://[::1]:#{TEST_WEBSERVER_PORT}/ [::1]:#{TEST_WEBSERVER_PORT} response code", metric: 200, state: 'ok', description: '200 OK' })) }
@@ -218,7 +218,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       end
 
       context 'with an encrypted uri' do
-        let(:uri) { "https://example.com:#{TEST_WEBSERVER_PORT}/" }
+        let(:uri) { URI("https://example.com:#{TEST_WEBSERVER_PORT}/") }
 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get https://example.com:#{TEST_WEBSERVER_PORT}/ [::1]:#{TEST_WEBSERVER_PORT} connection latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get https://example.com:#{TEST_WEBSERVER_PORT}/ [::1]:#{TEST_WEBSERVER_PORT} response code", metric: 200, state: 'ok', description: '200 OK' })) }
@@ -231,13 +231,13 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
     end
 
     context 'with a wrong port' do
-      let(:uri) { 'http://example.com:23/' }
+      let(:uri) { URI('http://example.com:23/') }
 
       it { is_expected.to have_received(:report).with(hash_including({ service: 'get http://example.com:23/ consistency', state: 'critical', description: 'Could not get any response from example.com' })) }
     end
 
     context 'with a wrong domain' do
-      let(:uri) { 'https://invalid.example.com/' }
+      let(:uri) { URI('https://invalid.example.com/') }
 
       it { is_expected.to have_received(:report).with(hash_including({ service: 'get https://invalid.example.com/ consistency', state: 'critical', description: 'Could not get any response from invalid.example.com' })) }
     end

@@ -26,23 +26,84 @@ module Riemann
       opt :response_latency_critical, 'Lattency critical threshold', short: :none, default: 1.0
       opt :http_timeout, 'Timeout (in seconds) for HTTP requests', short: :none, default: 5.0
       opt :checks, 'A list of checks to run.', short: :none, type: :strings, default: %w[consistency connection-latency response-code response-latency]
+      opt :resolvers, 'Run this number of resolver threads', short: :none, type: :integer, default: 5
+      opt :workers, 'Run this number of worker threads', short: :none, type: :integer, default: 20
+
+      def initialize
+        @resolve_queue = Queue.new
+        @work_queue = Queue.new
+
+        opts[:resolvers].times do
+          Thread.new do
+            loop do
+              uri = @resolve_queue.pop
+              host = uri.host
+
+              addresses = Resolv::DNS.new.getaddresses(host)
+              if addresses.empty?
+                host = host[1...-1] if host[0] == '[' && host[-1] == ']'
+                addresses << IPAddr.new(host)
+              end
+
+              @work_queue.push([uri, addresses])
+            end
+          end
+        end
+
+        opts[:workers].times do
+          Thread.new do
+            loop do
+              uri, addresses = @work_queue.pop
+              request = ::Net::HTTP::Get.new(uri)
+              request.basic_auth(uri.user, uri.password)
+
+              test_uri_addresses(uri, addresses)
+            end
+          end
+        end
+
+        super
+      end
 
       def tick
+        report(
+          service: 'riemann http-check resolvers utilization',
+          metric: (opts[:resolvers].to_f - @resolve_queue.num_waiting) / opts[:resolvers],
+          state: @resolve_queue.num_waiting.positive? ? 'ok' : 'critical',
+          tags: %w[riemann],
+        )
+        report(
+          service: 'riemann http-check resolvers saturation',
+          metric: @resolve_queue.length,
+          state: @resolve_queue.empty? ? 'ok' : 'critical',
+          tags: %w[riemann],
+        )
+        report(
+          service: 'riemann http-check workers utilization',
+          metric: (opts[:workers].to_f - @work_queue.num_waiting) / opts[:workers],
+          state: @work_queue.num_waiting.positive? ? 'ok' : 'critical',
+          tags: %w[riemann],
+        )
+        report(
+          service: 'riemann http-check workers saturation',
+          metric: @work_queue.length,
+          state: @work_queue.empty? ? 'ok' : 'critical',
+          tags: %w[riemann],
+        )
+
         opts[:uri].each do |uri|
-          test_uri(uri)
+          @resolve_queue.push(URI(uri))
         end
       end
 
-      def test_uri(uri)
-        uri = URI(uri)
-
+      def test_uri_addresses(uri, addresses)
         request = ::Net::HTTP::Get.new(uri)
         request.basic_auth(uri.user, uri.password)
 
         responses = []
 
-        with_each_address(uri.host) do |address|
-          responses << test_uri_address(uri, address, request)
+        addresses.each do |address|
+          responses << test_uri_address(uri, address.to_s, request)
         end
 
         responses.compact!
@@ -113,18 +174,6 @@ module Riemann
       rescue StandardError
         # Ignore this address
         nil
-      end
-
-      def with_each_address(host, &block)
-        addresses = Resolv::DNS.new.getaddresses(host)
-        if addresses.empty?
-          host = host[1...-1] if host[0] == '[' && host[-1] == ']'
-          addresses << IPAddr.new(host)
-        end
-
-        addresses.each do |address|
-          block.call(address.to_s)
-        end
       end
 
       def report_http_endpoint_response_code(http, uri, response)
