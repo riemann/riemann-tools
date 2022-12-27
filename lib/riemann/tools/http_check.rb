@@ -42,7 +42,11 @@ module Riemann
               addresses = Resolv::DNS.new.getaddresses(host)
               if addresses.empty?
                 host = host[1...-1] if host[0] == '[' && host[-1] == ']'
-                addresses << IPAddr.new(host)
+                begin
+                  addresses << IPAddr.new(host)
+                rescue IPAddr::InvalidAddressError
+                  # Ignore
+                end
               end
 
               @work_queue.push([uri, addresses])
