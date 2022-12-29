@@ -16,7 +16,7 @@ module Riemann
       opt :uri, 'Apache Server Status URI', default: 'http://localhost/server-status'
 
       def initialize
-        @uri = "#{URI.parse(opts[:uri])}?auto"
+        @uri = URI.parse("#{opts[:uri]}?auto")
         # Sample Response with ExtendedStatus On
         # Total Accesses: 20643
         # Total kBytes: 36831
