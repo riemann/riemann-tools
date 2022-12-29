@@ -58,9 +58,6 @@ module Riemann
           Thread.new do
             loop do
               uri, addresses = @work_queue.pop
-              request = ::Net::HTTP::Get.new(uri)
-              request.basic_auth(uri.user, uri.password)
-
               test_uri_addresses(uri, addresses)
             end
           end
