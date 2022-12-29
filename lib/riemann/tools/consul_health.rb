@@ -16,6 +16,7 @@ module Riemann
       opt :consul_port, 'Consul API Host (default to 8500)', default: '8500'
       opt :prefix, 'prefix to use for all service names when reporting', default: 'consul '
       opt :minimum_services_per_node, 'minimum services per node (default: 0)', default: 0
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
         @hostname = opts[:consul_host]
@@ -43,7 +44,7 @@ module Riemann
       end
 
       def get(url)
-        ::Net::HTTP.get_response(url).body
+        ::Net::HTTP.new(url.host, url.port).get(url, { 'user-agent' => opts[:user_agent] }).body
       end
 
       def tick

@@ -22,6 +22,7 @@ module Riemann
       opt :writing_critical, 'Writing connections critical threshold', default: 0
       opt :waiting_warning, 'Waiting connections warning threshold', default: 0
       opt :waiting_critical, 'Waiting connections critical threshold', default: 0
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
         @uri = URI.parse(opts[:uri])
@@ -53,7 +54,7 @@ module Riemann
       def tick
         response = nil
         begin
-          response = ::Net::HTTP.get(@uri)
+          response = ::Net::HTTP.new(@uri.host, @uri.port).get(@uri, { 'user-agent' => opts[:user_agent] }).body
         rescue StandardError => e
           report(
             service: 'nginx health',

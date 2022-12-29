@@ -14,6 +14,7 @@ module Riemann
       require 'uri'
 
       opt :uri, 'Apache Server Status URI', default: 'http://localhost/server-status'
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
         @uri = URI.parse("#{opts[:uri]}?auto")
@@ -68,7 +69,7 @@ module Riemann
       def connection
         response = nil
         begin
-          response = ::Net::HTTP.get(@uri)
+          response = ::Net::HTTP.new(@uri.host, @uri.port).get(@uri, { 'user-agent' => opts[:user_agent] }).body
         rescue StandardError => e
           report(
             service: 'httpd health',

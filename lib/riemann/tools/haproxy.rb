@@ -12,6 +12,7 @@ module Riemann
 
       opt :stats_url, 'Full url to haproxy stats (eg: https://user:password@host.com:9999/stats)', required: true,
                                                                                                    type: :string
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
         @uri = URI("#{opts[:stats_url]};csv")
@@ -45,7 +46,7 @@ module Riemann
         http = ::Net::HTTP.new(@uri.host, @uri.port)
         http.use_ssl = true if @uri.scheme == 'https'
         res = http.start do |h|
-          get = ::Net::HTTP::Get.new(@uri.request_uri)
+          get = ::Net::HTTP::Get.new(@uri.request_uri, { 'user-agent' => opts[:user_agent] })
           unless @uri.userinfo.nil?
             userinfo = @uri.userinfo.split(':')
             get.basic_auth userinfo[0], userinfo[1]
