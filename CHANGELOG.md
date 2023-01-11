@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.7.0](https://github.com/riemann/riemann-tools/tree/v1.7.0) (2023-01-11)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.6.0...v1.7.0)
+
+**Implemented enhancements:**
+
+- Override default HTTP User-Agent and make it tuneable [\#257](https://github.com/riemann/riemann-tools/pull/257) ([smortex](https://github.com/smortex))
+- Allow opting out of `riemann-http-check` latency state [\#255](https://github.com/riemann/riemann-tools/pull/255) ([smortex](https://github.com/smortex))
+- Speed-up `riemann-http-check` with resolver and worker threads [\#254](https://github.com/riemann/riemann-tools/pull/254) ([smortex](https://github.com/smortex))
+- Allow mdstat device filtering [\#252](https://github.com/riemann/riemann-tools/pull/252) ([smortex](https://github.com/smortex))
+- Report mdstat health by device [\#251](https://github.com/riemann/riemann-tools/pull/251) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix `riemann-http-check` with unresolvable domains [\#256](https://github.com/riemann/riemann-tools/pull/256) ([smortex](https://github.com/smortex))
+
 ## [v1.6.0](https://github.com/riemann/riemann-tools/tree/v1.6.0) (2022-11-04)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.5.0...v1.6.0)
