@@ -205,7 +205,7 @@ module Riemann
         else
           report(
             {
-              state: 'critical',
+              state: latency_state(latency, nil),
               description: 'timeout',
             }.merge(endpoint_report(http, uri, "#{latency} latency")),
           )
@@ -213,9 +213,14 @@ module Riemann
       end
 
       def latency_state(name, latency)
-        if latency > opts["#{name}_latency_critical".to_sym]
+        critical_threshold = opts["#{name}_latency_critical".to_sym]
+        warning_threshold = opts["#{name}_latency_warning".to_sym]
+
+        return if critical_threshold.zero? || warning_threshold.zero?
+
+        if latency.nil? || latency > critical_threshold
           'critical'
-        elsif latency > opts["#{name}_latency_warning".to_sym]
+        elsif latency > warning_threshold
           'warning'
         else
           'ok'
