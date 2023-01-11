@@ -12,6 +12,7 @@ module Riemann
 
       opt :cloudant_username, 'Cloudant username', type: :string, required: true
       opt :cloudant_password, 'Cloudant pasword', type: :string, required: true
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def tick
         json.each do |node|
@@ -46,7 +47,7 @@ module Riemann
         http = ::Net::HTTP.new('cloudant.com', 443)
         http.use_ssl = true
         http.start do |h|
-          get = ::Net::HTTP::Get.new('/api/load_balancer')
+          get = ::Net::HTTP::Get.new('/api/load_balancer', { 'user-agent' => opts[:user_agent] })
           get.basic_auth opts[:cloudant_username], opts[:cloudant_password]
           h.request get
         end

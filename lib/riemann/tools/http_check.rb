@@ -28,6 +28,7 @@ module Riemann
       opt :checks, 'A list of checks to run.', short: :none, type: :strings, default: %w[consistency connection-latency response-code response-latency]
       opt :resolvers, 'Run this number of resolver threads', short: :none, type: :integer, default: 5
       opt :workers, 'Run this number of worker threads', short: :none, type: :integer, default: 20
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
         @resolve_queue = Queue.new
@@ -58,9 +59,6 @@ module Riemann
           Thread.new do
             loop do
               uri, addresses = @work_queue.pop
-              request = ::Net::HTTP::Get.new(uri)
-              request.basic_auth(uri.user, uri.password)
-
               test_uri_addresses(uri, addresses)
             end
           end
@@ -101,7 +99,7 @@ module Riemann
       end
 
       def test_uri_addresses(uri, addresses)
-        request = ::Net::HTTP::Get.new(uri)
+        request = ::Net::HTTP::Get.new(uri, { 'user-agent' => opts[:user_agent] })
         request.basic_auth(uri.user, uri.password)
 
         responses = []

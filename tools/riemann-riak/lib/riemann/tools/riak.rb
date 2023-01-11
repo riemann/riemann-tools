@@ -26,6 +26,8 @@ module Riemann
       opt :get_99_warning, 'FSM 99% get time warning threshold (ms)', default: 10_000
       opt :put_99_warning, 'FSM 99% put time warning threshold (ms)', default: 10_000
 
+      opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
+
       def initialize
         detect_features
 
@@ -38,7 +40,7 @@ module Riemann
           http.use_ssl = uri.scheme == 'https'
           http.verify_mode = OpenSSL::SSL::VERIFY_NONE if http.use_ssl?
           http.start do |h|
-            h.get opts[:stats_path]
+            h.get(opts[:stats_path], { 'user-agent' => opts[:user_agent] })
           end
         rescue StandardError => _e
           @httpstatus = false
@@ -168,7 +170,7 @@ module Riemann
           http.use_ssl = uri.scheme == 'https'
           http.verify_mode = OpenSSL::SSL::VERIFY_NONE if http.use_ssl?
           res = http.start do |h|
-            h.get opts[:stats_path]
+            h.get(opts[:stats_path], { 'user-agent' => opts[:user_agent] })
           end
         rescue StandardError => e
           report(
