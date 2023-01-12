@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.7.1](https://github.com/riemann/riemann-tools/tree/v1.7.1) (2023-01-12)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.7.0...v1.7.1)
+
+**Fixed bugs:**
+
+- Fix uninitialized constant Riemann::Tools::VERSION \(NameError\) [\#259](https://github.com/riemann/riemann-tools/pull/259) ([smortex](https://github.com/smortex))
+
 ## [v1.7.0](https://github.com/riemann/riemann-tools/tree/v1.7.0) (2023-01-11)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.6.0...v1.7.0)
