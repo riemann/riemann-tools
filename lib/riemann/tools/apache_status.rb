@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Collects Apache metrics and submits them to Riemann
 # More information can be found at http://httpd.apache.org/docs/2.4/mod/mod_status.html

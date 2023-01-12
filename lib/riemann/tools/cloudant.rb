@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Gathers load balancer statistics from Cloudant.com (shared cluster) and submits them to Riemann.
 module Riemann

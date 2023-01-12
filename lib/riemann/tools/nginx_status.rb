@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Gathers nginx status stub statistics and submits them to Riemann.
 # See http://wiki.nginx.org/HttpStubStatusModule for configuring Nginx appropriately

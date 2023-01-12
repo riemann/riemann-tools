@@ -2,6 +2,7 @@
 
 require 'English'
 require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Forwards information on a Riak node to Riemann.
 module Riemann

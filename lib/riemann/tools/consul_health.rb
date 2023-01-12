@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'riemann/tools'
+require 'riemann/tools/version'
 require 'socket'
 require 'net/http'
 require 'uri'

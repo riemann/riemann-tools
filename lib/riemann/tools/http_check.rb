@@ -5,6 +5,7 @@ require 'resolv'
 require 'socket'
 
 require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Test for HTTP requests
 module Riemann
