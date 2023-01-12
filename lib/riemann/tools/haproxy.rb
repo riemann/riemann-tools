@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Gathers haproxy CSV statistics and submits them to Riemann.
 module Riemann
