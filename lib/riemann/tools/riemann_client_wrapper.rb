@@ -11,6 +11,8 @@ module Riemann
 
       def initialize
         @client = nil
+        @queue = Queue.new
+        @max_bulk_size = 1000
       end
 
       def configure(options)
@@ -32,11 +34,24 @@ module Riemann
                   else
                     r
                   end
+
+        @worker = Thread.new do
+          loop do
+            events = []
+
+            events << @queue.pop
+            events << @queue.pop while !@queue.empty? && events.size < @max_bulk_size
+
+            @client.bulk_send(events)
+          end
+        end
+        @worker.abort_on_exception = true
+
         self
       end
 
       def <<(event)
-        @client << event
+        @queue << event
       end
     end
   end
