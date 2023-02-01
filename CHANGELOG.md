@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.8.0](https://github.com/riemann/riemann-tools/tree/v1.8.0) (2023-02-01)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.7.1...v1.8.0)
+
+**Implemented enhancements:**
+
+- Send events in bulk when they are stacking [\#261](https://github.com/riemann/riemann-tools/pull/261) ([smortex](https://github.com/smortex))
+
 ## [v1.7.1](https://github.com/riemann/riemann-tools/tree/v1.7.1) (2023-01-12)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.7.0...v1.7.1)
@@ -378,7 +386,7 @@
 
 **Merged pull requests:**
 
-- Update FreeBSD load average for 1 min [\#79](https://github.com/riemann/riemann-tools/pull/79) ([xaque208](https://github.com/xaque208))
+- Update FreeBSD load average for 1 min [\#79](https://github.com/riemann/riemann-tools/pull/79) ([zachfi](https://github.com/zachfi))
 - Added riemann-varnish collector script [\#77](https://github.com/riemann/riemann-tools/pull/77) ([pradeepchhetri](https://github.com/pradeepchhetri))
 - allow dashes in diskstats volume names to support lvm volumes like "dm-0" [\#75](https://github.com/riemann/riemann-tools/pull/75) ([cmerrick](https://github.com/cmerrick))
 - rieman-tools aws billing [\#74](https://github.com/riemann/riemann-tools/pull/74) ([jespada](https://github.com/jespada))
