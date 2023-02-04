@@ -47,11 +47,17 @@ module Riemann
         end
         @worker.abort_on_exception = true
 
+        at_exit { drain }
+
         self
       end
 
       def <<(event)
         @queue << event
+      end
+
+      def drain
+        sleep(1) until @queue.empty?
       end
     end
   end
