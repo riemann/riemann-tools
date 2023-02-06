@@ -7,33 +7,14 @@ require 'riemann/client'
 module Riemann
   module Tools
     class RiemannClientWrapper
-      include Singleton
+      attr_reader :options
 
-      def initialize
-        @client = nil
+      def initialize(options)
+        @options = options
+
         @queue = Queue.new
         @max_bulk_size = 1000
-      end
-
-      def configure(options)
-        return self unless @client.nil?
-
-        r = Riemann::Client.new(
-          host: options[:host],
-          port: options[:port],
-          timeout: options[:timeout],
-          ssl: options[:tls],
-          key_file: options[:tls_key],
-          cert_file: options[:tls_cert],
-          ca_file: options[:tls_ca_cert],
-          ssl_verify: options[:tls_verify],
-        )
-
-        @client = if options[:tcp] || options[:tls]
-                    r.tcp
-                  else
-                    r
-                  end
+        @draining = false
 
         @worker = Thread.new do
           loop do
@@ -42,16 +23,44 @@ module Riemann
             events << @queue.pop
             events << @queue.pop while !@queue.empty? && events.size < @max_bulk_size
 
-            @client.bulk_send(events)
+            client.bulk_send(events)
           end
         end
         @worker.abort_on_exception = true
 
-        self
+        at_exit { drain }
+      end
+
+      def client
+        @client ||= begin
+          r = Riemann::Client.new(
+            host: options[:host],
+            port: options[:port],
+            timeout: options[:timeout],
+            ssl: options[:tls],
+            key_file: options[:tls_key],
+            cert_file: options[:tls_cert],
+            ca_file: options[:tls_ca_cert],
+            ssl_verify: options[:tls_verify],
+          )
+
+          if options[:tcp] || options[:tls]
+            r.tcp
+          else
+            r
+          end
+        end
       end
 
       def <<(event)
+        raise('Cannot queue events when draining') if @draining
+
         @queue << event
+      end
+
+      def drain
+        @draining = true
+        sleep(1) until @queue.empty?
       end
     end
   end
