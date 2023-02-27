@@ -60,7 +60,7 @@ module Riemann
 
       def drain
         @draining = true
-        sleep(1) until @queue.empty?
+        sleep(1) until @queue.empty? || @worker.stop?
       end
     end
   end
