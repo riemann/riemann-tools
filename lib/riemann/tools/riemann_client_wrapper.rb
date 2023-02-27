@@ -17,6 +17,7 @@ module Riemann
         @draining = false
 
         @worker = Thread.new do
+          Thread.current.abort_on_exception = true
           loop do
             events = []
 
@@ -26,7 +27,6 @@ module Riemann
             client.bulk_send(events)
           end
         end
-        @worker.abort_on_exception = true
 
         at_exit { drain }
       end
