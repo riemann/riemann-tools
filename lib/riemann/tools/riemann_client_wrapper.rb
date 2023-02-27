@@ -17,6 +17,7 @@ module Riemann
         @draining = false
 
         @worker = Thread.new do
+          Thread.current.abort_on_exception = true
           loop do
             events = []
 
@@ -24,9 +25,13 @@ module Riemann
             events << @queue.pop while !@queue.empty? && events.size < @max_bulk_size
 
             client.bulk_send(events)
+          rescue Riemann::Client::Error => e
+            warn "Dropping #{events.size} event#{'s' if events.size > 1} due to #{e}"
+          rescue StandardError => e
+            warn "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
+            Thread.main.terminate
           end
         end
-        @worker.abort_on_exception = true
 
         at_exit { drain }
       end
@@ -60,7 +65,7 @@ module Riemann
 
       def drain
         @draining = true
-        sleep(1) until @queue.empty?
+        sleep(1) until @queue.empty? || @worker.stop?
       end
     end
   end
