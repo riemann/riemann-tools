@@ -25,6 +25,11 @@ module Riemann
             events << @queue.pop while !@queue.empty? && events.size < @max_bulk_size
 
             client.bulk_send(events)
+          rescue Riemann::Client::Error => e
+            warn "Dropping #{events.size} event#{'s' if events.size > 1} due to #{e}"
+          rescue StandardError => e
+            warn "#{e.class} #{e}\n#{e.backtrace.join "\n"}"
+            Thread.main.terminate
           end
         end
 
