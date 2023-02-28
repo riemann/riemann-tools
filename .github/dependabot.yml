@@ -5,7 +5,14 @@
 
 version: 2
 updates:
+  # Open PR for gem updates
   - package-ecosystem: "bundler" # See documentation for possible values
     directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  # Open PR for GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
       interval: "daily"
