@@ -1,6 +1,15 @@
 # Changelog
 
-## [v1.8.0](https://github.com/riemann/riemann-tools/tree/v1.8.0) (2023-02-01)
+## [v1.8.1](https://github.com/riemann/riemann-tools/tree/v1.8.1) (2023-02-27)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.8.0...v1.8.1)
+
+**Fixed bugs:**
+
+- Improve event sending thread lifecycle management [\#265](https://github.com/riemann/riemann-tools/pull/265) ([smortex](https://github.com/smortex))
+- Make sure all events are send before terminating [\#264](https://github.com/riemann/riemann-tools/pull/264) ([smortex](https://github.com/smortex))
+
+## [v1.8.0](https://github.com/riemann/riemann-tools/tree/v1.8.0) (2023-02-02)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.7.1...v1.8.0)
 
