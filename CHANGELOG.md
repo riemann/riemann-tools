@@ -1,6 +1,14 @@
 # Changelog
 
-## [v1.8.1](https://github.com/riemann/riemann-tools/tree/v1.8.1) (2023-02-27)
+## [v1.8.2](https://github.com/riemann/riemann-tools/tree/v1.8.2) (2023-05-22)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.8.1...v1.8.2)
+
+**Fixed bugs:**
+
+- Gracefully handle all communication errors [\#268](https://github.com/riemann/riemann-tools/pull/268) ([smortex](https://github.com/smortex))
+
+## [v1.8.1](https://github.com/riemann/riemann-tools/tree/v1.8.1) (2023-02-28)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.8.0...v1.8.1)
 
