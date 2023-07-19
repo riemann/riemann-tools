@@ -48,6 +48,18 @@ class TestWebserver < Sinatra::Base
   get '/rand' do
     SecureRandom.hex(16)
   end
+
+  get '/redirect/same-origin' do
+    redirect '/', 301
+  end
+
+  get '/redirect/other-origin' do
+    redirect 'https://riemann.io/', 301
+  end
+
+  get '/redirect/same-origin-broken/:n' do
+    redirect "/redirect/same-origin-broken/#{params[:n].to_i + 1}", 301
+  end
 end
 
 RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= Gem::Version.new(Riemann::Tools::HttpCheck::REQUIRED_RUBY_VERSION) do
@@ -193,6 +205,33 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://[::1]:#{test_webserver_port}/ [::1]:#{test_webserver_port} response code", metric: 200, state: 'ok', description: '200 OK' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://[::1]:#{test_webserver_port}/ [::1]:#{test_webserver_port} response latency", state: 'ok' })) }
         it { is_expected.to have_received(:report).with(hash_including({ service: "get http://[::1]:#{test_webserver_port}/ consistency", state: 'ok', description: 'consistent response on all 1 endpoints' })) }
+      end
+
+      context 'when a same-origin redirect is found' do
+        let(:uri) { URI("http://example.com:#{test_webserver_port}/redirect/same-origin") }
+
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/ 127.0.0.1:#{test_webserver_port} response code", metric: 200, state: 'ok' })) }
+      end
+
+      context 'when an other-origin redirect is found' do
+        let(:uri) { URI("http://example.com:#{test_webserver_port}/redirect/other-origin") }
+
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/other-origin 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.not_to have_received(:report).with(hash_including({ metric: 200, state: 'ok' })) }
+      end
+
+      context 'when an same-origin-broken redirect is found' do
+        let(:uri) { URI("http://example.com:#{test_webserver_port}/redirect/same-origin-broken/0") }
+
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/0 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/1 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/2 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/3 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/4 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/5 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
+        it { is_expected.to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/5 127.0.0.1:#{test_webserver_port} redirects", state: 'critical', description: 'Reached the limit of 5 redirects' })) }
+        it { is_expected.not_to have_received(:report).with(hash_including({ service: "get http://example.com:#{test_webserver_port}/redirect/same-origin-broken/6 127.0.0.1:#{test_webserver_port} response code", metric: 301, state: 'ok' })) }
       end
     end
 
