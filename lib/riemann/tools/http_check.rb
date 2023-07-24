@@ -25,6 +25,8 @@ module Riemann
       opt :connection_latency_critical, 'Lattency critical threshold', short: :none, default: 0.25
       opt :response_latency_warning, 'Lattency warning threshold', short: :none, default: 0.5
       opt :response_latency_critical, 'Lattency critical threshold', short: :none, default: 1.0
+      opt :follow_redirects, 'Follow redirects (301, 302)', short: :none, default: true
+      opt :max_redirects, 'Stop following redirects after this number of hops', short: :none, default: 5
       opt :http_timeout, 'Timeout (in seconds) for HTTP requests', short: :none, default: 5.0
       opt :checks, 'A list of checks to run.', short: :none, type: :strings, default: %w[consistency connection-latency response-code response-latency]
       opt :resolvers, 'Run this number of resolver threads', short: :none, type: :integer, default: 5
@@ -100,8 +102,7 @@ module Riemann
       end
 
       def test_uri_addresses(uri, addresses)
-        request = ::Net::HTTP::Get.new(uri, { 'user-agent' => opts[:user_agent] })
-        request.basic_auth(uri.user, uri.password)
+        request = get_request(uri)
 
         responses = []
 
@@ -147,7 +148,15 @@ module Riemann
         )
       end
 
-      def test_uri_address(uri, address, request)
+      def get_request(uri)
+        request = ::Net::HTTP::Get.new(uri, { 'user-agent' => opts[:user_agent] })
+
+        request.basic_auth(uri.user, uri.password)
+
+        request
+      end
+
+      def test_uri_address(uri, address, request, redirect_count: 0)
         response = nil
 
         start = Time.now
@@ -173,10 +182,41 @@ module Riemann
         report_http_endpoint_latency(http, uri, 'connection', start, connected) if opts[:checks].include?('connection-latency')
         report_http_endpoint_latency(http, uri, 'response', start, done) if opts[:checks].include?('response-latency')
 
+        if opts[:follow_redirects] && %w[301 302].include?(response.code)
+          next_uri = redirect_uri(uri, response['Location'])
+
+          if same_origin?(uri, next_uri)
+            if redirect_count == opts[:max_redirects]
+              report_http_endpoint_max_redirects(http, uri)
+              return nil
+            else
+              response = test_uri_address(next_uri, address, get_request(next_uri), redirect_count: redirect_count + 1)
+            end
+          end
+        end
+
         response
       rescue StandardError
         # Ignore this address
         nil
+      end
+
+      def redirect_uri(uri, location)
+        res = URI.parse(location)
+
+        res.scheme   ||= uri.scheme
+        res.host     ||= uri.host
+        res.port     ||= uri.port
+        res.user     ||= res.user
+        res.password ||= res.password
+
+        res
+      end
+
+      def same_origin?(left, right)
+        left.scheme == right.scheme &&
+          left.host == right.host &&
+          left.port == right.port
       end
 
       def report_http_endpoint_response_code(http, uri, response)
@@ -213,6 +253,15 @@ module Riemann
             }.merge(endpoint_report(http, uri, "#{latency} latency")),
           )
         end
+      end
+
+      def report_http_endpoint_max_redirects(http, uri)
+        report(
+          {
+            state: 'critical',
+            description: "Reached the limit of #{opts[:max_redirects]} redirects",
+          }.merge(endpoint_report(http, uri, 'redirects')),
+        )
       end
 
       def latency_state(name, latency)
