@@ -9,6 +9,10 @@ module Riemann
     class RiemannClientWrapper
       attr_reader :options
 
+      BACKOFF_TMIN = 0.5  # Minimum delay between reconnection attempts
+      BACKOFF_TMAX = 30.0 # Maximum delay
+      BACKOFF_FACTOR = 2
+
       def initialize(options)
         @options = options
 
@@ -18,6 +22,8 @@ module Riemann
 
         @worker = Thread.new do
           Thread.current.abort_on_exception = true
+          backoff_delay = BACKOFF_TMIN
+
           loop do
             events = []
 
@@ -25,8 +31,16 @@ module Riemann
             events << @queue.pop while !@queue.empty? && events.size < @max_bulk_size
 
             client.bulk_send(events)
+            backoff_delay = BACKOFF_TMIN
           rescue StandardError => e
-            warn "Dropping #{events.size} event#{'s' if events.size > 1} due to #{e}"
+            sleep(backoff_delay)
+
+            dropped_count = events.size + @queue.size
+            @queue.clear
+            warn "Dropped #{dropped_count} event#{'s' if dropped_count > 1} due to #{e}"
+
+            backoff_delay *= BACKOFF_FACTOR
+            backoff_delay = BACKOFF_TMAX if backoff_delay > BACKOFF_TMAX
           end
         end
 
