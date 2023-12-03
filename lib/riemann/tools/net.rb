@@ -108,7 +108,7 @@ module Riemann
 
         if @old_state
           # Report services from `@old_state` that don't exist in `state` as expired
-          @old_state.reject { |k| state.key?(k) }.each do |service, _metric|
+          @old_state.reject { |k| state.key?(k) }.each_key do |service|
             report(service: service.dup, state: 'expired')
           end
 

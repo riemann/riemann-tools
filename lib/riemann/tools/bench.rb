@@ -15,7 +15,7 @@ module Riemann
         @hosts = %w[a b c d e f g h i j]
         @services = %w[test1 test2 test3 foo bar baz xyzzy attack cat treat]
         @states = {}
-        @client = Riemann::Client.new(host: (ARGV.first || 'localhost'))
+        @client = Riemann::Client.new(host: ARGV.first || 'localhost')
       end
 
       def evolve(state)
