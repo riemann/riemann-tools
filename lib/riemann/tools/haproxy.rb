@@ -44,7 +44,7 @@ module Riemann
       end
 
       def csv
-        CSV.parse(body.split('# ')[1], { headers: true })
+        CSV.parse(body.split('# ')[1], headers: true)
       end
 
       def body
