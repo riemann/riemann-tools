@@ -57,8 +57,8 @@ module Riemann
             get.basic_auth userinfo[0], userinfo[1]
           end
           h.request get
-          res.body
         end
+        res.body
       end
     end
   end
