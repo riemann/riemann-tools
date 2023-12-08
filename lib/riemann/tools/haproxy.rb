@@ -44,6 +44,10 @@ module Riemann
       end
 
       def csv
+        CSV.parse(body.split('# ')[1], headers: true)
+      end
+
+      def body
         http = ::Net::HTTP.new(@uri.host, @uri.port)
         http.use_ssl = true if @uri.scheme == 'https'
         res = http.start do |h|
@@ -53,8 +57,8 @@ module Riemann
             get.basic_auth userinfo[0], userinfo[1]
           end
           h.request get
+          res.body
         end
-        CSV.parse(res.body.split('# ')[1], { headers: true })
       end
     end
   end
