@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.9.1](https://github.com/riemann/riemann-tools/tree/v1.9.1) (2023-12-08)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.9.0...v1.9.1)
+
+**Fixed bugs:**
+
+- Fix `riemann-haproxy` NoMethodError [\#275](https://github.com/riemann/riemann-tools/pull/275) ([smortex](https://github.com/smortex))
+
 ## [v1.9.0](https://github.com/riemann/riemann-tools/tree/v1.9.0) (2023-12-08)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.8.2...v1.9.0)
