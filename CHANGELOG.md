@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.9.0](https://github.com/riemann/riemann-tools/tree/v1.9.0) (2023-12-08)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.8.2...v1.9.0)
+
+**Implemented enhancements:**
+
+- Use truncated exponential backoff for reconnection [\#272](https://github.com/riemann/riemann-tools/pull/272) ([smortex](https://github.com/smortex))
+- Add redirect support to `riemann-http-check` [\#270](https://github.com/riemann/riemann-tools/pull/270) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix `riemann-haproxy` with Ruby 3.0+ [\#273](https://github.com/riemann/riemann-tools/pull/273) ([smortex](https://github.com/smortex))
+
+**Merged pull requests:**
+
+- Bump actions/checkout from 3 to 4 [\#271](https://github.com/riemann/riemann-tools/pull/271) ([dependabot[bot]](https://github.com/apps/dependabot))
+
 ## [v1.8.2](https://github.com/riemann/riemann-tools/tree/v1.8.2) (2023-05-22)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.8.1...v1.8.2)
@@ -95,7 +112,7 @@
 
 **Implemented enhancements:**
 
-- Add support for configuration file to riemann-wrapper [\#235](https://github.com/riemann/riemann-tools/pull/235) ([smortex](https://github.com/smortex))
+- Add support for a configuration file to `riemann-wrapper` [\#235](https://github.com/riemann/riemann-tools/pull/235) ([smortex](https://github.com/smortex))
 - Add `riemann-md` to monitor Linux RAID/md health [\#232](https://github.com/riemann/riemann-tools/pull/232) ([smortex](https://github.com/smortex))
 - Add `riemann-zpool` to monitor zpool health [\#231](https://github.com/riemann/riemann-tools/pull/231) ([smortex](https://github.com/smortex))
 
