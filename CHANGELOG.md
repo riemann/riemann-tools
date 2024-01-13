@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.10.0](https://github.com/riemann/riemann-tools/tree/v1.10.0) (2024-01-13)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.9.1...v1.10.0)
+
+**Implemented enhancements:**
+
+- Add support for options with spaces to `riemann-wrapper` [\#280](https://github.com/riemann/riemann-tools/pull/280) ([smortex](https://github.com/smortex))
+
 ## [v1.9.1](https://github.com/riemann/riemann-tools/tree/v1.9.1) (2023-12-08)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.9.0...v1.9.1)
@@ -20,10 +28,6 @@
 **Fixed bugs:**
 
 - Fix `riemann-haproxy` with Ruby 3.0+ [\#273](https://github.com/riemann/riemann-tools/pull/273) ([smortex](https://github.com/smortex))
-
-**Merged pull requests:**
-
-- Bump actions/checkout from 3 to 4 [\#271](https://github.com/riemann/riemann-tools/pull/271) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [v1.8.2](https://github.com/riemann/riemann-tools/tree/v1.8.2) (2023-05-22)
 

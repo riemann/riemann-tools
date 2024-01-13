@@ -7,7 +7,7 @@ require 'github_changelog_generator/task'
 GitHubChangelogGenerator::RakeTask.new :changelog do |config|
   config.user = 'riemann'
   config.project = 'riemann-tools'
-  config.exclude_labels = ['skip-changelog']
+  config.exclude_labels = %w[dependencies skip-changelog]
   config.future_release = "v#{Riemann::Tools::VERSION}"
 end
 
