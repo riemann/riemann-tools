@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'strscan'
+
 Process.setproctitle($PROGRAM_NAME)
 
 def camelize(subject)
@@ -13,6 +15,42 @@ end
 
 def constantize(subject)
   Object.const_get(subject)
+end
+
+# Split on blanks unless quoted or escaped:
+# "--foo --bar=bar --baz='baz baz'\ baz" #=> ["--foo", "--bar=bar", "--baz=baz baz baz"]
+def split_options(options)
+  res = []
+
+  return res unless options
+
+  current = ''
+  s = StringScanner.new(options)
+  until s.eos?
+    if s.scan(/\s+/)
+      res << current
+      current = ''
+    elsif s.scan(/\\./)
+      current += s.matched[1]
+    elsif s.scan(/['"]/)
+      match = s.matched
+      loop do
+        if s.scan(match)
+          break
+        elsif s.scan(/\\./)
+          current += s.matched[1]
+        else
+          current += s.getch
+        end
+      end
+    else
+      current += s.getch
+    end
+  end
+
+  res << current unless current.empty?
+
+  res
 end
 
 def read_flags(argv)
@@ -80,10 +118,14 @@ if ARGV.size == 1
   require 'yaml'
   config = YAML.safe_load(File.read(ARGV[0]))
 
-  commandline = config['options']
-  config['tools'].each { |tool| commandline << " -- #{tool['name']} #{tool['options']}" }
+  arguments = split_options(config['options'])
+  config['tools'].each do |tool|
+    arguments << '--'
+    arguments << tool['name']
+    arguments += split_options(tool['options'])
+  end
 
-  ARGV.replace(commandline.split)
+  ARGV.replace(arguments)
 end
 
 argv = ARGV.dup
