@@ -61,7 +61,7 @@ module Riemann
                     elsif opts[:event_warning] && (Date.today >= before - opts[:event_warning])
                       { state: 'warning' }
                     else
-                      { state: 'warning' }
+                      {}
                     end
 
               report ev.merge(ev2)

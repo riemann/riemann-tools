@@ -118,13 +118,7 @@ module Riemann
 
             delta = metric - @old_state[service]
             svc_state = case service
-                        when /drop$/
-                          if delta.positive?
-                            'warning'
-                          else
-                            'ok'
-                          end
-                        when /errs$/
+                        when /drop$/, /errs$/
                           if delta.positive?
                             'warning'
                           else
