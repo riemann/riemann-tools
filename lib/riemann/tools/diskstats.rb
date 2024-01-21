@@ -43,13 +43,13 @@ module Riemann
         # Filter interfaces
         if (is = opts[:devices])
           state = state.select do |service, _value|
-            is.include? service.split(' ').first
+            is.include? service.split.first
           end
         end
 
         if (ign = opts[:ignore_devices])
           state = state.reject do |service, _value|
-            ign.include? service.split(' ').first
+            ign.include? service.split.first
           end
         end
 
