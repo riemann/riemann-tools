@@ -20,7 +20,7 @@ module Riemann
 
       def evolve(state)
         m = state[:metric] + ((rand - 0.5) * 0.1)
-        m = [[0, m].max, 1].min
+        m = m.clamp(0, 1)
 
         s = case m
             when 0...0.75
