@@ -98,6 +98,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
     let(:http_timeout) { 2.0 }
 
     context 'when using unencrypted http' do
+      # rubocop:disable RSpec/BeforeAfterAll, RSpec/InstanceVariable
       before(:all) do
         server_options = {
           Port: 0,
@@ -112,15 +113,16 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
         Timeout.timeout(1) { sleep(0.1) until @started }
       end
 
+      let(:test_webserver_port) { @server.config[:Port] }
+
       after(:all) do
         @server&.shutdown
       end
+      # rubocop:enable RSpec/BeforeAfterAll, RSpec/InstanceVariable
 
       after(:each) do
         subject.shutdown
       end
-
-      let(:test_webserver_port) { @server.config[:Port] }
 
       let(:reported_uri) { uri }
 
@@ -246,6 +248,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
     end
 
     context 'when using encrypted https' do
+      # rubocop:disable RSpec/BeforeAfterAll, RSpec/InstanceVariable
       before(:all) do
         server_options = {
           Port: 0,
@@ -267,6 +270,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       after(:all) do
         @server&.shutdown
       end
+      # rubocop:enable RSpec/BeforeAfterAll, RSpec/InstanceVariable
 
       context 'with an encrypted uri' do
         let(:uri) { URI("https://example.com:#{test_webserver_port}/") }
