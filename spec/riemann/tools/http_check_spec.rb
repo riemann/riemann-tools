@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 
 require 'openssl'
-require 'rack/handler/webrick'
+begin
+  require 'rackup/handler/webrick'
+rescue LoadError
+  # XXX: Needed for Ruby 2.6 compatibility
+  # Moved to the rackup gem in recent versions
+  require 'rack/handler/webrick'
+end
 require 'sinatra/base'
 require 'webrick'
 require 'webrick/https'
