@@ -115,6 +115,7 @@ RSpec.describe Riemann::Tools::Health do
         expect(subject).to have_received(:report_pct).with(:swap, 0.339623244451355, 'used')
       end
     end
+
     context 'without swap devices' do
       before do
         allow(File).to receive(:read).with('/proc/swaps').and_return(<<~OUTPUT)
