@@ -1,5 +1,6 @@
 ---
 AllCops:
+  NewCops: enable
   Exclude:
     - lib/riemann/tools/*_parser.tab.rb
     - vendor/bundle/**/*
