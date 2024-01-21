@@ -151,7 +151,7 @@ module Riemann
 
       # Returns the alerts state for the given fsm.
       def fsm_state(type, percentile, val)
-        limit = opts["#{type}_#{percentile}_warning".to_sym]
+        limit = opts[:"#{type}_#{percentile}_warning"]
         case val
         when 0..limit
           'ok'

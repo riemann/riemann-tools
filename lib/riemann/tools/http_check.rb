@@ -289,8 +289,8 @@ module Riemann
       end
 
       def latency_state(name, latency)
-        critical_threshold = opts["#{name}_latency_critical".to_sym]
-        warning_threshold = opts["#{name}_latency_warning".to_sym]
+        critical_threshold = opts[:"#{name}_latency_critical"]
+        warning_threshold = opts[:"#{name}_latency_warning"]
 
         return if critical_threshold.zero? || warning_threshold.zero?
 
