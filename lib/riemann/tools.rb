@@ -51,10 +51,10 @@ module Riemann
     alias opts options
 
     def attributes
-      @attributes ||= options[:attribute].map do |attr|
+      @attributes ||= options[:attribute].to_h do |attr|
         k, v = attr.split('=')
         [k, v] if k && v
-      end.to_h
+      end
     end
 
     def report(event)

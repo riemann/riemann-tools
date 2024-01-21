@@ -201,7 +201,7 @@ module Riemann
         str = `riak-admin status`
         raise 'riak-admin failed' unless $CHILD_STATUS == 0
 
-        str.split("\n").map { |i| i.split(' : ') }.to_h
+        str.split("\n").to_h { |i| i.split(' : ') }
       end
 
       # Get current stats as a hash
