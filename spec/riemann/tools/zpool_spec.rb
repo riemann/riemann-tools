@@ -3,7 +3,7 @@
 require 'riemann/tools/zpool'
 
 RSpec.describe Riemann::Tools::Zpool do
-  context('#tick') do
+  describe('#tick') do
     before do
       process_status = double
       allow(process_status).to receive(:success?).and_return(true)

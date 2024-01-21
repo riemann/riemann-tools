@@ -7,7 +7,7 @@ class TestClass
 end
 
 RSpec.describe Riemann::Tools::Utils do
-  context('#reverse_numeric_sort_with_header') do
+  describe('#reverse_numeric_sort_with_header') do
     subject { TestClass.new.reverse_numeric_sort_with_header(input) }
 
     let(:input) do

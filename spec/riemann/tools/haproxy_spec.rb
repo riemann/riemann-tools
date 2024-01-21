@@ -3,7 +3,7 @@
 require 'riemann/tools/haproxy'
 
 RSpec.describe Riemann::Tools::Haproxy do
-  context('#tick') do
+  describe('#tick') do
     before do
       ARGV.replace(['--stats-url', 'http://localhost'])
 

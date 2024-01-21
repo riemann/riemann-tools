@@ -3,7 +3,7 @@
 require 'riemann/tools/health'
 
 RSpec.describe Riemann::Tools::Health do
-  context('#disks') do
+  describe('#disks') do
     before do
       allow(subject).to receive(:df).and_return(<<~OUTPUT)
         Filesystem                         512-blocks       Used      Avail Capacity  Mounted on
@@ -66,7 +66,7 @@ RSpec.describe Riemann::Tools::Health do
     end
   end
 
-  context '#bsd_swap' do
+  describe '#bsd_swap' do
     context 'with swap devices' do
       before do
         allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
@@ -99,7 +99,7 @@ RSpec.describe Riemann::Tools::Health do
     end
   end
 
-  context '#linux_swap' do
+  describe '#linux_swap' do
     context 'with swap devices' do
       before do
         allow(File).to receive(:read).with('/proc/swaps').and_return(<<~OUTPUT)
@@ -130,7 +130,7 @@ RSpec.describe Riemann::Tools::Health do
     end
   end
 
-  context '#bsd_uptime' do
+  describe '#bsd_uptime' do
     context 'when given unexpected data' do
       before do
         allow(subject).to receive(:`).with('uptime').and_return(<<~DOCUMENT)
