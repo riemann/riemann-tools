@@ -20,6 +20,42 @@ RSpec.describe Riemann::Tools::Health do
     end
   end
 
+  describe('#number_to_human_size') do
+    subject { described_class.new.number_to_human_size(input, rounding) }
+
+    {
+      0                 => %w[0 0 0],
+      1024              => ['1.0kiB', '1.0kiB', '1.0kiB'],
+      2047              => ['1.9kiB', '2.0kiB', '2.0kiB'],
+      2048              => ['2.0kiB', '2.0kiB', '2.0kiB'],
+      2049              => ['2.0kiB', '2.0kiB', '2.1kiB'],
+      44_040_192        => ['42.0MiB', '42.0MiB', '42.0MiB'],
+      1_155_301_638_144 => ['1.0TiB', '1.1TiB', '1.1TiB'],
+    }.each do |input, expected_output|
+      context %(when passed #{input.inspect}) do
+        let(:input) { input }
+
+        context 'when rounding lower' do
+          let(:rounding) { :floor }
+
+          it { is_expected.to eq(expected_output[0]) }
+        end
+
+        context 'when rounding to nearest' do
+          let(:rounding) { :round }
+
+          it { is_expected.to eq(expected_output[1]) }
+        end
+
+        context 'when rounding above' do
+          let(:rounding) { :ceil }
+
+          it { is_expected.to eq(expected_output[2]) }
+        end
+      end
+    end
+  end
+
   describe('#disks') do
     before do
       allow(subject).to receive(:df).and_return(<<~OUTPUT)
@@ -39,29 +75,29 @@ RSpec.describe Riemann::Tools::Health do
     end
 
     it 'reports all zfs filesystems' do
-      allow(subject).to receive(:alert).with('disk /', :ok, 0.07185344331519083, '7% used')
-      allow(subject).to receive(:alert).with('disk /var/audit', :ok, 2.9484841782529697e-07, '0% used')
-      allow(subject).to receive(:alert).with('disk /var/mail', :ok, 4.529924689197913e-06, '0% used')
-      allow(subject).to receive(:alert).with('disk /tmp', :ok, 0.0001386131897766662, '0% used')
-      allow(subject).to receive(:alert).with('disk /zroot', :ok, 2.9484841782529697e-07, '0% used')
-      allow(subject).to receive(:alert).with('disk /var/crash', :ok, 2.9484841782529697e-07, '0% used')
-      allow(subject).to receive(:alert).with('disk /usr/src', :ok, 2.9484841782529697e-07, '0% used')
-      allow(subject).to receive(:alert).with('disk /usr/home', :ok, 0.33075683535672684, '33% used')
-      allow(subject).to receive(:alert).with('disk /var/tmp', :ok, 4.02065981198671e-07, '0% used')
-      allow(subject).to receive(:alert).with('disk /var/log', :ok, 2.0545157787749945e-05, '0% used')
-      allow(subject).to receive(:alert).with('disk /usr/home/romain/Medias', :ok, 0.39906518922242257, '40% used')
+      allow(subject).to receive(:alert).with('disk /', :ok, 0.07185344331519083, '7% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /var/audit', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /var/mail', :ok, 4.529924689197913e-06, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /tmp', :ok, 0.0001386131897766662, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /zroot', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /var/crash', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /usr/src', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /usr/home', :ok, 0.33075683535672684, '33% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /var/tmp', :ok, 4.02065981198671e-07, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /var/log', :ok, 2.0545157787749945e-05, '0% used, 284.6GiB free')
+      allow(subject).to receive(:alert).with('disk /usr/home/romain/Medias', :ok, 0.39906518922242257, '40% used, 2.0TiB free')
       subject.disk
-      expect(subject).to have_received(:alert).with('disk /', :ok, 0.07185344331519083, '7% used')
-      expect(subject).to have_received(:alert).with('disk /var/audit', :ok, 2.9484841782529697e-07, '0% used')
-      expect(subject).to have_received(:alert).with('disk /var/mail', :ok, 4.529924689197913e-06, '0% used')
-      expect(subject).to have_received(:alert).with('disk /tmp', :ok, 0.0001386131897766662, '0% used')
-      expect(subject).to have_received(:alert).with('disk /zroot', :ok, 2.9484841782529697e-07, '0% used')
-      expect(subject).to have_received(:alert).with('disk /var/crash', :ok, 2.9484841782529697e-07, '0% used')
-      expect(subject).to have_received(:alert).with('disk /usr/src', :ok, 2.9484841782529697e-07, '0% used')
-      expect(subject).to have_received(:alert).with('disk /usr/home', :ok, 0.33075683535672684, '33% used')
-      expect(subject).to have_received(:alert).with('disk /var/tmp', :ok, 4.02065981198671e-07, '0% used')
-      expect(subject).to have_received(:alert).with('disk /var/log', :ok, 2.0545157787749945e-05, '0% used')
-      expect(subject).to have_received(:alert).with('disk /usr/home/romain/Medias', :ok, 0.39906518922242257, '40% used')
+      expect(subject).to have_received(:alert).with('disk /', :ok, 0.07185344331519083, '7% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /var/audit', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /var/mail', :ok, 4.529924689197913e-06, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /tmp', :ok, 0.0001386131897766662, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /zroot', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /var/crash', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /usr/src', :ok, 2.9484841782529697e-07, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /usr/home', :ok, 0.33075683535672684, '33% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /var/tmp', :ok, 4.02065981198671e-07, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /var/log', :ok, 2.0545157787749945e-05, '0% used, 284.6GiB free')
+      expect(subject).to have_received(:alert).with('disk /usr/home/romain/Medias', :ok, 0.39906518922242257, '40% used, 2.0TiB free')
     end
 
     context 'with a foreign locale' do
@@ -74,11 +110,11 @@ RSpec.describe Riemann::Tools::Health do
       end
 
       it 'reports all zfs filesystems' do
-        allow(subject).to receive(:alert).with('disk /', :ok, 0.6267130394624543, '63% used')
-        allow(subject).to receive(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used')
+        allow(subject).to receive(:alert).with('disk /', :ok, 0.6267130394624543, '63% used, 6.7GiB free')
+        allow(subject).to receive(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used, 66.7GiB free')
         subject.disk
-        expect(subject).to have_received(:alert).with('disk /', :ok, 0.6267130394624543, '63% used')
-        expect(subject).to have_received(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used')
+        expect(subject).to have_received(:alert).with('disk /', :ok, 0.6267130394624543, '63% used, 6.7GiB free')
+        expect(subject).to have_received(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used, 66.7GiB free')
       end
     end
 
@@ -91,9 +127,9 @@ RSpec.describe Riemann::Tools::Health do
       end
 
       it 'reports a correct lenient state' do
-        allow(subject).to receive(:alert).with('disk /tank', :ok, 0.9002625247490722, '91% used')
+        allow(subject).to receive(:alert).with('disk /tank', :ok, 0.9002625247490722, '91% used, 1.0TiB free')
         subject.disk
-        expect(subject).to have_received(:alert).with('disk /tank', :ok, 0.9002625247490722, '91% used')
+        expect(subject).to have_received(:alert).with('disk /tank', :ok, 0.9002625247490722, '91% used, 1.0TiB free')
       end
     end
   end

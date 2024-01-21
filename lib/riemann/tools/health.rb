@@ -11,6 +11,8 @@ module Riemann
       include Riemann::Tools
       include Riemann::Tools::Utils
 
+      SI_UNITS = '_kMGTPEZYRQ'
+
       opt :cpu_warning, 'CPU warning threshold (fraction of total jiffies)', default: 0.9
       opt :cpu_critical, 'CPU critical threshold (fraction of total jiffies)', default: 0.95
       opt :disk_warning, 'Disk warning threshold (fraction of space used)', default: 0.9
@@ -404,7 +406,7 @@ module Riemann
           elsif x > @limits[:disk][:warning] && available < @limits[:disk][:warning_leniency_kb]
             alert "disk #{f[5]}", :warning, x, "#{f[4]} used"
           else
-            alert "disk #{f[5]}", :ok, x, "#{f[4]} used"
+            alert "disk #{f[5]}", :ok, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           end
         end
       end
@@ -484,8 +486,15 @@ module Riemann
         when /^\d+R$/i then value.to_i * (1024**9)
         when /^\d+Q$/i then value.to_i * (1024**10)
         else
-          raise %(Malformed size "#{value}", syntax is [0-9]+[kMGTPEZYRQ]?)
+          raise %(Malformed size "#{value}", syntax is [0-9]+[#{SI_UNITS[1..]}]?)
         end
+      end
+
+      def number_to_human_size(value, rounding = :round)
+        return value.to_s if value < 1024
+
+        r = Math.log(value, 1024).floor
+        format('%<size>.1f%<unit>ciB', size: (value.to_f / (1024**r)).send(rounding, 1), unit: SI_UNITS[r])
       end
 
       def tick
