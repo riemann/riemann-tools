@@ -19,7 +19,7 @@ module Riemann
       end
 
       def evolve(state)
-        m = state[:metric] + (rand - 0.5) * 0.1
+        m = state[:metric] + ((rand - 0.5) * 0.1)
         m = [[0, m].max, 1].min
 
         s = case m
