@@ -52,7 +52,7 @@ module Riemann
 
     def attributes
       @attributes ||= Hash[options[:attribute].map do |attr|
-        k, v = attr.split(/=/)
+        k, v = attr.split('=')
         [k, v] if k && v
       end]
     end

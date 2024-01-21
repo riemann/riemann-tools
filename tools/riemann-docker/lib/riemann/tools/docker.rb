@@ -121,7 +121,7 @@ module Riemann
       end
 
       def disk
-        `df -P`.split(/\n/).each do |r|
+        `df -P`.split("\n").each do |r|
           f = r.split(/\s+/)
           next if f[0] == 'Filesystem'
           next unless f[0] =~ %r{/} # Needs at least one slash in the mount path

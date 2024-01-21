@@ -80,7 +80,7 @@ module Riemann
             next unless service =~ /io time$/
 
             report(
-              service: "diskstats #{service.gsub(/time/, 'util')}",
+              service: "diskstats #{service.gsub('time', 'util')}",
               metric: (delta.to_f / (opts[:interval] * 1000)),
               state: 'ok',
             )
