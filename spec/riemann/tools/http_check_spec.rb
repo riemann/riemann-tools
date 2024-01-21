@@ -116,6 +116,10 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
         @server&.shutdown
       end
 
+      after(:each) do
+        subject.shutdown
+      end
+
       let(:test_webserver_port) { @server.config[:Port] }
 
       let(:reported_uri) { uri }
