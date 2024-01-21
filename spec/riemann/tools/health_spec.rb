@@ -3,21 +3,38 @@
 require 'riemann/tools/health'
 
 RSpec.describe Riemann::Tools::Health do
+  describe('#human_size_to_number') do
+    subject { described_class.new.human_size_to_number(input) }
+
+    {
+      '512' => 512,
+      '1k'  => 1024,
+      '2K'  => 2048,
+      '42m' => 44_040_192,
+    }.each do |input, expected_output|
+      context %(when passed #{input.inspect}) do
+        let(:input) { input }
+
+        it { is_expected.to eq(expected_output) }
+      end
+    end
+  end
+
   describe('#disks') do
     before do
       allow(subject).to receive(:df).and_return(<<~OUTPUT)
-        Filesystem                         512-blocks       Used      Avail Capacity  Mounted on
-        zroot/ROOT/13.1                     643127648   46210936  596916712     7%    /
-        zroot/var/audit                     596916888        176  596916712     0%    /var/audit
-        zroot/var/mail                      596919416       2704  596916712     0%    /var/mail
-        zroot/tmp                           596999464      82752  596916712     0%    /tmp
-        zroot                               596916888        176  596916712     0%    /zroot
-        zroot/var/crash                     596916888        176  596916712     0%    /var/crash
-        zroot/usr/src                       596916888        176  596916712     0%    /usr/src
-        zroot/usr/home                      891927992  295011280  596916712    33%    /usr/home
-        zroot/var/tmp                       596916952        240  596916712     0%    /var/tmp
-        zroot/var/log                       596928976      12264  596916712     0%    /var/log
-        192.168.42.5:/volume1/tank/Medias  7491362496 2989541992 4501820504    40%    /usr/home/romain/Medias
+        Filesystem                        1024-blocks       Used      Avail Capacity  Mounted on
+        zroot/ROOT/13.1                     321563824   23105468  298458356     7%    /
+        zroot/var/audit                     298458444         88  298458356     0%    /var/audit
+        zroot/var/mail                      298459708       1352  298458356     0%    /var/mail
+        zroot/tmp                           298499732      41376  298458356     0%    /tmp
+        zroot                               298458444         88  298458356     0%    /zroot
+        zroot/var/crash                     298458444         88  298458356     0%    /var/crash
+        zroot/usr/src                       298458444         88  298458356     0%    /usr/src
+        zroot/usr/home                      445963996  147505640  298458356    33%    /usr/home
+        zroot/var/tmp                       298458476        120  298458356     0%    /var/tmp
+        zroot/var/log                       298464488       6132  298458356     0%    /var/log
+        192.168.42.5:/volume1/tank/Medias  3745681248 1494770996 2250910252    40%    /usr/home/romain/Medias
       OUTPUT
     end
 
@@ -85,10 +102,10 @@ RSpec.describe Riemann::Tools::Health do
     context 'with swap devices' do
       before do
         allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
-          Device          512-blocks     Used    Avail Capacity
-          /dev/da0p2         4194304  2695808  1498496    64%
-          /dev/ggate0           2048        0     2048     0%
-          Total              4196352  2695808  1500544    64%
+          Device         1024-blocks     Used    Avail Capacity
+          /dev/da0p2         2097152  1347904   749248    64%
+          /dev/ggate0           1024        0     1024     0%
+          Total              2098176  1347904   750272    64%
         OUTPUT
       end
 
@@ -102,7 +119,7 @@ RSpec.describe Riemann::Tools::Health do
     context 'without swap devices' do
       before do
         allow(subject).to receive(:`).with('swapinfo').and_return(<<~OUTPUT)
-          Device          512-blocks     Used    Avail Capacity
+          Device         1024-blocks     Used    Avail Capacity
         OUTPUT
       end
 
