@@ -8,32 +8,32 @@ RSpec.describe Riemann::Tools::Net do
       subject.instance_variable_set(:@interfaces, %w[wlan0 wlan1])
       subject.instance_variable_set(:@ignore_interfaces, %w[wlan1])
 
-      expect(subject.report_interface?('wlan0')).to be_truthy
-      expect(subject.report_interface?('wlan1')).to be_truthy
+      expect(subject.report_interface?('wlan0')).to be(true)
+      expect(subject.report_interface?('wlan1')).to be(true)
     end
 
     it 'selects interfaces by regular expression' do
       subject.instance_variable_set(:@interfaces, %w[\Awlan\d+\z])
       subject.instance_variable_set(:@ignore_interfaces, %w[wlan1])
 
-      expect(subject.report_interface?('wlan0')).to be_truthy
-      expect(subject.report_interface?('wlan1')).to be_truthy
+      expect(subject.report_interface?('wlan0')).to be(true)
+      expect(subject.report_interface?('wlan1')).to be(true)
     end
 
     it 'reject interfaces by name' do
       subject.instance_variable_set(:@interfaces, [])
       subject.instance_variable_set(:@ignore_interfaces, %w[wlan1])
 
-      expect(subject.report_interface?('wlan0')).to be_truthy
-      expect(subject.report_interface?('wlan1')).to be_falsey
+      expect(subject.report_interface?('wlan0')).to be(true)
+      expect(subject.report_interface?('wlan1')).to be(false)
     end
 
     it 'reject interfaces by regular expression' do
       subject.instance_variable_set(:@interfaces, [])
       subject.instance_variable_set(:@ignore_interfaces, %w[\Awlan\d+\z])
 
-      expect(subject.report_interface?('wlan0')).to be_falsey
-      expect(subject.report_interface?('wlan1')).to be_falsey
+      expect(subject.report_interface?('wlan0')).to be(false)
+      expect(subject.report_interface?('wlan1')).to be(false)
     end
   end
 

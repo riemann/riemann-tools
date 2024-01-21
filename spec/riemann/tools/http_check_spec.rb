@@ -114,16 +114,16 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
         Timeout.timeout(1) { sleep(0.1) until @started }
       end
 
-      let(:test_webserver_port) { @server.config[:Port] }
-
       after(:all) do
         @server&.shutdown
       end
       # rubocop:enable RSpec/BeforeAfterAll, RSpec/InstanceVariable
 
-      after(:each) do
+      after do
         subject.shutdown
       end
+
+      let(:test_webserver_port) { @server.config[:Port] } # rubocop:disable RSpec/InstanceVariable
 
       let(:reported_uri) { uri }
 

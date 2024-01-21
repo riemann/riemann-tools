@@ -20,7 +20,7 @@ task :rbuild do
   end
 end
 
-task build: :gen_parser
+Rake::Task['build'].enhance(['gen_parser'])
 
 desc 'Generate parsers'
 task gen_parser: [
