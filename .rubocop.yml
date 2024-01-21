@@ -7,11 +7,15 @@ AllCops:
 require:
   - rubocop-rake
   - rubocop-rspec
+Gemspec/RequireMFA:
+  Enabled: false
 Gemspec/RequiredRubyVersion:
   Enabled: false
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
 Layout/LineLength:
+  Enabled: false
+Lint/EmptyBlock:
   Enabled: false
 Metrics/AbcSize:
   Enabled: false
@@ -46,6 +50,8 @@ Style/Documentation:
   Enabled: false
 Style/HashSyntax:
   EnforcedShorthandSyntax: never
+Style/NegatedIfElseCondition:
+  Enabled: false
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: consistent_comma
 Style/TrailingCommaInArrayLiteral:
