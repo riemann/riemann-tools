@@ -64,6 +64,21 @@ RSpec.describe Riemann::Tools::Health do
         expect(subject).to have_received(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used')
       end
     end
+
+    context 'with huge disks and a lot of free space' do
+      before do
+        allow(subject).to receive(:df).and_return(<<~OUTPUT)
+          Filesystem     1024-blocks        Used  Available Capacity Mounted on
+          tank           11311939200 10183714944 1128224256      91% /tank
+        OUTPUT
+      end
+
+      it 'reports a correct lenient state' do
+        allow(subject).to receive(:alert).with('disk /tank', :ok, 0.9002625247490722, '91% used')
+        subject.disk
+        expect(subject).to have_received(:alert).with('disk /tank', :ok, 0.9002625247490722, '91% used')
+      end
+    end
   end
 
   describe '#bsd_swap' do
