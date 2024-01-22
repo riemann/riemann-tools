@@ -39,13 +39,13 @@ module Riemann
       end
 
       def state(key, value)
-        if opts.key? "#{key}_critical".to_sym
-          critical_threshold = opts["#{key}_critical".to_sym]
+        if opts.key? :"#{key}_critical"
+          critical_threshold = opts[:"#{key}_critical"]
           return 'critical' if critical_threshold.positive? && (value >= critical_threshold)
         end
 
-        if opts.key? "#{key}_warning".to_sym
-          warning_threshold = opts["#{key}_warning".to_sym]
+        if opts.key? :"#{key}_warning"
+          warning_threshold = opts[:"#{key}_warning"]
           return 'warning' if warning_threshold.positive? && (value >= warning_threshold)
         end
 

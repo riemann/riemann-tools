@@ -188,7 +188,7 @@ module Riemann
       end
 
       def linux_memory
-        m = File.read('/proc/meminfo').split(/\n/).each_with_object({}) do |line, info|
+        m = File.read('/proc/meminfo').split("\n").each_with_object({}) do |line, info|
           x = line.split(/:?\s+/)
           # Assume kB...
           info[x[0]] = x[1].to_i

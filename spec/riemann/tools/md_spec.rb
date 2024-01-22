@@ -3,7 +3,7 @@
 require 'riemann/tools/md'
 
 RSpec.describe Riemann::Tools::Md do
-  context('#tick') do
+  describe('#tick') do
     context 'when all md devices are healthy' do
       before do
         allow(File).to receive(:read).with('/proc/mdstat').and_return(File.read('spec/fixtures/mdstat/example-8'))

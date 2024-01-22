@@ -1,13 +1,21 @@
 ---
 AllCops:
+  NewCops: enable
   Exclude:
     - lib/riemann/tools/*_parser.tab.rb
     - vendor/bundle/**/*
+require:
+  - rubocop-rake
+  - rubocop-rspec
+Gemspec/RequireMFA:
+  Enabled: false
 Gemspec/RequiredRubyVersion:
   Enabled: false
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
 Layout/LineLength:
+  Enabled: false
+Lint/EmptyBlock:
   Enabled: false
 Metrics/AbcSize:
   Enabled: false
@@ -28,10 +36,22 @@ Naming/MethodParameterName:
     - az # availability zone
     - id
     - lb # load balancer
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/NamedSubject:
+  Enabled: false
+RSpec/NestedGroups:
+  Enabled: false
+RSpec/SubjectStub:
+  Enabled: false
 Style/Documentation:
   Enabled: false
 Style/HashSyntax:
   EnforcedShorthandSyntax: never
+Style/NegatedIfElseCondition:
+  Enabled: false
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: consistent_comma
 Style/TrailingCommaInArrayLiteral:

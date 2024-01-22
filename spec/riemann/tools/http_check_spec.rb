@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 
 require 'openssl'
-require 'rack/handler/webrick'
+begin
+  require 'rackup/handler/webrick'
+rescue LoadError
+  # XXX: Needed for Ruby 2.6 compatibility
+  # Moved to the rackup gem in recent versions
+  require 'rack/handler/webrick'
+end
 require 'sinatra/base'
 require 'webrick'
 require 'webrick/https'
@@ -65,6 +71,7 @@ end
 RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= Gem::Version.new(Riemann::Tools::HttpCheck::REQUIRED_RUBY_VERSION) do
   describe '#endpoint_name' do
     subject { described_class.new.endpoint_name(address, port) }
+
     let(:port) { 443 }
 
     context 'when using an IPv4 address' do
@@ -92,6 +99,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
     let(:http_timeout) { 2.0 }
 
     context 'when using unencrypted http' do
+      # rubocop:disable RSpec/BeforeAfterAll, RSpec/InstanceVariable
       before(:all) do
         server_options = {
           Port: 0,
@@ -109,8 +117,13 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       after(:all) do
         @server&.shutdown
       end
+      # rubocop:enable RSpec/BeforeAfterAll, RSpec/InstanceVariable
 
-      let(:test_webserver_port) { @server.config[:Port] }
+      after do
+        subject.shutdown
+      end
+
+      let(:test_webserver_port) { @server.config[:Port] } # rubocop:disable RSpec/InstanceVariable
 
       let(:reported_uri) { uri }
 
@@ -236,6 +249,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
     end
 
     context 'when using encrypted https' do
+      # rubocop:disable RSpec/BeforeAfterAll, RSpec/InstanceVariable
       before(:all) do
         server_options = {
           Port: 0,
@@ -257,6 +271,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       after(:all) do
         @server&.shutdown
       end
+      # rubocop:enable RSpec/BeforeAfterAll, RSpec/InstanceVariable
 
       context 'with an encrypted uri' do
         let(:uri) { URI("https://example.com:#{test_webserver_port}/") }

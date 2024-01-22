@@ -16,7 +16,7 @@ module Riemann
 
       def state
         f = File.read('/proc/diskstats')
-        state = f.split("\n").reject { |d| d =~ /(ram|loop)/ }.each_with_object({}) do |line, s|
+        state = f.split("\n").grep_v(/(ram|loop)/).each_with_object({}) do |line, s|
           next unless line =~ /^(?:\s+\d+){2}\s+([\w\d-]+) (.*)$/
 
           dev = Regexp.last_match(1)
@@ -43,13 +43,13 @@ module Riemann
         # Filter interfaces
         if (is = opts[:devices])
           state = state.select do |service, _value|
-            is.include? service.split(' ').first
+            is.include? service.split.first
           end
         end
 
         if (ign = opts[:ignore_devices])
           state = state.reject do |service, _value|
-            ign.include? service.split(' ').first
+            ign.include? service.split.first
           end
         end
 
@@ -80,7 +80,7 @@ module Riemann
             next unless service =~ /io time$/
 
             report(
-              service: "diskstats #{service.gsub(/time/, 'util')}",
+              service: "diskstats #{service.gsub('time', 'util')}",
               metric: (delta.to_f / (opts[:interval] * 1000)),
               state: 'ok',
             )

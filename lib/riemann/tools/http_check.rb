@@ -37,10 +37,15 @@ module Riemann
         @resolve_queue = Queue.new
         @work_queue = Queue.new
 
+        @resolvers = []
+        @workers = []
+
         opts[:resolvers].times do
-          Thread.new do
+          @resolvers << Thread.new do
             loop do
               uri = @resolve_queue.pop
+              Thread.exit unless uri
+
               host = uri.host
 
               addresses = Resolv::DNS.new.getaddresses(host)
@@ -59,15 +64,34 @@ module Riemann
         end
 
         opts[:workers].times do
-          Thread.new do
+          @workers << Thread.new do
             loop do
               uri, addresses = @work_queue.pop
+              Thread.exit unless uri
+
               test_uri_addresses(uri, addresses)
             end
           end
         end
 
         super
+      end
+
+      # Under normal operation, we have a single instance of this class for the
+      # lifetime of the process.  But when testing, we create a new instance
+      # for each test, each with its resolvers and worker threads.  The test
+      # process may end-up with a lot of running threads, hitting the OS limit
+      # of max threads by process and being unable to create more thread:
+      #
+      # ThreadError: can't create Thread: Resource temporarily unavailable
+      #
+      # To avoid this situation, we provide this method.
+      def shutdown
+        @resolve_queue.close
+        @resolvers.map(&:join)
+
+        @work_queue.close
+        @workers.map(&:join)
       end
 
       def tick
@@ -265,8 +289,8 @@ module Riemann
       end
 
       def latency_state(name, latency)
-        critical_threshold = opts["#{name}_latency_critical".to_sym]
-        warning_threshold = opts["#{name}_latency_warning".to_sym]
+        critical_threshold = opts[:"#{name}_latency_critical"]
+        warning_threshold = opts[:"#{name}_latency_warning"]
 
         return if critical_threshold.zero? || warning_threshold.zero?
 

@@ -21,7 +21,7 @@ module Riemann
 
         def base_metrics
           # get last 60 seconds
-          start_time = (Time.now.utc - 3600 * 24 * 1).iso8601
+          start_time = (Time.now.utc - (3600 * 24 * 1)).iso8601
           end_time = Time.now.utc.iso8601
 
           # The base query that all metrics would get
