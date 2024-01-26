@@ -11,10 +11,14 @@ module Riemann
       include Riemann::Tools
       include Riemann::Tools::Utils
 
+      SI_UNITS = '_kMGTPEZYRQ'
+
       opt :cpu_warning, 'CPU warning threshold (fraction of total jiffies)', default: 0.9
       opt :cpu_critical, 'CPU critical threshold (fraction of total jiffies)', default: 0.95
       opt :disk_warning, 'Disk warning threshold (fraction of space used)', default: 0.9
       opt :disk_critical, 'Disk critical threshold (fraction of space used)', default: 0.95
+      opt :disk_warning_leniency, 'Disk warning threshold (amount of free space)', short: :none, default: '500G'
+      opt :disk_critical_leniency, 'Disk critical threshold (amount of free space)', short: :none, default: '250G'
       opt :disk_ignorefs, 'A list of filesystem types to ignore',
           default: %w[anon_inodefs autofs cd9660 devfs devtmpfs fdescfs iso9660 linprocfs linsysfs nfs overlay procfs squashfs tmpfs]
       opt :load_warning, 'Load warning threshold (load average / core)', default: 3.0
@@ -32,7 +36,7 @@ module Riemann
       def initialize
         @limits = {
           cpu: { critical: opts[:cpu_critical], warning: opts[:cpu_warning] },
-          disk: { critical: opts[:disk_critical], warning: opts[:disk_warning] },
+          disk: { critical: opts[:disk_critical], warning: opts[:disk_warning], critical_leniency_kb: human_size_to_number(opts[:disk_critical_leniency]) / 1024, warning_leniency_kb: human_size_to_number(opts[:disk_warning_leniency]) / 1024 },
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
           memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
           uptime: { critical: opts[:uptime_critical], warning: opts[:uptime_warning] },
@@ -374,14 +378,14 @@ module Riemann
       def df
         case @ostype
         when 'darwin', 'freebsd', 'openbsd'
-          `df -P -t no#{opts[:disk_ignorefs].join(',')}`
+          `df -Pk -t no#{opts[:disk_ignorefs].join(',')}`
         when 'sunos'
-          `df -P` # Is there a good way to exlude iso9660 here?
+          `df -Pk` # Is there a good way to exlude iso9660 here?
         else
           if @supports_exclude_type
-            `df -P #{opts[:disk_ignorefs].map { |fstype| "--exclude-type=#{fstype}" }.join(' ')}`
+            `df -Pk #{opts[:disk_ignorefs].map { |fstype| "--exclude-type=#{fstype}" }.join(' ')}`
           else
-            `df -P`
+            `df -Pk`
           end
         end
       end
@@ -397,12 +401,12 @@ module Riemann
 
           x = used.to_f / total_without_reservation
 
-          if x > @limits[:disk][:critical]
+          if x > @limits[:disk][:critical] && available < @limits[:disk][:critical_leniency_kb]
             alert "disk #{f[5]}", :critical, x, "#{f[4]} used"
-          elsif x > @limits[:disk][:warning]
+          elsif x > @limits[:disk][:warning] && available < @limits[:disk][:warning_leniency_kb]
             alert "disk #{f[5]}", :warning, x, "#{f[4]} used"
           else
-            alert "disk #{f[5]}", :ok, x, "#{f[4]} used"
+            alert "disk #{f[5]}", :ok, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           end
         end
       end
@@ -466,6 +470,31 @@ module Riemann
           ("#{days} day#{'s' if days > 1}" unless days.zero?),
           format('%<hrs>2d:%<mins>02d', hrs: hrs, mins: mins),
         ].compact.join(' ')
+      end
+
+      def human_size_to_number(value)
+        case value
+        when /^\d+$/ then value.to_i
+        when /^\d+k$/i then value.to_i * 1024
+        when /^\d+M$/i then value.to_i * (1024**2)
+        when /^\d+G$/i then value.to_i * (1024**3)
+        when /^\d+T$/i then value.to_i * (1024**4)
+        when /^\d+P$/i then value.to_i * (1024**5)
+        when /^\d+E$/i then value.to_i * (1024**6)
+        when /^\d+Z$/i then value.to_i * (1024**7)
+        when /^\d+Y$/i then value.to_i * (1024**8)
+        when /^\d+R$/i then value.to_i * (1024**9)
+        when /^\d+Q$/i then value.to_i * (1024**10)
+        else
+          raise %(Malformed size "#{value}", syntax is [0-9]+[#{SI_UNITS[1..]}]?)
+        end
+      end
+
+      def number_to_human_size(value, rounding = :round)
+        return value.to_s if value < 1024
+
+        r = Math.log(value, 1024).floor
+        format('%<size>.1f%<unit>ciB', size: (value.to_f / (1024**r)).send(rounding, 1), unit: SI_UNITS[r])
       end
 
       def tick
