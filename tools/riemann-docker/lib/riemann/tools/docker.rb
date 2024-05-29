@@ -171,10 +171,8 @@ module Riemann
         disk if @disk_enabled
 
         # Get CPU, Memory and Load of each container
-        threads = []
-
-        containers.each do |ctr|
-          threads << Thread.new(ctr) do |container|
+        threads = containers.map do |ctr|
+          Thread.new(ctr) do |container|
             id = container.id
             name = get_container_name(container)
 

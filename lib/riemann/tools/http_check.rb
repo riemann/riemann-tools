@@ -128,10 +128,8 @@ module Riemann
       def test_uri_addresses(uri, addresses)
         request = get_request(uri)
 
-        responses = []
-
-        addresses.each do |address|
-          responses << test_uri_address(uri, address.to_s, request)
+        responses = addresses.map do |address|
+          test_uri_address(uri, address.to_s, request)
         end
 
         responses.compact!
