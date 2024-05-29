@@ -56,6 +56,165 @@ RSpec.describe Riemann::Tools::Health do
     end
   end
 
+  describe '#linux_running_in_container?' do
+    before do
+      allow(File).to receive(:readlink).with('/proc/self/ns/pid').and_return(pid_namespace)
+    end
+
+    context 'when running on the host' do
+      let(:pid_namespace) { 'pid:[4026531836]' }
+
+      it 'returns the expected value' do
+        expect(subject).not_to be_linux_running_in_container
+      end
+    end
+
+    context 'when running in a container' do
+      let(:pid_namespace) { 'pid:[4026532474]' }
+
+      it 'returns the expected value' do
+        expect(subject).to be_linux_running_in_container
+      end
+    end
+  end
+
+  describe '#linux_zfs_arc_evictable_memory' do
+    before do
+      allow(subject).to receive(:linux_running_in_container?).and_return(false)
+      allow(File).to receive(:readlines).with('/proc/spl/kstat/zfs/arcstats').and_return(<<~OUTPUT.split("\n"))
+        12 1 0x01 123 33456 16771914747167 65909736923948
+        name                            type data
+        hits                            4    4194887
+        misses                          4    10500
+        demand_data_hits                4    107986
+        demand_data_misses              4    2
+        demand_metadata_hits            4    4058473
+        demand_metadata_misses          4    9216
+        prefetch_data_hits              4    28396
+        prefetch_data_misses            4    1207
+        prefetch_metadata_hits          4    32
+        prefetch_metadata_misses        4    75
+        mru_hits                        4    882890
+        mru_ghost_hits                  4    7737
+        mfu_hits                        4    3311966
+        mfu_ghost_hits                  4    2306
+        deleted                         4    42072676
+        mutex_miss                      4    1771
+        access_skip                     4    0
+        evict_skip                      4    1004
+        evict_not_enough                4    68
+        evict_l2_cached                 4    0
+        evict_l2_eligible               4    5516808656384
+        evict_l2_eligible_mfu           4    216467456
+        evict_l2_eligible_mru           4    5516592188928
+        evict_l2_ineligible             4    6029312
+        evict_l2_skip                   4    0
+        hash_elements                   4    124644
+        hash_elements_max               4    158917
+        hash_collisions                 4    1256052
+        hash_chains                     4    1793
+        hash_chain_max                  4    4
+        p                               4    8383553536
+        c                               4    16767066112
+        c_min                           4    1047941632
+        c_max                           4    16767066112
+        size                            4    16791717984
+        compressed_size                 4    16052915712
+        uncompressed_size               4    16066757120
+        overhead_size                   4    685315584
+        hdr_size                        4    40836960
+        data_size                       4    16724525056
+        metadata_size                   4    13706240
+        dbuf_size                       4    3017856
+        dnode_size                      4    8890304
+        bonus_size                      4    734400
+        anon_size                       4    205520896
+        anon_evictable_data             4    0
+        anon_evictable_metadata         4    0
+        mru_size                        4    16532327936
+        mru_evictable_data              4    15577382912
+        mru_evictable_metadata          4    2461696
+        mru_ghost_size                  4    225443840
+        mru_ghost_evictable_data        4    52822016
+        mru_ghost_evictable_metadata    4    172621824
+        mfu_size                        4    382464
+        mfu_evictable_data              4    0
+        mfu_evictable_metadata          4    0
+        mfu_ghost_size                  4    18432
+        mfu_ghost_evictable_data        4    0
+        mfu_ghost_evictable_metadata    4    18432
+        l2_hits                         4    0
+        l2_misses                       4    0
+        l2_prefetch_asize               4    0
+        l2_mru_asize                    4    0
+        l2_mfu_asize                    4    0
+        l2_bufc_data_asize              4    0
+        l2_bufc_metadata_asize          4    0
+        l2_feeds                        4    0
+        l2_rw_clash                     4    0
+        l2_read_bytes                   4    0
+        l2_write_bytes                  4    0
+        l2_writes_sent                  4    0
+        l2_writes_done                  4    0
+        l2_writes_error                 4    0
+        l2_writes_lock_retry            4    0
+        l2_evict_lock_retry             4    0
+        l2_evict_reading                4    0
+        l2_evict_l1cached               4    0
+        l2_free_on_write                4    0
+        l2_abort_lowmem                 4    0
+        l2_cksum_bad                    4    0
+        l2_io_error                     4    0
+        l2_size                         4    0
+        l2_asize                        4    0
+        l2_hdr_size                     4    0
+        l2_log_blk_writes               4    0
+        l2_log_blk_avg_asize            4    0
+        l2_log_blk_asize                4    0
+        l2_log_blk_count                4    0
+        l2_data_to_meta_ratio           4    0
+        l2_rebuild_success              4    0
+        l2_rebuild_unsupported          4    0
+        l2_rebuild_io_errors            4    0
+        l2_rebuild_dh_errors            4    0
+        l2_rebuild_cksum_lb_errors      4    0
+        l2_rebuild_lowmem               4    0
+        l2_rebuild_size                 4    0
+        l2_rebuild_asize                4    0
+        l2_rebuild_bufs                 4    0
+        l2_rebuild_bufs_precached       4    0
+        l2_rebuild_log_blks             4    0
+        memory_throttle_count           4    0
+        memory_direct_count             4    0
+        memory_indirect_count           4    0
+        memory_all_bytes                4    33534132224
+        memory_free_bytes               4    14101360640
+        memory_available_bytes          3    12877639168
+        arc_no_grow                     4    0
+        arc_tempreserve                 4    132096
+        arc_loaned_bytes                4    0
+        arc_prune                       4    0
+        arc_meta_used                   4    65964976
+        arc_meta_limit                  4    12575299584
+        arc_dnode_limit                 4    1257529958
+        arc_meta_max                    4    129330864
+        arc_meta_min                    4    16777216
+        async_upgrade_sync              4    2597
+        demand_hit_predictive_prefetch  4    907
+        demand_hit_prescient_prefetch   4    0
+        arc_need_free                   4    0
+        arc_sys_free                    4    1223721472
+        arc_raw_size                    4    0
+        cached_only_in_progress         4    0
+        abd_chunk_waste_size            4    7168
+      OUTPUT
+    end
+
+    it 'return the expected size' do
+      expect(subject.linux_zfs_arc_evictable_memory).to eq(15_214_692)
+    end
+  end
+
   describe('#disks') do
     before do
       allow(subject).to receive(:df).and_return(<<~OUTPUT)
