@@ -75,6 +75,8 @@ module Riemann
         values = @re.match(response).to_a[1, 7].map(&:to_i)
 
         @keys.zip(values).each do |key, value|
+          next unless opts[:checks].include?(key)
+
           report({
                    service: "nginx #{key}",
                    metric: value,
