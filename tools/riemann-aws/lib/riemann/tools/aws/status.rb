@@ -20,21 +20,21 @@ module Riemann
         opt :event_warning, 'Number of days before event. Defaults to nil (i.e. when the event appears)', default: nil
 
         def initialize
-          if options[:fog_credentials_file]
-            Fog.credentials_path = options[:fog_credentials_file]
-            Fog.credential = options[:fog_credential].to_sym
+          if opts[:fog_credentials_file]
+            Fog.credentials_path = opts[:fog_credentials_file]
+            Fog.credential = opts[:fog_credential].to_sym
             @compute = Fog::AWS::Compute.new
           else
-            @compute = if options[:access_key] && options[:secret_key]
+            @compute = if opts[:access_key] && opts[:secret_key]
                          Fog::AWS::Compute.new({
-                                                 access_key_key_id: options[:access_key],
-                                                 secret_key_access_key: options[:secret_key],
-                                                 region: options[:region],
+                                                 access_key_key_id: opts[:access_key],
+                                                 secret_key_access_key: opts[:secret_key],
+                                                 region: opts[:region],
                                                })
                        else
                          Fog::AWS::Compute.new({
                                                  use_iam_profile: true,
-                                                 region: options[:region],
+                                                 region: opts[:region],
                                                })
                        end
           end
