@@ -27,8 +27,8 @@ module Riemann
 
       def base_url
         protocol = 'http'
-        protocol = 'https' if options[:monitor_use_tls] && (options[:monitor_use_tls] == true)
-        "#{protocol}://#{options[:monitor_user]}:#{options[:monitor_pass]}@#{options[:monitor_host]}:#{options[:monitor_port]}/api"
+        protocol = 'https' if opts[:monitor_use_tls] && (opts[:monitor_use_tls] == true)
+        "#{protocol}://#{opts[:monitor_user]}:#{opts[:monitor_pass]}@#{opts[:monitor_host]}:#{opts[:monitor_port]}/api"
       end
 
       def overview_url
@@ -44,7 +44,7 @@ module Riemann
       end
 
       def event_host
-        options[:event_host] || :monitor_host
+        opts[:event_host] || :monitor_host
       end
 
       def safe_get(uri, event_host)
@@ -53,8 +53,8 @@ module Riemann
         begin
           connection = Faraday.new(uri)
           response = connection.get do |req|
-            req.options[:timeout] = options[:read_timeout]
-            req.options[:open_timeout] = options[:open_timeout]
+            req.opts[:timeout] = opts[:read_timeout]
+            req.opts[:open_timeout] = opts[:open_timeout]
           end
           report(
             host: event_host,
@@ -75,7 +75,7 @@ module Riemann
 
       def check_queues
         response = safe_get(queues_url, event_host)
-        max_size_check_filter = (Regexp.new(options[:ignore_max_size_queues]) if options[:ignore_max_size_queues])
+        max_size_check_filter = (Regexp.new(opts[:ignore_max_size_queues]) if opts[:ignore_max_size_queues])
 
         return if response.nil?
 
@@ -102,7 +102,7 @@ module Riemann
 
             errs << 'Queue has jobs but no consumers' if !queue['messages_ready'].nil? && (queue['messages_ready']).positive? && (queue['consumers']).zero?
 
-            errs << "Queue has #{queue['messages_ready']} jobs" if (max_size_check_filter.nil? || queue['name'] !~ (max_size_check_filter)) && !queue['messages_ready'].nil? && (queue['messages_ready'] > options[:max_queue_size])
+            errs << "Queue has #{queue['messages_ready']} jobs" if (max_size_check_filter.nil? || queue['name'] !~ (max_size_check_filter)) && !queue['messages_ready'].nil? && (queue['messages_ready'] > opts[:max_queue_size])
 
             if errs.empty?
               report(

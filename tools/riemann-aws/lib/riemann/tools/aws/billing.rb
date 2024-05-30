@@ -21,7 +21,7 @@ module Riemann
         opt :time_end, 'End time in seconds of the metrics period ', type: Integer, default: 60
 
         def initialize
-          if options[:fog_credentials_file]
+          if opts[:fog_credentials_file]
             Fog.credentials_path = opts[:fog_credentials_file]
             Fog.credential = opts[:fog_credential].to_sym
             @cloudwatch = Fog::AWS::CloudWatch.new
