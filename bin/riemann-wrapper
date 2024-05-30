@@ -116,7 +116,7 @@ if ARGV.size == 1
   end
 
   require 'yaml'
-  config = YAML.safe_load_file(ARGV[0])
+  config = YAML.safe_load(File.read(ARGV[0]))
 
   arguments = split_options(config['options'])
   config['tools'].each do |tool|
