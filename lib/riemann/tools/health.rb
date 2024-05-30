@@ -11,6 +11,7 @@ module Riemann
       include Riemann::Tools
       include Riemann::Tools::Utils
 
+      PROC_PID_INIT_INO = 0xEFFFFFFC
       SI_UNITS = '_kMGTPEZYRQ'
 
       opt :cpu_warning, 'CPU warning threshold (fraction of total jiffies)', default: 0.9
@@ -158,6 +159,11 @@ module Riemann
         end
       end
 
+      def linux_running_in_container?
+        @linux_running_in_container = File.readlink('/proc/self/ns/pid') != "pid:[#{PROC_PID_INIT_INO}]" if @linux_running_in_container.nil?
+        @linux_running_in_container
+      end
+
       def linux_cpu
         new = File.read('/proc/stat')
         unless new[/cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/]
@@ -198,11 +204,42 @@ module Riemann
           info[x[0]] = x[1].to_i
         end
 
-        free = m['MemFree'].to_i + m['Buffers'].to_i + m['Cached'].to_i
-        total = m['MemTotal'].to_i
+        free = m['MemFree'] + m['Buffers'] + m['Cached'] + linux_zfs_arc_evictable_memory
+        total = m['MemTotal']
         fraction = 1 - (free.to_f / total)
 
         report_pct :memory, fraction, "used\n\n#{reverse_numeric_sort_with_header(`ps -eo pmem,pid,comm`)}"
+      end
+
+      # On Linux, the ZFS ARC is reported as used, not as cached memory.
+      # https://github.com/openzfs/zfs/issues/10251
+      #
+      # Gather ZFS ARC statisticts about evictable memory.  The available
+      # fields are listed here:
+      # https://github.com/openzfs/zfs/blob/master/include/sys/arc_impl.h
+      def linux_zfs_arc_evictable_memory
+        # When the system is a container, it can access the hosts stats that
+        # cause invalid memory usage reporting.  We should only remove
+        # evictable memory from the ZFS ARC on the host system.
+        return 0 if linux_running_in_container?
+
+        m = File.readlines('/proc/spl/kstat/zfs/arcstats').each_with_object(Hash.new(0)) do |line, info|
+          x = line.split(/\s+/)
+          info[x[0]] = x[2].to_i
+        end
+
+        (
+          m['anon_evictable_data'] +
+          m['anon_evictable_metadata'] +
+          m['mru_evictable_data'] +
+          m['mru_evictable_metadata'] +
+          m['mfu_evictable_data'] +
+          m['mfu_evictable_metadata'] +
+          m['uncached_evictable_data'] +
+          m['uncached_evictable_metadata']
+        ) / 1024 # We want kB...
+      rescue Errno::ENOENT
+        0
       end
 
       def freebsd_cpu
