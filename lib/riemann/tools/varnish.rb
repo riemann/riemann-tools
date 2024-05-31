@@ -12,6 +12,8 @@ module Riemann
       opt :varnish_host, 'Varnish hostname', default: `hostname`.chomp
 
       def initialize
+        super
+
         cmd = 'varnishstat -V'
         Open3.popen3(cmd) do |_stdin, _stdout, stderr, _wait_thr|
           @ver = /varnishstat \(varnish-(\d+)/.match(stderr.read)[1].to_i

@@ -30,6 +30,8 @@ module Riemann
       opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
+        super
+
         detect_features
 
         @httpstatus = true

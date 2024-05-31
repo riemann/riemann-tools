@@ -44,6 +44,14 @@ module Riemann
       end
     end
 
+    attr_reader :argv
+
+    def initialize(allow_arguments: false)
+      options
+      @argv = ARGV.dup
+      abort "Error: stray arguments: #{ARGV.map(&:inspect).join(', ')}" if ARGV.any? && !allow_arguments
+    end
+
     # Returns parsed options (cached) from command line.
     def options
       @options ||= self.class.options
@@ -58,10 +66,7 @@ module Riemann
     end
 
     def report(event)
-      if options[:tag]
-        # Work around a bug with beefcake which can't take frozen strings.
-        event[:tags] = [*event.fetch(:tags, [])] + options[:tag].map(&:dup)
-      end
+      event[:tags] = event.fetch(:tags, []) + options[:tag]
 
       event[:ttl] ||= options[:ttl] || (options[:interval] * 2)
 

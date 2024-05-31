@@ -31,6 +31,8 @@ module Riemann
       end
 
       def initialize
+        super
+
         Docker.url = opts[:docker_host] unless opts[:docker_host].nil?
 
         @hostname = opts[:host_hostname]

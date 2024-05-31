@@ -14,6 +14,8 @@ module Riemann
       opt :ports, "List of ports to check, e.g. '-r 80 443'", type: :ints
 
       def initialize
+        super
+
         @hostname = opts.fetch(:hostname)
         @ports = opts.fetch(:ports)
       end

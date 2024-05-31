@@ -20,6 +20,8 @@ module Riemann
       opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
 
       def initialize
+        super
+
         @hostname = opts[:consul_host]
         @prefix = opts[:prefix]
         @minimum_services_per_node = opts[:minimum_services_per_node]

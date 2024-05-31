@@ -11,6 +11,8 @@ module Riemann
       opt :ignore_devices, 'Devices to ignore', type: :strings, default: nil
 
       def initialize
+        super
+
         @old_state = nil
       end
 

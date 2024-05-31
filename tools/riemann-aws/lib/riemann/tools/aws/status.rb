@@ -20,6 +20,8 @@ module Riemann
         opt :event_warning, 'Number of days before event. Defaults to nil (i.e. when the event appears)', default: nil
 
         def initialize
+          super
+
           if opts[:fog_credentials_file]
             Fog.credentials_path = opts[:fog_credentials_file]
             Fog.credential = opts[:fog_credential].to_sym

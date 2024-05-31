@@ -12,6 +12,8 @@ module Riemann
       opt :ignore_interfaces, 'Interfaces to ignore', type: :strings, default: ['\Alo\d*\z']
 
       def initialize
+        super
+
         @old_state = nil
         @interfaces = if opts[:interfaces]
                         opts[:interfaces].reject(&:empty?).map(&:dup)

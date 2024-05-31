@@ -16,6 +16,8 @@ module Riemann
       opt :processes, 'list of processes to measure fd usage in addition to system total', type: :ints
 
       def initialize
+        super
+
         @limits = {
           fd: { critical: opts[:fd_sys_critical], warning: opts[:fd_sys_warning] },
           process: { critical: opts[:fd_proc_critical], warning: opts[:fd_proc_warning] },

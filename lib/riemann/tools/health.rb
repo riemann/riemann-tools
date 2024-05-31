@@ -35,6 +35,8 @@ module Riemann
       opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk swap]
 
       def initialize
+        super
+
         @limits = {
           cpu: { critical: opts[:cpu_critical], warning: opts[:cpu_warning] },
           disk: { critical: opts[:disk_critical], warning: opts[:disk_warning], critical_leniency_kb: human_size_to_number(opts[:disk_critical_leniency]) / 1024, warning_leniency_kb: human_size_to_number(opts[:disk_warning_leniency]) / 1024 },

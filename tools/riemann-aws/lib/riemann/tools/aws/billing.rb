@@ -21,6 +21,8 @@ module Riemann
         opt :time_end, 'End time in seconds of the metrics period ', type: Integer, default: 60
 
         def initialize
+          super
+
           if opts[:fog_credentials_file]
             Fog.credentials_path = opts[:fog_credentials_file]
             Fog.credential = opts[:fog_credential].to_sym
