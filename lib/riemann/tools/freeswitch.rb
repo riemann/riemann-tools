@@ -13,6 +13,8 @@ module Riemann
       opt :pid_file, 'FreeSWITCH daemon pidfile', type: String, default: '/var/run/freeswitch/freeswitch.pid'
 
       def initialize
+        super
+
         @limits = {
           calls: { critical: opts[:calls_critical], warning: opts[:calls_warning] },
         }

@@ -10,6 +10,8 @@ module Riemann
       require 'munin-ruby'
 
       def initialize
+        super
+
         @munin = ::Munin::Node.new
       end
 

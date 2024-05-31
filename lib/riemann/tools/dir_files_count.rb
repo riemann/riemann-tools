@@ -15,6 +15,8 @@ module Riemann
       opt :alert_on_missing, 'Send a critical metric if the directory is missing?', default: true
 
       def initialize
+        super
+
         @dir = opts.fetch(:directory)
         @service_prefix = opts.fetch(:service_prefix)
         @warning = opts.fetch(:warning, nil)

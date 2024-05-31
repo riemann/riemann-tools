@@ -9,6 +9,8 @@ module Riemann
       include Riemann::Tools
 
       def initialize
+        super
+
         @hostname = `hostname`.chomp
         @ostype = `uname -s`.chomp.downcase
         abort 'WARNING: macOS not explicitly supported. Exiting.' if @ostype == 'darwin'

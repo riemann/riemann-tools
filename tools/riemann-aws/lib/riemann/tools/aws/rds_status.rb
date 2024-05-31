@@ -17,6 +17,8 @@ module Riemann
         opt :region, 'AWS region', type: String, default: 'eu-west-1'
         opt :dbinstance_identifier, 'DBInstanceIdentifier', type: String
         def initialize
+          super
+
           abort 'FATAL: specify a DB instance name, see --help for usage' unless opts[:dbinstance_identifier]
           creds = if opts[:access_key] && opts[:secret_key]
                     {

@@ -21,6 +21,8 @@ module Riemann
       def initialize
         options[:interval] = 60
         options[:ttl] = 120
+
+        super
       end
 
       # Handles HTTP connections and GET requests safely

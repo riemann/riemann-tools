@@ -13,6 +13,8 @@ module Riemann
       opt :proc_max_critical, 'running process count maximum', default: 65_536
 
       def initialize
+        super
+
         @limits = { critical: { min: opts[:proc_min_critical], max: opts[:proc_max_critical] } }
 
         abort 'FATAL: specify a process regular expression, see --help for usage' unless opts[:proc_regex]

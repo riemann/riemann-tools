@@ -14,6 +14,8 @@ module Riemann
         opt :region, 'AWS region', type: String, default: 'us-east-1'
         opt :queue, 'SQS Queue name', type: String
         def initialize
+          super
+
           creds = if opts.key?('access_key') && opts.key?('secret_key')
                     {
                       aws_access_key_id: opts[:access_key],

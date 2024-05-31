@@ -11,6 +11,8 @@ module Riemann
       attr_accessor :client, :hosts, :services, :states
 
       def initialize
+        super
+
         @hosts = [nil] + (0...10).map { |i| "host#{i}" }
         @hosts = %w[a b c d e f g h i j]
         @services = %w[test1 test2 test3 foo bar baz xyzzy attack cat treat]
