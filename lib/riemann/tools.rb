@@ -32,7 +32,8 @@ module Riemann
         opt :event_host, 'Event hostname', type: String
         opt :interval, 'Seconds between updates', default: 5
         opt :tag, 'Tag to add to events', type: String, multi: true
-        opt :ttl, 'TTL for events', type: Integer
+        opt :ttl, 'TTL for events (twice the interval when unspecified)', type: Integer
+        opt :minimum_ttl, 'Minimum TTL for events', type: Integer, short: :none
         opt :attribute, 'Attribute to add to the event', type: String, multi: true
         opt :timeout, 'Timeout (in seconds) when waiting for acknowledgements', default: 30
         opt :tcp, 'Use TCP transport instead of UDP (improves reliability, slight overhead.', default: true
@@ -50,6 +51,9 @@ module Riemann
       options
       @argv = ARGV.dup
       abort "Error: stray arguments: #{ARGV.map(&:inspect).join(', ')}" if ARGV.any? && !allow_arguments
+
+      options[:ttl] ||= options[:interval] * 2
+      options[:ttl] = [options[:minimum_ttl], options[:ttl]].compact.max
     end
 
     # Returns parsed options (cached) from command line.
@@ -68,7 +72,7 @@ module Riemann
     def report(event)
       event[:tags] = event.fetch(:tags, []) + options[:tag]
 
-      event[:ttl] ||= options[:ttl] || (options[:interval] * 2)
+      event[:ttl] ||= options[:ttl]
 
       event[:host] = options[:event_host].dup if options[:event_host]
 
