@@ -300,4 +300,28 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
       it { is_expected.to have_received(:report).with(hash_including({ service: 'get https://invalid.example.com/ consistency', state: 'critical', description: 'Could not get any response from invalid.example.com' })) }
     end
   end
+
+  describe '#address_belongs_to_ignored_asn?' do
+    subject { described_class.new.address_belongs_to_ignored_asn?(address) }
+
+    before { ARGV.replace(['--geoip-asn-database', 'spec/fixtures/test-asn/test-asn.mmdb', '--ignored-asn', '64512', '64514']) }
+
+    context 'when the address does not belong to an ignored ASN' do
+      let(:address) { IPAddr.new('1.1.1.2') }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when the address belongs to an ignored ASN' do
+      let(:address) { IPAddr.new('2.2.2.1') }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when the address is unknown' do
+      let(:address) { IPAddr.new('4.4.4.1') }
+
+      it { is_expected.to be_falsey }
+    end
+  end
 end

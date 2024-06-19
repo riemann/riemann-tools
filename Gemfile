@@ -6,6 +6,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'github_changelog_generator'
+gem 'maxmind-geoip2'
 gem 'racc'
 gem 'rake'
 gem 'rspec'

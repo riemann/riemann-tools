@@ -1,0 +1,4 @@
+network,autonomous_system_number,autonomous_system_organization
+2001:1::/20,64512,FOO
+2001:2::/20,64513,BAR
+2001:3::/20,64514,BAZ

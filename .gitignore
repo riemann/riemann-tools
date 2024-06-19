@@ -6,3 +6,4 @@ pkg/
 .*.swp
 *.log
 lib/riemann/tools/*_parser.tab.rb
+spec/fixtures/test-asn/test-asn
