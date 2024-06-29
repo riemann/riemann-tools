@@ -9,7 +9,7 @@ module Riemann
       include Riemann::Tools
 
       class Device
-        attr_reader :hwmon, :type, :number, :crit, :lcrit, :label, :name
+        attr_reader :hwmon, :type, :number, :crit, :lcrit, :service
 
         def initialize(hwmon, type, number)
           @hwmon = hwmon
@@ -18,8 +18,7 @@ module Riemann
 
           @crit = scale(read_hwmon_i('crit'))
           @lcrit = scale(read_hwmon_i('lcrit'))
-          @label = read_hwmon_s('label')
-          @name = read_hwmon_file('name')
+          @service = ['hwmon', read_hwmon_file('name'), read_hwmon_s('label')].compact.join(' ')
         end
 
         def input
@@ -33,7 +32,7 @@ module Riemann
           state = :critical if crit && value >= crit
           state = :critical if lcrit && value <= lcrit
           {
-            service: "hwmon #{name} #{label}",
+            service: service,
             state: state,
             metric: value,
             description: fromat_input(value),
