@@ -3,10 +3,12 @@
 require 'openssl'
 begin
   require 'rackup/handler/webrick'
+  RACK_HANDLER = Rackup::Handler::WEBrick
 rescue LoadError
   # XXX: Needed for Ruby 2.6 compatibility
   # Moved to the rackup gem in recent versions
   require 'rack/handler/webrick'
+  RACK_HANDLER = Rack::Handler::WEBrick
 end
 require 'sinatra/base'
 require 'webrick'
@@ -108,7 +110,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
           Logger: WEBrick::Log.new(File.open(File::NULL, 'w')),
         }
         @server = WEBrick::HTTPServer.new(server_options)
-        @server.mount('/', Rack::Handler::WEBrick, TestWebserver)
+        @server.mount('/', RACK_HANDLER, TestWebserver)
         @started = false
         Thread.new { @server.start }
         Timeout.timeout(1) { sleep(0.1) until @started }
@@ -260,7 +262,7 @@ RSpec.describe Riemann::Tools::HttpCheck, if: Gem::Version.new(RUBY_VERSION) >= 
           SSLCertName: '/CN=example.com',
         }
         @server = WEBrick::HTTPServer.new(server_options)
-        @server.mount('/', Rack::Handler::WEBrick, TestWebserver)
+        @server.mount('/', RACK_HANDLER, TestWebserver)
         @started = false
         Thread.new { @server.start }
         Timeout.timeout(1) { sleep(0.1) until @started }
