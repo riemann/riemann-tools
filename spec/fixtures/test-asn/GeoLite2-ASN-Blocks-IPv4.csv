@@ -1,0 +1,4 @@
+network,autonomous_system_number,autonomous_system_organization
+1.1.1.0/24,64512,FOO
+2.2.2.0/24,64513,BAR
+3.3.3.0/24,64514,BAZ

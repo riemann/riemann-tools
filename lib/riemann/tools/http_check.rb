@@ -32,6 +32,8 @@ module Riemann
       opt :resolvers, 'Run this number of resolver threads', short: :none, type: :integer, default: 5
       opt :workers, 'Run this number of worker threads', short: :none, type: :integer, default: 20
       opt :user_agent, 'User-Agent header for HTTP requests', short: :none, default: "#{File.basename($PROGRAM_NAME)}/#{Riemann::Tools::VERSION} (+https://github.com/riemann/riemann-tools)"
+      opt :ignored_asn, 'Ignore addresses belonging to these ASN', short: :none, type: :integers, default: []
+      opt :geoip_asn_database, 'Path to the GeoIP ASN database', short: :none, default: '/usr/share/GeoIP/GeoLite2-ASN.mmdb'
 
       def initialize
         super
@@ -60,6 +62,14 @@ module Riemann
                 end
               end
 
+              if opts[:ignored_asn].any?
+                addresses.reject! do |address|
+                  address_belongs_to_ignored_asn?(address)
+                end
+              end
+
+              next if addresses.empty?
+
               @work_queue.push([uri, addresses])
             end
           end
@@ -75,6 +85,21 @@ module Riemann
             end
           end
         end
+      end
+
+      def address_belongs_to_ignored_asn?(address)
+        begin
+          require 'maxmind/geoip2'
+        rescue LoadError
+          raise StandardError, 'MaxMind::GeoIP2 is not available. Please install the maxmind-geoip2 gem for filtering by ASN.'
+        end
+
+        @reader ||= MaxMind::GeoIP2::Reader.new(database: opts[:geoip_asn_database])
+        asn = @reader.asn(address.to_s)
+
+        opts[:ignored_asn].include?(asn&.autonomous_system_number)
+      rescue MaxMind::GeoIP2::AddressNotFoundError
+        false
       end
 
       # Under normal operation, we have a single instance of this class for the
