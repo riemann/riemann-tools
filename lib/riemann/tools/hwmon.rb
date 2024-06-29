@@ -83,16 +83,6 @@ module Riemann
         end
       end
 
-      FIRST_NUMBER = {
-        in: 0,
-        fan: 1,
-        temp: 1,
-        curr: 1,
-        power: 1,
-        energy: 1,
-        humidity: 1,
-      }.freeze
-
       attr_reader :devices
 
       def initialize
@@ -104,18 +94,9 @@ module Riemann
       def poll_devices
         res = []
 
-        hwmon = 0
-        while File.exist?("/sys/class/hwmon/hwmon#{hwmon}")
-          %i[in fan temp curr power energy humidity].each do |type|
-            number = FIRST_NUMBER[type]
-            while File.exist?("/sys/class/hwmon/hwmon#{hwmon}/#{type}#{number}_input")
-              res << Device.new(hwmon, type, number)
-
-              number += 1
-            end
-          end
-
-          hwmon += 1
+        Dir['/sys/class/hwmon/hwmon[0-9]*/{in,fan,temp,curr,power,energy,humidity}[0-9]*_input'].each do |filename|
+          m = filename.match(%r{/sys/class/hwmon/hwmon(\d+)/([[:alpha:]]+)(\d+)_input})
+          res << Device.new(m[1].to_i, m[2].to_sym, m[3].to_i)
         end
 
         res
