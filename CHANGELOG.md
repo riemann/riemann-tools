@@ -1,5 +1,28 @@
 # Changelog
 
+## [v1.11.0](https://github.com/riemann/riemann-tools/tree/v1.11.0) (2024-07-07)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.10.0...v1.11.0)
+
+**Implemented enhancements:**
+
+- Add a new `riemann-hwmon` tool for harware monitors [\#297](https://github.com/riemann/riemann-tools/pull/297) ([smortex](https://github.com/smortex))
+- Add support for ignoring IPs by ASN in `riemann-http` [\#295](https://github.com/riemann/riemann-tools/pull/295) ([smortex](https://github.com/smortex))
+- Add support for a minimum TTL for events [\#294](https://github.com/riemann/riemann-tools/pull/294) ([smortex](https://github.com/smortex))
+- Detect and report stray arguments [\#293](https://github.com/riemann/riemann-tools/pull/293) ([smortex](https://github.com/smortex))
+- Add leniency to disk thresholds of `riemann-health` [\#282](https://github.com/riemann/riemann-tools/pull/282) ([smortex](https://github.com/smortex))
+- Add `riemann-tls-check` to monitor TLS certificates [\#253](https://github.com/riemann/riemann-tools/pull/253) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Minor `riemann-hwmon` improvements [\#298](https://github.com/riemann/riemann-tools/pull/298) ([smortex](https://github.com/smortex))
+- Fix `riemann-nginx` checks selection [\#292](https://github.com/riemann/riemann-tools/pull/292) ([smortex](https://github.com/smortex))
+- Fix `riemann-health` memory reporting when using ZFS on Linux [\#289](https://github.com/riemann/riemann-tools/pull/289) ([smortex](https://github.com/smortex))
+
+**Closed issues:**
+
+- RFC: `riemann-domain-check` to monitor domain name expiration date [\#249](https://github.com/riemann/riemann-tools/issues/249)
+
 ## [v1.10.0](https://github.com/riemann/riemann-tools/tree/v1.10.0) (2024-01-13)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.9.1...v1.10.0)
