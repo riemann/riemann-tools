@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
-require 'rubygems'
-require 'riemann/client'
+require 'riemann/tools'
+require 'riemann/tools/version'
 
 # Connects to a server (first arg) and populates it with a constant stream of
 # events for testing.
 module Riemann
   module Tools
     class Bench
-      attr_accessor :client, :hosts, :services, :states
+      include Riemann::Tools
+      attr_accessor :hosts, :services, :states
 
       def initialize
         super
@@ -17,7 +18,6 @@ module Riemann
         @hosts = %w[a b c d e f g h i j]
         @services = %w[test1 test2 test3 foo bar baz xyzzy attack cat treat]
         @states = {}
-        @client = Riemann::Client.new(host: ARGV.first || 'localhost')
       end
 
       def evolve(state)
@@ -45,7 +45,7 @@ module Riemann
       def tick
         #    pp @states
         hosts.product(services).each do |id|
-          client << (states[id] = evolve(states[id]))
+          report(states[id] = evolve(states[id]))
         end
       end
 
