@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.12.0](https://github.com/riemann/riemann-tools/tree/v1.12.0) (2025-01-15)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.11.0...v1.12.0)
+
+**Implemented enhancements:**
+
+- Allow passing options to `riemann-bench` [\#300](https://github.com/riemann/riemann-tools/pull/300) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix support of Ruby 3.4 [\#301](https://github.com/riemann/riemann-tools/pull/301) ([smortex](https://github.com/smortex))
+
 ## [v1.11.0](https://github.com/riemann/riemann-tools/tree/v1.11.0) (2024-07-07)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.10.0...v1.11.0)
