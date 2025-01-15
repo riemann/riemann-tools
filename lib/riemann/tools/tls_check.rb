@@ -478,7 +478,7 @@ module Riemann
         capabilities = initial_handshake_packet[5] | (initial_handshake_packet[8] << 16)
 
         ssl_flag = 1 << 11
-        raise 'No TLS support' if (capabilities & ssl_flag).zero?
+        raise 'No TLS support' if capabilities.nobits?(ssl_flag)
 
         socket.write(['2000000185ae7f0000000001210000000000000000000000000000000000000000000000'].pack('H*'))
         tls_handshake(socket, uri.host)
