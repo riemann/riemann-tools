@@ -17,6 +17,8 @@ require 'webrick/https'
 require 'riemann/tools/http_check'
 
 class TestWebserver < Sinatra::Base
+  set :host_authorization, { permitted_hosts: [] }
+
   def authorized?
     @auth ||= Rack::Auth::Basic::Request.new(request.env)
     @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == %w[admin secret]
