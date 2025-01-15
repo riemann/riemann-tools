@@ -38,7 +38,8 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'json', '>= 1.8'
-  spec.add_runtime_dependency 'optimist', '~> 3.0', '>= 3.0.0'
-  spec.add_runtime_dependency 'riemann-client', '~> 1.1'
+  spec.add_dependency 'csv', '~> 3.0'
+  spec.add_dependency 'json', '>= 1.8'
+  spec.add_dependency 'optimist', '~> 3.0', '>= 3.0.0'
+  spec.add_dependency 'riemann-client', '~> 1.1'
 end
