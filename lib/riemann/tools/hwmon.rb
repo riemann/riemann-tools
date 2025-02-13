@@ -104,6 +104,8 @@ module Riemann
       def tick
         devices.each do |device|
           report(device.report)
+        rescue Errno::ENODATA
+          # Some sensors are buggy and cannot report properly
         end
       end
     end
