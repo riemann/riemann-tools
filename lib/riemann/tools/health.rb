@@ -21,7 +21,7 @@ module Riemann
       opt :disk_warning_leniency, 'Disk warning threshold (amount of free space)', short: :none, default: '500G'
       opt :disk_critical_leniency, 'Disk critical threshold (amount of free space)', short: :none, default: '250G'
       opt :disk_ignorefs, 'A list of filesystem types to ignore',
-          default: %w[anon_inodefs autofs cd9660 devfs devtmpfs fdescfs iso9660 linprocfs linsysfs nfs overlay procfs squashfs tmpfs]
+          default: %w[anon_inodefs autofs cd9660 devfs devtmpfs efivarfs fdescfs iso9660 linprocfs linsysfs nfs overlay procfs squashfs tmpfs]
       opt :load_warning, 'Load warning threshold (load average / core)', default: 3.0
       opt :load_critical, 'Load critical threshold (load average / core)', default: 8.0
       opt :memory_warning, 'Memory warning threshold (fraction of RAM)', default: 0.85
