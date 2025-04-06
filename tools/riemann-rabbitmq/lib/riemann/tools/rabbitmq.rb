@@ -100,7 +100,7 @@ module Riemann
             svc = "rabbitmq.queue.#{queue['vhost']}.#{queue['name']}"
             errs = []
 
-            errs << 'Queue has jobs but no consumers' if !queue['messages_ready'].nil? && (queue['messages_ready']).positive? && (queue['consumers']).zero?
+            errs << 'Queue has jobs but no consumers' if !queue['messages_ready'].nil? && queue['messages_ready'].positive? && queue['consumers'].zero?
 
             errs << "Queue has #{queue['messages_ready']} jobs" if (max_size_check_filter.nil? || queue['name'] !~ (max_size_check_filter)) && !queue['messages_ready'].nil? && (queue['messages_ready'] > opts[:max_queue_size])
 
