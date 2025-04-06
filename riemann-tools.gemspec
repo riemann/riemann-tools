@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Collection of utilities which submit events to Riemann,'
   spec.homepage      = 'https://github.com/aphyr/riemann-tools'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.6.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 
   spec.metadata['allowed_push_host']     = 'https://rubygems.org/'
   spec.metadata['rubygems_mfa_required'] = 'true'
