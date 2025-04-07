@@ -18,7 +18,14 @@ module Riemann
 
           @crit = scale(read_hwmon_i('crit'))
           @lcrit = scale(read_hwmon_i('lcrit'))
-          @service = ['hwmon', read_hwmon_file('name'), read_hwmon_s('label')].compact.join(' ')
+          @service = ['hwmon', name, read_hwmon_s('label')].compact.join(' ')
+        end
+
+        def name
+          result = read_hwmon_file('name')
+          filename = File.realpath(hwmon_file_path('name'))
+          result.concat(' at ', Regexp.last_match[1]) if filename.match(%r{/(i2c-\d+/\d+-[[:xdigit:]]+)/hwmon/})
+          result
         end
 
         def input
@@ -35,7 +42,7 @@ module Riemann
             service: service,
             state: state,
             metric: value,
-            description: fromat_input(value),
+            description: format_input(value),
           }
         end
 
@@ -52,7 +59,7 @@ module Riemann
           end
         end
 
-        def fromat_input(value)
+        def format_input(value)
           case type
           when :in then format('%<value>.3f V', { value: value })
           when :fan then "#{value} RPM"
@@ -76,9 +83,13 @@ module Riemann
         end
 
         def read_hwmon_file(file)
-          File.read("/sys/class/hwmon/hwmon#{hwmon}/#{file}").chomp
+          File.read(hwmon_file_path(file)).chomp
         rescue Errno::ENOENT
           nil
+        end
+
+        def hwmon_file_path(file)
+          "/sys/class/hwmon/hwmon#{hwmon}/#{file}"
         end
       end
 
