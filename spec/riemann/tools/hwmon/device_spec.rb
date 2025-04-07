@@ -8,12 +8,13 @@ RSpec.describe Riemann::Tools::Hwmon::Device do
   before do
     allow(File).to receive(:realpath).with('/sys/class/hwmon/hwmon1/name').and_return(device_path)
     allow(File).to receive(:read).with('/sys/class/hwmon/hwmon1/name').and_return("i350bb\n")
-    allow(File).to receive(:read).with('/sys/class/hwmon/hwmon1/temp2_crit').and_return("96000\n")
+    allow(File).to receive(:read).with('/sys/class/hwmon/hwmon1/temp2_crit').and_return(crit)
     allow(File).to receive(:read).with('/sys/class/hwmon/hwmon1/temp2_lcrit').and_raise(Errno::ENOENT)
     allow(File).to receive(:read).with('/sys/class/hwmon/hwmon1/temp2_label').and_return("loc1\n")
   end
 
   let(:device_path) { '/sys/devices/platform/coretemp.0/hwmon/hwmon1' }
+  let(:crit) { "96000\n" }
 
   describe '#name' do
     context 'with a regular device' do
@@ -32,9 +33,9 @@ RSpec.describe Riemann::Tools::Hwmon::Device do
       allow(File).to receive(:read).with('/sys/class/hwmon/hwmon1/temp2_input').and_return("#{input}\n")
     end
 
-    context 'when temperature is ok' do
-      let(:input) { 31_000 }
+    let(:input) { 31_000 }
 
+    context 'when temperature is ok' do
       it { expect(subject.report).to eq({ service: 'hwmon i350bb loc1', state: :ok, metric: 31.0, description: '31.000 °C' }) }
     end
 
@@ -42,6 +43,12 @@ RSpec.describe Riemann::Tools::Hwmon::Device do
       let(:input) { 96_000 }
 
       it { expect(subject.report).to eq({ service: 'hwmon i350bb loc1', state: :critical, metric: 96.0, description: '96.000 °C' }) }
+    end
+
+    context 'when crit is zero' do
+      let(:crit) { "0\n" }
+
+      it { expect(subject.report).to eq({ service: 'hwmon i350bb loc1', state: nil, metric: 31.0, description: '31.000 °C' }) }
     end
   end
 end

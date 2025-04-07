@@ -17,6 +17,7 @@ module Riemann
           @number = number
 
           @crit = scale(read_hwmon_i('crit'))
+          @crit = nil if @crit&.zero? # Some buggy drivers report a zero critical value.  Ignore these
           @lcrit = scale(read_hwmon_i('lcrit'))
           @service = ['hwmon', name, read_hwmon_s('label')].compact.join(' ')
         end
@@ -35,9 +36,12 @@ module Riemann
         def report
           value = scale(input)
 
-          state = :ok
-          state = :critical if crit && value >= crit
-          state = :critical if lcrit && value <= lcrit
+          state = nil
+          if crit || lcrit
+            state = :ok
+            state = :critical if crit && value >= crit
+            state = :critical if lcrit && value <= lcrit
+          end
           {
             service: service,
             state: state,
