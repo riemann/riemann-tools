@@ -7,6 +7,7 @@ module Riemann
     module Aws
       class RdsStatus
         include Riemann::Tools
+
         require 'fog/aws'
         require 'date'
         require 'time'

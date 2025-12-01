@@ -9,6 +9,7 @@ module Riemann
   module Tools
     class Riak
       include Riemann::Tools
+
       require 'net/http'
       require 'net/https'
       require 'yajl/json_gem'

@@ -102,7 +102,7 @@ module Riemann
 
             errs << 'Queue has jobs but no consumers' if !queue['messages_ready'].nil? && queue['messages_ready'].positive? && queue['consumers'].zero?
 
-            errs << "Queue has #{queue['messages_ready']} jobs" if (max_size_check_filter.nil? || queue['name'] !~ (max_size_check_filter)) && !queue['messages_ready'].nil? && (queue['messages_ready'] > opts[:max_queue_size])
+            errs << "Queue has #{queue['messages_ready']} jobs" if (max_size_check_filter.nil? || queue['name'] !~ max_size_check_filter) && !queue['messages_ready'].nil? && (queue['messages_ready'] > opts[:max_queue_size])
 
             if errs.empty?
               report(
@@ -133,7 +133,7 @@ module Riemann
 
             stats.each_pair do |k, v|
               service = "#{svc}.#{k}"
-              metric = if k =~ (/details$/) && !v.nil?
+              metric = if k =~ /details$/ && !v.nil?
                          v['rate']
                        else
                          v

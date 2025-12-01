@@ -9,6 +9,7 @@ module Riemann
   module Tools
     class Bench
       include Riemann::Tools
+
       attr_accessor :hosts, :services, :states
 
       def initialize

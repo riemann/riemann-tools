@@ -7,6 +7,7 @@ module Riemann
     module Aws
       class SqsStatus
         include Riemann::Tools
+
         require 'fog/aws'
 
         opt :access_key, 'AWS access key', type: String

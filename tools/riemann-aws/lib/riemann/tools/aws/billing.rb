@@ -7,6 +7,7 @@ module Riemann
     module Aws
       class Billing
         include Riemann::Tools
+
         require 'fog/aws'
 
         opt :fog_credentials_file, 'Fog credentials file', type: String
