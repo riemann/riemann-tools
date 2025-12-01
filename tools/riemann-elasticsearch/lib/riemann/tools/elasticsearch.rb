@@ -6,6 +6,7 @@ module Riemann
   module Tools
     class Elasticsearch
       include Riemann::Tools
+
       require 'faraday'
       require 'json'
       require 'uri'
@@ -43,7 +44,7 @@ module Riemann
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
         path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
-        "http://#{options[:es_host]}:#{options[:es_port]}#{path_prefix.length.positive? ? '/' : ''}#{path_prefix}/#{path}"
+        "http://#{options[:es_host]}:#{options[:es_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/#{path}"
       end
 
       def health_url

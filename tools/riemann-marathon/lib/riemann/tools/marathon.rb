@@ -50,14 +50,14 @@ module Riemann
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
         path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
-        "http://#{options[:marathon_host]}:#{options[:marathon_port]}#{path_prefix.length.positive? ? '/' : ''}#{path_prefix}/metrics"
+        "http://#{options[:marathon_host]}:#{options[:marathon_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/metrics"
       end
 
       def apps_url
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
         path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
-        "http://#{options[:marathon_host]}:#{options[:marathon_port]}#{path_prefix.length.positive? ? '/' : ''}#{path_prefix}/v2/apps"
+        "http://#{options[:marathon_host]}:#{options[:marathon_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/v2/apps"
       end
 
       def tick

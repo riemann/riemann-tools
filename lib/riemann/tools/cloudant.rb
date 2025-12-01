@@ -8,6 +8,7 @@ module Riemann
   module Tools
     class Cloudant
       include Riemann::Tools
+
       require 'net/http'
       require 'json'
 

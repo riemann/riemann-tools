@@ -7,6 +7,7 @@ module Riemann
   module Tools
     class Zookeeper
       include Riemann::Tools
+
       require 'socket'
 
       opt :zookeeper_host, 'Zookeeper hostname', default: 'localhost'

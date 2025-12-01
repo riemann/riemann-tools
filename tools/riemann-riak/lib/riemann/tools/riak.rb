@@ -9,6 +9,7 @@ module Riemann
   module Tools
     class Riak
       include Riemann::Tools
+
       require 'net/http'
       require 'net/https'
       require 'yajl/json_gem'
@@ -157,7 +158,7 @@ module Riemann
         case val
         when 0..limit
           'ok'
-        when limit..limit * 2
+        when limit..(limit * 2)
           'warning'
         else
           'critical'
@@ -289,7 +290,7 @@ module Riemann
         fsm_types.each do |typespec|
           typespec.each do |type, prop|
             fsm_percentiles.each do |percentile|
-              val = stats[fsm_stat(type, prop, percentile)].to_i || 0
+              val = stats[fsm_stat(type, prop, percentile)].to_i
               val = 0 if val == 'undefined'
               val /= 1000.0 if prop == 'time' # Convert us to ms
               state = if prop == 'time'

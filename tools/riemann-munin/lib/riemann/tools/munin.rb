@@ -7,6 +7,7 @@ module Riemann
   module Tools
     class Munin
       include Riemann::Tools
+
       require 'munin-ruby'
 
       def initialize

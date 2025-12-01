@@ -7,6 +7,7 @@ module Riemann
   module Tools
     class Memcached
       include Riemann::Tools
+
       require 'socket'
 
       opt :memcached_host, 'Memcached hostname', default: 'localhost'

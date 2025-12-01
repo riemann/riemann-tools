@@ -8,6 +8,7 @@ module Riemann
   module Tools
     class Haproxy
       include Riemann::Tools
+
       require 'net/http'
       require 'csv'
 

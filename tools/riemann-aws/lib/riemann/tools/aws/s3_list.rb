@@ -7,6 +7,7 @@ module Riemann
     module Aws
       class S3List
         include Riemann::Tools
+
         require 'fog/aws'
         require 'time'
 

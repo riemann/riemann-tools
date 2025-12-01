@@ -9,6 +9,7 @@ module Riemann
   module Tools
     class NginxStatus
       include Riemann::Tools
+
       require 'net/http'
       require 'uri'
 

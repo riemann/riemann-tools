@@ -11,6 +11,7 @@ module Riemann
   module Tools
     class ApacheStatus
       include Riemann::Tools
+
       require 'net/http'
       require 'uri'
 

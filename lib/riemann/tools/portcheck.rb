@@ -8,6 +8,7 @@ module Riemann
   module Tools
     class Portcheck
       include Riemann::Tools
+
       require 'socket'
 
       opt :hostname, 'Host, defaults to localhost', default: `hostname`.chomp

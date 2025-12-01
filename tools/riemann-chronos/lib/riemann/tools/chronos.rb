@@ -50,14 +50,14 @@ module Riemann
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
         path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
-        "http://#{options[:chronos_host]}:#{options[:chronos_port]}#{path_prefix.length.positive? ? '/' : ''}#{path_prefix}/metrics"
+        "http://#{options[:chronos_host]}:#{options[:chronos_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/metrics"
       end
 
       def jobs_url
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
         path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
-        "http://#{options[:chronos_host]}:#{options[:chronos_port]}#{path_prefix.length.positive? ? '/' : ''}#{path_prefix}/scheduler/jobs"
+        "http://#{options[:chronos_host]}:#{options[:chronos_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/scheduler/jobs"
       end
 
       def tick

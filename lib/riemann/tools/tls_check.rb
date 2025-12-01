@@ -202,6 +202,8 @@ module Riemann
             description.start_with? 'OCSP'
           end
 
+          return '' unless ocsp
+
           ocsp_uri = URI(ocsp[/URI:(.*)/, 1])
 
           http_response = ::Net::HTTP.start(ocsp_uri.hostname, ocsp_uri.port) do |http|
