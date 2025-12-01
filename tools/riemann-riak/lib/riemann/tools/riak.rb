@@ -158,7 +158,7 @@ module Riemann
         case val
         when 0..limit
           'ok'
-        when limit..limit * 2
+        when limit..(limit * 2)
           'warning'
         else
           'critical'
