@@ -42,14 +42,14 @@ module Riemann
       def health_url
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
-        path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
+        path_prefix[-1] = '' if path_prefix[-1] == '/'
         "http://#{options[:mesos_host]}:#{options[:mesos_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/metrics/snapshot"
       end
 
       def slaves_url
         path_prefix = options[:path_prefix]
         path_prefix[0] = '' if path_prefix[0] == '/'
-        path_prefix[path_prefix.length - 1] = '' if path_prefix[path_prefix.length - 1] == '/'
+        path_prefix[-1] = '' if path_prefix[-1] == '/'
         "http://#{options[:mesos_host]}:#{options[:mesos_port]}#{'/' if path_prefix.length.positive?}#{path_prefix}/master/slaves"
       end
 
