@@ -1,5 +1,5 @@
 class Riemann::Tools::MdstatParser
-token ALGORITHM BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED DISK_STATUS FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN NONE PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
+token ALGORITHM AUTO_READ_ONLY BITMAP BLOCKS BYTE_UNIT CHECK CHUNK DELAYED DISK_STATUS FINISH FLOAT IDENTIFIER INTEGER LEVEL MIN NONE PAGES PERSONALITIES PERSONALITY PENDING PROGRESS RECOVER RECOVERY REMOTE RESHAPE RESYNC SPEED SPEED_UNIT SUPER UNIT UNUSED_DEVICES
 rule
   target: personalities devices unused_devices { result = val[1] }
 
@@ -11,7 +11,11 @@ rule
   devices: devices device { result = val[0].merge(val[1]) }
          |                { result = {} }
 
-  device: IDENTIFIER ':' IDENTIFIER PERSONALITY list_of_devices INTEGER BLOCKS super level '[' INTEGER '/' INTEGER ']' '[' IDENTIFIER ']' progress bitmap { result = { val[0][:value] => val[15][:value] } }
+  device: IDENTIFIER ':' IDENTIFIER auto_read_only PERSONALITY list_of_devices INTEGER BLOCKS super level '[' INTEGER '/' INTEGER ']' '[' IDENTIFIER ']' progress bitmap { result = { val[0][:value] => val[16][:value] } }
+
+  auto_read_only: '(' AUTO_READ_ONLY ')'
+                |
+                ;
 
   list_of_devices: list_of_devices device
                  | device
@@ -79,6 +83,7 @@ require 'riemann/tools/utils'
       when s.scan(/\[/)               then s.push_token('[')
       when s.scan(/]/)                then s.push_token(']')
 
+      when s.scan(/auto-read-only\b/) then s.push_token(:AUTO_READ_ONLY)
       when s.scan(/DELAYED\b/)        then s.push_token(:DELAYED)
       when s.scan(/KB\b/)             then s.push_token(:BYTE_UNIT)
       when s.scan(/K\/sec\b/)         then s.push_token(:SPEED_UNIT)
