@@ -62,7 +62,7 @@ require 'riemann/tools/utils'
     until s.eos? do
       case
       when s.scan(/\n/)               then s.push_token(nil)
-      when s.scan(/\s+/)              then s.push_token(nil)
+      when s.scan(/[[:blank:]]+/)     then s.push_token(nil)
 
       when s.scan(/\([WJFSR]\)/)      then s.push_token(:DISK_STATUS)
       when s.scan(/<none>/)           then s.push_token(:NONE)
