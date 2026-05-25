@@ -441,9 +441,9 @@ module Riemann
           x = used.to_f / total_without_reservation
 
           if x > @limits[:disk][:critical] && available < @limits[:disk][:critical_leniency_kb]
-            alert "disk #{f[5]}", :critical, x, "#{f[4]} used"
+            alert "disk #{f[5]}", :critical, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           elsif x > @limits[:disk][:warning] && available < @limits[:disk][:warning_leniency_kb]
-            alert "disk #{f[5]}", :warning, x, "#{f[4]} used"
+            alert "disk #{f[5]}", :warning, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           else
             alert "disk #{f[5]}", :ok, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           end
