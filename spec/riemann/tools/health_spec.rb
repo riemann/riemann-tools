@@ -24,9 +24,11 @@ RSpec.describe Riemann::Tools::Health do
     subject { described_class.new.number_to_human_size(input, rounding) }
 
     {
-      0                 => %w[0 0 0],
+      # value           => [floored, rounded, ceiled]
+      0                 => %w[0B 0B 0B],
       1024              => ['1.0kiB', '1.0kiB', '1.0kiB'],
       2047              => ['1.9kiB', '2.0kiB', '2.0kiB'],
+      -2047             => ['-1.9kiB', '-2.0kiB', '-2.0kiB'],
       2048              => ['2.0kiB', '2.0kiB', '2.0kiB'],
       2049              => ['2.0kiB', '2.0kiB', '2.1kiB'],
       44_040_192        => ['42.0MiB', '42.0MiB', '42.0MiB'],
@@ -267,6 +269,7 @@ RSpec.describe Riemann::Tools::Health do
           /dev/md2              94569252 19758048   69984228      23% /home
           /dev/md3             456125672 393217472  39711584      91% /tank
           /dev/md4             456125672 432929056         0     100% /full
+          /dev/md4             456125672 456125672 -23196616     105% /overfull
         OUTPUT
       end
 
@@ -275,11 +278,13 @@ RSpec.describe Riemann::Tools::Health do
         allow(subject).to receive(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used, 66.7GiB free')
         allow(subject).to receive(:alert).with('disk /tank', :warning, 0.9082723059364257, '91% used, 37.8GiB free')
         allow(subject).to receive(:alert).with('disk /full', :critical, 1.0, '100% used, 0B free')
+        allow(subject).to receive(:alert).with('disk /overfull', :critical, 1.0535806402423589, '105% used, -22.1GiB free')
         subject.disk
         expect(subject).to have_received(:alert).with('disk /', :ok, 0.6267130394624543, '63% used, 6.7GiB free')
         expect(subject).to have_received(:alert).with('disk /home', :ok, 0.22016432923987797, '23% used, 66.7GiB free')
         expect(subject).to have_received(:alert).with('disk /tank', :warning, 0.9082723059364257, '91% used, 37.8GiB free')
         expect(subject).to have_received(:alert).with('disk /full', :critical, 1.0, '100% used, 0B free')
+        expect(subject).to have_received(:alert).with('disk /overfull', :critical, 1.0535806402423589, '105% used, -22.1GiB free')
       end
     end
 

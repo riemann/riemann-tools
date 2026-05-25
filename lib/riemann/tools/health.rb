@@ -530,10 +530,12 @@ module Riemann
       end
 
       def number_to_human_size(value, rounding = :round)
-        return value.to_s if value < 1024
+        return "#{value}B" if value.abs < 1024
 
+        neg = value.negative?
+        value = value.abs
         r = Math.log(value, 1024).floor
-        format('%<size>.1f%<unit>ciB', size: (value.to_f / (1024**r)).send(rounding, 1), unit: SI_UNITS[r])
+        format('%<sign>s%<size>.1f%<unit>ciB', sign: (neg ? '-' : ''), size: (value.to_f / (1024**r)).send(rounding, 1), unit: SI_UNITS[r])
       end
 
       def tick
