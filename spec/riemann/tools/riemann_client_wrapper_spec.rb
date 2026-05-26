@@ -4,11 +4,15 @@ require 'riemann/tools/riemann_client_wrapper'
 
 RSpec.describe Riemann::Tools::RiemannClientWrapper do
   subject do
-    instance = described_class.new({})
+    instance = described_class.instance
     client_mock = double
     allow(client_mock).to receive(:bulk_send)
     allow(instance).to receive(:client).and_return(client_mock)
     instance
+  end
+
+  before do
+    subject.send(:reset)
   end
 
   describe '#drain' do
@@ -18,7 +22,7 @@ RSpec.describe Riemann::Tools::RiemannClientWrapper do
 
     it 'does not accept events when draining' do
       subject.drain
-      expect { subject << {} }.to raise_error(RuntimeError, 'Cannot queue events when draining')
+      expect { subject << {} }.to raise_error(RuntimeError, 'Cannot queue events while draining')
     end
   end
 end
