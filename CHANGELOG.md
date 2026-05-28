@@ -1,5 +1,34 @@
 # Changelog
 
+## [v2.0.0](https://github.com/riemann/riemann-tools/tree/v2.0.0) (2026-05-28)
+
+[Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.12.0...v2.0.0)
+
+**Breaking changes:**
+
+- Drop support for Ruby \< 2.7 [\#305](https://github.com/riemann/riemann-tools/pull/305) ([smortex](https://github.com/smortex))
+
+**Implemented enhancements:**
+
+- Ignore null-critical value for `riemann-hwmon` [\#307](https://github.com/riemann/riemann-tools/pull/307) ([smortex](https://github.com/smortex))
+- Distinguish i2c devices in `riemann-hwmon` [\#306](https://github.com/riemann/riemann-tools/pull/306) ([smortex](https://github.com/smortex))
+- Ignore `efivarfs` disks in `riemann-health` checks [\#304](https://github.com/riemann/riemann-tools/pull/304) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Fix `riemann-wrapper` connection sharing [\#315](https://github.com/riemann/riemann-tools/pull/315) ([smortex](https://github.com/smortex))
+- Fix reporting of free disk space [\#314](https://github.com/riemann/riemann-tools/pull/314) ([smortex](https://github.com/smortex))
+- Fix `riemann-md` not recognizing mdstat `auto-read-only` mode [\#312](https://github.com/riemann/riemann-tools/pull/312) ([smortex](https://github.com/smortex))
+- Ignore invalid data in `riemann-hwmon` [\#303](https://github.com/riemann/riemann-tools/pull/303) ([smortex](https://github.com/smortex))
+
+**Closed issues:**
+
+- RFC: retire tools that monitor Mesos and related projects [\#311](https://github.com/riemann/riemann-tools/issues/311)
+
+**Merged pull requests:**
+
+- Mark Mesos monitoring tools as deprecated [\#313](https://github.com/riemann/riemann-tools/pull/313) ([l2dy](https://github.com/l2dy))
+
 ## [v1.12.0](https://github.com/riemann/riemann-tools/tree/v1.12.0) (2025-01-15)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/v1.11.0...v1.12.0)
@@ -411,7 +440,7 @@
 
 - Send out "expired" state when riemann-net stops seeing an interface [\#114](https://github.com/riemann/riemann-tools/pull/114) ([md5](https://github.com/md5))
 - Skip network metric comparison for newly added interfaces [\#113](https://github.com/riemann/riemann-tools/pull/113) ([md5](https://github.com/md5))
-- riemann-proc alerts output which processes matched [\#111](https://github.com/riemann/riemann-tools/pull/111) ([tcrayford](https://github.com/tcrayford))
+- riemann-proc alerts output which processes matched [\#111](https://github.com/riemann/riemann-tools/pull/111) ([tom-pang](https://github.com/tom-pang))
 - abort if no DB specified [\#110](https://github.com/riemann/riemann-tools/pull/110) ([peterneubauer](https://github.com/peterneubauer))
 - Adding monitoring of an RDS instance [\#109](https://github.com/riemann/riemann-tools/pull/109) ([peterneubauer](https://github.com/peterneubauer))
 - Added NTP statistics collector [\#108](https://github.com/riemann/riemann-tools/pull/108) ([jamtur01](https://github.com/jamtur01))
@@ -427,7 +456,7 @@
 
 - Adding support for https connection [\#102](https://github.com/riemann/riemann-tools/pull/102) ([peterneubauer](https://github.com/peterneubauer))
 - Adds monitoring a folder based on its number of files [\#100](https://github.com/riemann/riemann-tools/pull/100) ([iramello](https://github.com/iramello))
-- add directory space use monitoring [\#96](https://github.com/riemann/riemann-tools/pull/96) ([tcrayford](https://github.com/tcrayford))
+- add directory space use monitoring [\#96](https://github.com/riemann/riemann-tools/pull/96) ([tom-pang](https://github.com/tom-pang))
 
 ## [0.2.3](https://github.com/riemann/riemann-tools/tree/0.2.3) (2015-01-06)
 
@@ -458,19 +487,22 @@
 
 - one-character fix: Make riemann-aws-billing work again [\#85](https://github.com/riemann/riemann-tools/pull/85) ([benley](https://github.com/benley))
 - Fix for latest riemann-client changes [\#83](https://github.com/riemann/riemann-tools/pull/83) ([eric](https://github.com/eric))
-- riemann proc regex should quote args to grep [\#82](https://github.com/riemann/riemann-tools/pull/82) ([tcrayford](https://github.com/tcrayford))
+- riemann proc regex should quote args to grep [\#82](https://github.com/riemann/riemann-tools/pull/82) ([tom-pang](https://github.com/tom-pang))
 - riemann-redis migrated to https://github.com/riemann/riemann-redis [\#81](https://github.com/riemann/riemann-tools/pull/81) ([fborgnia](https://github.com/fborgnia))
 
 ## [0.2.1](https://github.com/riemann/riemann-tools/tree/0.2.1) (2014-03-26)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.2.0...0.2.1)
 
+**Implemented enhancements:**
+
+- rieman-tools aws billing [\#74](https://github.com/riemann/riemann-tools/pull/74) ([jespada](https://github.com/jespada))
+
 **Merged pull requests:**
 
 - Update FreeBSD load average for 1 min [\#79](https://github.com/riemann/riemann-tools/pull/79) ([zachfi](https://github.com/zachfi))
 - Added riemann-varnish collector script [\#77](https://github.com/riemann/riemann-tools/pull/77) ([pradeepchhetri](https://github.com/pradeepchhetri))
 - allow dashes in diskstats volume names to support lvm volumes like "dm-0" [\#75](https://github.com/riemann/riemann-tools/pull/75) ([cmerrick](https://github.com/cmerrick))
-- rieman-tools aws billing [\#74](https://github.com/riemann/riemann-tools/pull/74) ([jespada](https://github.com/jespada))
 - Added basic metric monitoring for zookeeper [\#73](https://github.com/riemann/riemann-tools/pull/73) ([aterreno](https://github.com/aterreno))
 
 ## [0.2.0](https://github.com/riemann/riemann-tools/tree/0.2.0) (2014-01-23)
@@ -556,21 +588,30 @@
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.1.2...0.1.3)
 
+**Implemented enhancements:**
+
+- Add ability to add attributes from CLI [\#38](https://github.com/riemann/riemann-tools/pull/38) ([lwf](https://github.com/lwf))
+
+**Fixed bugs:**
+
+- Handle timeouts [\#42](https://github.com/riemann/riemann-tools/pull/42) ([lwf](https://github.com/lwf))
+
 **Closed issues:**
 
 - riemann-kvminstance\(s\) duplicate scripts [\#34](https://github.com/riemann/riemann-tools/issues/34)
 
 **Merged pull requests:**
 
-- Remove dead code [\#43](https://github.com/riemann/riemann-tools/pull/43) ([lwf](https://github.com/lwf))
-- Handle timeouts [\#42](https://github.com/riemann/riemann-tools/pull/42) ([lwf](https://github.com/lwf))
 - Allow riemann resmon to use hostname or FQDN for events [\#41](https://github.com/riemann/riemann-tools/pull/41) ([gsandie](https://github.com/gsandie))
 - Remove duplicated file riemann-kvminstances. [\#39](https://github.com/riemann/riemann-tools/pull/39) ([default50](https://github.com/default50))
-- Add ability to add attributes from CLI [\#38](https://github.com/riemann/riemann-tools/pull/38) ([lwf](https://github.com/lwf))
 
 ## [0.1.2](https://github.com/riemann/riemann-tools/tree/0.1.2) (2013-04-30)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/0.0.9...0.1.2)
+
+**Implemented enhancements:**
+
+- Add riemann-aws-status [\#13](https://github.com/riemann/riemann-tools/pull/13) ([lwf](https://github.com/lwf))
 
 **Closed issues:**
 
@@ -596,18 +637,21 @@
 - Default event hostname [\#20](https://github.com/riemann/riemann-tools/pull/20) ([timshadel](https://github.com/timshadel))
 - Add memcached monitoring support for riemann-tools. [\#19](https://github.com/riemann/riemann-tools/pull/19) ([fcuny](https://github.com/fcuny))
 - Typo in rieman-riak using :servie instead of :service [\#18](https://github.com/riemann/riemann-tools/pull/18) ([dgtized](https://github.com/dgtized))
-- Add riemann-aws-status [\#13](https://github.com/riemann/riemann-tools/pull/13) ([lwf](https://github.com/lwf))
 
 ## [0.0.9](https://github.com/riemann/riemann-tools/tree/0.0.9) (2012-12-08)
 
 [Full Changelog](https://github.com/riemann/riemann-tools/compare/version-0.0.2...0.0.9)
+
+**Implemented enhancements:**
+
+- Add riemann-diskstats [\#12](https://github.com/riemann/riemann-tools/pull/12) ([lwf](https://github.com/lwf))
+- Add --tag option to specify tags [\#2](https://github.com/riemann/riemann-tools/pull/2) ([lwf](https://github.com/lwf))
 
 **Merged pull requests:**
 
 - fix overflowing text from ps by swapping args for comm [\#17](https://github.com/riemann/riemann-tools/pull/17) ([dch](https://github.com/dch))
 - Fix darwin cpu usage. Show used cpu instead of idle [\#15](https://github.com/riemann/riemann-tools/pull/15) ([henrikno](https://github.com/henrikno))
 - Fix core count on darwin [\#14](https://github.com/riemann/riemann-tools/pull/14) ([henrikno](https://github.com/henrikno))
-- Add riemann-diskstats [\#12](https://github.com/riemann/riemann-tools/pull/12) ([lwf](https://github.com/lwf))
 - Reflect each haproxy config as its own unique status [\#11](https://github.com/riemann/riemann-tools/pull/11) ([perezd](https://github.com/perezd))
 - allow for a commandline configurable TTL. [\#10](https://github.com/riemann/riemann-tools/pull/10) ([perezd](https://github.com/perezd))
 - add host properties to cloudant, haproxy, redis. [\#8](https://github.com/riemann/riemann-tools/pull/8) ([perezd](https://github.com/perezd))
@@ -616,7 +660,6 @@
 - adds redis monitoring support to riemann-tools. [\#5](https://github.com/riemann/riemann-tools/pull/5) ([perezd](https://github.com/perezd))
 - Prevent riemann-health from failing to report memory on OpenVZ virtual machines.  [\#4](https://github.com/riemann/riemann-tools/pull/4) ([mindreframer](https://github.com/mindreframer))
 - added a script to report kvm instances running on a host [\#3](https://github.com/riemann/riemann-tools/pull/3) ([wjimenez5271](https://github.com/wjimenez5271))
-- Add --tag option to specify tags [\#2](https://github.com/riemann/riemann-tools/pull/2) ([lwf](https://github.com/lwf))
 - add freebsd and darwin support to riemann-health [\#1](https://github.com/riemann/riemann-tools/pull/1) ([joecaswell](https://github.com/joecaswell))
 
 ## [version-0.0.2](https://github.com/riemann/riemann-tools/tree/version-0.0.2) (2012-04-17)

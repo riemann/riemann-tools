@@ -2,6 +2,6 @@
 
 module Riemann
   module Tools # :nodoc:
-    VERSION = '1.12.0'
+    VERSION = '2.0.0'
   end
 end
