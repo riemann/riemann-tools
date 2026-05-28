@@ -24,7 +24,7 @@ module URI
   end
 end
 
-module Riemann
+module Riemann # rubocop:disable Style/OneClassPerFile
   module Tools
     class TLSCheck
       include Riemann::Tools

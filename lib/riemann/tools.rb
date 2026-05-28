@@ -82,7 +82,10 @@ module Riemann
     end
 
     def riemann
-      @riemann ||= RiemannClientWrapper.new(options)
+      @riemann ||= begin
+        RiemannClientWrapper.instance.options = options
+        RiemannClientWrapper.instance
+      end
     end
     alias r riemann
 

@@ -441,9 +441,9 @@ module Riemann
           x = used.to_f / total_without_reservation
 
           if x > @limits[:disk][:critical] && available < @limits[:disk][:critical_leniency_kb]
-            alert "disk #{f[5]}", :critical, x, "#{f[4]} used"
+            alert "disk #{f[5]}", :critical, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           elsif x > @limits[:disk][:warning] && available < @limits[:disk][:warning_leniency_kb]
-            alert "disk #{f[5]}", :warning, x, "#{f[4]} used"
+            alert "disk #{f[5]}", :warning, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           else
             alert "disk #{f[5]}", :ok, x, "#{f[4]} used, #{number_to_human_size(available * 1024, :floor)} free"
           end
@@ -530,10 +530,12 @@ module Riemann
       end
 
       def number_to_human_size(value, rounding = :round)
-        return value.to_s if value < 1024
+        return "#{value}B" if value.abs < 1024
 
+        neg = value.negative?
+        value = value.abs
         r = Math.log(value, 1024).floor
-        format('%<size>.1f%<unit>ciB', size: (value.to_f / (1024**r)).send(rounding, 1), unit: SI_UNITS[r])
+        format('%<sign>s%<size>.1f%<unit>ciB', sign: (neg ? '-' : ''), size: (value.to_f / (1024**r)).send(rounding, 1), unit: SI_UNITS[r])
       end
 
       def tick
