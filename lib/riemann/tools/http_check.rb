@@ -254,8 +254,8 @@ module Riemann
         res.scheme   ||= uri.scheme
         res.host     ||= uri.host
         res.port     ||= uri.port
-        res.user     ||= res.user
-        res.password ||= res.password
+        res.user     ||= uri.user
+        res.password ||= uri.password
 
         res
       end
