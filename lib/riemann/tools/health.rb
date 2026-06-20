@@ -4,7 +4,7 @@ require 'riemann/tools'
 require 'riemann/tools/utils'
 require 'riemann/tools/uptime_parser.tab'
 
-# Reports current CPU, disk, load average, and memory use to riemann.
+# Reports current CPU, disk, inodes, load average, and memory use to riemann.
 module Riemann
   module Tools
     class Health
@@ -22,6 +22,10 @@ module Riemann
       opt :disk_critical_leniency, 'Disk critical threshold (amount of free space)', short: :none, default: '250G'
       opt :disk_ignorefs, 'A list of filesystem types to ignore',
           default: %w[anon_inodefs autofs cd9660 devfs devtmpfs efivarfs fdescfs iso9660 linprocfs linsysfs nfs overlay procfs squashfs tmpfs]
+      opt :inodes_warning, 'Disk inodes warning threshold (fraction of inodes used)', default: 0.9
+      opt :inodes_critical, 'Disk inodes critical threshold (fraction of inodes used)', default: 0.95
+      opt :inodes_ignorefs, 'A list of filesystem types to ignore',
+          default: %w[anon_inodefs autofs cd9660 devfs devtmpfs efivarfs fdescfs iso9660 linprocfs linsysfs nfs overlay procfs squashfs tmpfs]
       opt :load_warning, 'Load warning threshold (load average / core)', default: 3.0
       opt :load_critical, 'Load critical threshold (load average / core)', default: 8.0
       opt :memory_warning, 'Memory warning threshold (fraction of RAM)', default: 0.85
@@ -32,7 +36,7 @@ module Riemann
       opt :users_critical, 'Users critical threshold', default: 1
       opt :swap_warning, 'Swap warning threshold', default: 0.4
       opt :swap_critical, 'Swap critical threshold', default: 0.5
-      opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk swap]
+      opt :checks, 'A list of checks to run.', type: :strings, default: %w[cpu load memory disk inodes swap]
 
       def initialize
         super
@@ -40,6 +44,7 @@ module Riemann
         @limits = {
           cpu: { critical: opts[:cpu_critical], warning: opts[:cpu_warning] },
           disk: { critical: opts[:disk_critical], warning: opts[:disk_warning], critical_leniency_kb: human_size_to_number(opts[:disk_critical_leniency]) / 1024, warning_leniency_kb: human_size_to_number(opts[:disk_warning_leniency]) / 1024 },
+          inodes: { critical: opts[:inodes_critical], warning: opts[:inodes_warning] },
           load: { critical: opts[:load_critical], warning: opts[:load_warning] },
           memory: { critical: opts[:memory_critical], warning: opts[:memory_warning] },
           uptime: { critical: opts[:uptime_critical], warning: opts[:uptime_warning] },
@@ -51,6 +56,7 @@ module Riemann
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :darwin_cpu
           @disk = method :disk
+          @inodes = method :inodes
           @load = method :darwin_load
           @memory = method :darwin_memory
           @uptime = method :bsd_uptime
@@ -59,6 +65,7 @@ module Riemann
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :freebsd_cpu
           @disk = method :disk
+          @inodes = method :inodes
           @load = method :bsd_load
           @memory = method :freebsd_memory
           @uptime = method :bsd_uptime
@@ -67,6 +74,7 @@ module Riemann
           @cores = `sysctl -n hw.ncpu`.to_i
           @cpu = method :openbsd_cpu
           @disk = method :disk
+          @inodes = method :inodes
           @load = method :bsd_load
           @memory = method :openbsd_memory
           @uptime = method :bsd_uptime
@@ -75,6 +83,7 @@ module Riemann
           @cores = `mpstat -a 2>/dev/null`.split[33].to_i
           @cpu = method :sunos_cpu
           @disk = method :disk
+          @inodes = method :inodes
           @load = method :bsd_load
           @memory = method :sunos_memory
           @uptime = method :bsd_uptime
@@ -84,6 +93,7 @@ module Riemann
           puts "WARNING: OS '#{@ostype}' not explicitly supported. Falling back to Linux" unless @ostype == 'linux'
           @cpu = method :linux_cpu
           @disk = method :disk
+          @inodes = method :inodes
           @load = method :linux_load
           @memory = method :linux_memory
           @uptime = method :linux_uptime
@@ -96,6 +106,8 @@ module Riemann
           case check
           when 'disk'
             @disk_enabled = true
+          when 'inodes'
+            @inodes_enabled = true
           when 'load'
             @load_enabled = true
           when 'cpu'
@@ -450,6 +462,47 @@ module Riemann
         end
       end
 
+      def df_i
+        case @ostype
+        when 'darwin', 'freebsd', 'openbsd'
+          `df -iP -t no#{opts[:inodes_ignorefs].join(',')}`
+        when 'sunos'
+          `df -iP` # Is there a good way to exlude iso9660 here?
+        else
+          if @supports_exclude_type
+            `df -iP #{opts[:inodes_ignorefs].map { |fstype| "--exclude-type=#{fstype}" }.join(' ')}`
+          else
+            `df -iP`
+          end
+        end
+      end
+
+      def inodes
+        df_i.lines[1..].each do |r|
+          f = r.split(/\s+/)
+
+          # Calculate capacity
+          used = f[2].to_i
+          available = f[3].to_i
+          total_without_reservation = used + available
+
+          if total_without_reservation.zero?
+            alert("inodes #{f[5]}", :ok, 0, '0% used, 0 free')
+            next
+          end
+
+          x = used.to_f / total_without_reservation
+
+          if x > @limits[:inodes][:critical]
+            alert "inodes #{f[5]}", :critical, x, "#{f[4]} used, #{number_to_human(available, :floor)} free"
+          elsif x > @limits[:inodes][:warning]
+            alert "inodes #{f[5]}", :warning, x, "#{f[4]} used, #{number_to_human(available, :floor)} free"
+          else
+            alert "inodes #{f[5]}", :ok, x, "#{f[4]} used, #{number_to_human(available, :floor)} free"
+          end
+        end
+      end
+
       def bsd_uptime
         value = uptime[:uptime]
 
@@ -529,6 +582,15 @@ module Riemann
         end
       end
 
+      def number_to_human(value, rounding = :round)
+        return value.to_s if value.abs < 1000
+
+        neg = value.negative?
+        value = value.abs
+        r = Math.log(value, 1000).floor
+        format('%<sign>s%<size>.1f%<unit>c', sign: (neg ? '-' : ''), size: (value.to_f / (1000**r)).send(rounding, 1), unit: SI_UNITS[r])
+      end
+
       def number_to_human_size(value, rounding = :round)
         return "#{value}B" if value.abs < 1024
 
@@ -544,6 +606,7 @@ module Riemann
         @cpu.call if @cpu_enabled
         @memory.call if @memory_enabled
         @disk.call if @disk_enabled
+        @inodes.call if @inodes_enabled
         @load.call if @load_enabled
         @uptime.call if @uptime_enabled
         @users.call if @users_enabled

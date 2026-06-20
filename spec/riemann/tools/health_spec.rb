@@ -217,6 +217,42 @@ RSpec.describe Riemann::Tools::Health do
     end
   end
 
+  describe('#inodes') do
+    before do
+      allow(subject).to receive(:df_i).and_return(<<~OUTPUT)
+        Filesystem      Inodes  IUsed   IFree IUse% Mounted on
+        /dev/sda1      5234688 217768 5016920    5% /
+        /dev/sda15           0      0       0     - /boot/efi
+      OUTPUT
+    end
+
+    it 'reports all filesystems' do
+      allow(subject).to receive(:alert).with('inodes /', :ok, 0.04160095119327074, '5% used, 5.0M free')
+      allow(subject).to receive(:alert).with('inodes /boot/efi', :ok, 0, '0% used, 0 free')
+      subject.inodes
+      expect(subject).to have_received(:alert).with('inodes /', :ok, 0.04160095119327074, '5% used, 5.0M free')
+      expect(subject).to have_received(:alert).with('inodes /boot/efi', :ok, 0, '0% used, 0 free')
+    end
+
+    context 'with a foreign locale' do
+      before do
+        allow(subject).to receive(:df).and_return(<<~OUTPUT)
+          Sys. de fichiers Taille Utilisé Dispo Uti% Monté sur
+          /dev/sda1           79G     17G   59G  23% /
+          /dev/sda15         124M    8,7M  116M   8% /boot/efi
+        OUTPUT
+      end
+
+      it 'reports all filesystems' do
+        allow(subject).to receive(:alert).with('inodes /', :ok, 0.04160095119327074, '5% used, 5.0M free')
+        allow(subject).to receive(:alert).with('inodes /boot/efi', :ok, 0, '0% used, 0 free')
+        subject.inodes
+        expect(subject).to have_received(:alert).with('inodes /', :ok, 0.04160095119327074, '5% used, 5.0M free')
+        expect(subject).to have_received(:alert).with('inodes /boot/efi', :ok, 0, '0% used, 0 free')
+      end
+    end
+  end
+
   describe('#disks') do
     before do
       allow(subject).to receive(:df).and_return(<<~OUTPUT)
